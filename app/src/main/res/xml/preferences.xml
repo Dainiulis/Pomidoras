@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:sample="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory
+        android:title="Durations"
+        android:key="pref_key_durations_category">
+    <!--nepamirst kad naudoju MaterialSeekBarPreference!!!!-->
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
+            android:defaultValue="25"
+            android:key="pref_key_work_time"
+            android:title="Working session time"
+            sample:msbp_dialogEnabled="false"
+            sample:msbp_interval="1"
+            sample:msbp_maxValue="120"
+            sample:msbp_measurementUnit="minutes"
+            sample:msbp_minValue="1" />
+
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
+            android:defaultValue="5"
+            android:key="pref_key_rest_time"
+            android:title="Short rest time"
+            sample:msbp_dialogEnabled="false"
+            sample:msbp_interval="1"
+            sample:msbp_maxValue="30"
+            sample:msbp_measurementUnit="minutes"
+            sample:msbp_minValue="1" />
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
+            android:defaultValue="4"
+            android:key="pref_key_when_long_break"
+            android:title="Work sessions before long break"
+            sample:msbp_dialogEnabled="false"
+            sample:msbp_interval="1"
+            sample:msbp_maxValue="10"
+            sample:msbp_measurementUnit="sessions"
+            sample:msbp_minValue="1" />
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
+            android:defaultValue="15"
+            android:key="pref_key_long_break_time"
+            android:title="Long break time"
+            sample:msbp_dialogEnabled="false"
+            sample:msbp_interval="1"
+            sample:msbp_maxValue="60"
+            sample:msbp_measurementUnit="minutes"
+            sample:msbp_minValue="1" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Notifications"
+        android:key="pref_key_notifications_category">
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Exercises"
+        android:key="pref_key_exercises_category">
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Other"
+        android:key="pref_key_other_category">
+    <CheckBoxPreference
+        android:key="pref_continuous_mode"
+        android:title="Continuous mode"
+        android:summary="If selected the timer will autoswitch"
+        android:defaultValue="false"/>
+    </PreferenceCategory>
+
+
+
+</PreferenceScreen>

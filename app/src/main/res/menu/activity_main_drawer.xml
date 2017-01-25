@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_timer"
+            android:icon="@drawable/ic_timer_24dp"
+            android:title="@string/pomodoro"/>
+    </group>
+
+    <item android:title="Settings">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:checkable="false"
+                android:icon="@drawable/ic_settings_black_24dp"
+                android:title="@string/settings" />
+
+        </menu>
+    </item>
+
+</menu>
