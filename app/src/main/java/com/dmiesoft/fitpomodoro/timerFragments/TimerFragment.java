@@ -53,26 +53,8 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
             view = inflater.inflate(R.layout.fragment_timer, container, false);
             initializeViews(view);
             setTimer();
-            Log.i(TAG, "onCreateView: " + view);
         }
         return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.i(TAG, "onActivityCreated: ");
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
     }
 
     @Override
