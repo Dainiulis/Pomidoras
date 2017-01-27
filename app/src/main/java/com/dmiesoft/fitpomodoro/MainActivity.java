@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,11 +16,10 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.exercisesFragments.ExerciseGroupFragment;
+import com.dmiesoft.fitpomodoro.extras.AlertDialogFragment;
 import com.dmiesoft.fitpomodoro.historyFragments.HistoryFragment;
 import com.dmiesoft.fitpomodoro.timerFragments.TimerFragment;
 
-import java.sql.Time;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -31,6 +29,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
     private static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     private static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
+    private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private NavigationView navigationView;
     private List<Fragment> fragments;
 
@@ -69,6 +68,8 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
+            AlertDialogFragment alertDialogFragment = new AlertDialogFragment();
+            alertDialogFragment.show(getSupportFragmentManager(), EXIT_DIALOG);
             Toast.makeText(this, "Ot ir neiseisiu is fragmento", Toast.LENGTH_SHORT).show();
         }
     }

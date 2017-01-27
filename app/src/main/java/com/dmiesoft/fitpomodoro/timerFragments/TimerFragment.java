@@ -42,31 +42,6 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
 
         longBreakCounter = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Log.i(TAG, "onCreate: TIMER");
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        Log.i(TAG, "onAttach: TIMER");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy: TIMER");
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.i(TAG, "onDestroyView: TIMER");
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.i(TAG, "onDetach: TIMER");
     }
 
     @Override
@@ -87,6 +62,24 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
         if (!timerRunning && !timerPaused) {
             setTimer();
         }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Log.i(TAG, "onAttach: TIMER");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        Log.i(TAG, "onDetach: TIMER");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.i(TAG, "onDestroyView: TIMER");
     }
 
     //  **Handle millisecs and timer**
