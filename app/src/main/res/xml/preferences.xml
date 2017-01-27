@@ -18,7 +18,7 @@
         <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:defaultValue="5"
             android:key="pref_key_rest_time"
-            android:title="Short rest time"
+            android:title="Short break time"
             sample:msbp_dialogEnabled="false"
             sample:msbp_interval="1"
             sample:msbp_maxValue="30"

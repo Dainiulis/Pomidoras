@@ -42,7 +42,7 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
 
         longBreakCounter = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        Log.i(TAG, "onCreate: ");
+        Log.i(TAG, "onCreate: TIMER");
     }
 
     @Override
