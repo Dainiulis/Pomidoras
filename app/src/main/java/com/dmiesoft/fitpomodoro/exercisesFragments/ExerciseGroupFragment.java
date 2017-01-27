@@ -34,6 +34,5 @@ public class ExerciseGroupFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.i(TAG, "onDetach: ");
     }
 }

@@ -20,6 +20,7 @@ import com.dmiesoft.fitpomodoro.exercisesFragments.ExerciseGroupFragment;
 import com.dmiesoft.fitpomodoro.timerFragments.TimerFragment;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -58,7 +59,6 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        Log.i(TAG, "onCreate Activity: ");
     }
 
     @Override
@@ -83,19 +83,26 @@ public class MainActivity extends AppCompatActivity
                 if (isFragmentCreated(TIMER_FRAGMENT_TAG)) {
                     fragment = getSupportFragmentManager()
                             .findFragmentByTag(TIMER_FRAGMENT_TAG);
-//                    fragment.setRetainInstance(true);
-                } else {
-                    fragment = new TimerFragment();
-                    fragment.setRetainInstance(true);
                 }
-                Log.i(TAG, "fragas timer: " + fragment);
                 fragTag = TIMER_FRAGMENT_TAG;
                 break;
 
             case R.id.nav_exercise_group:
-                fragment = new ExerciseGroupFragment();
+                /*
+                if fragment is created then it finds it by tag
+                but the problem is that it can find it by tag but
+                fragment could be null so if it's null it creates new fragment
+                 */
+                if (isFragmentCreated(EXERCISE_GROUP_FRAGMENT_TAG)) {
+                    fragment = getSupportFragmentManager()
+                            .findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
+                    if (fragment == null) {
+                        fragment = new ExerciseGroupFragment();
+                    }
+                } else {
+                    fragment = new ExerciseGroupFragment();
+                }
                 fragTag = EXERCISE_GROUP_FRAGMENT_TAG;
-                Log.i(TAG, "fragas exercise: " + fragment);
                 break;
 
             case R.id.nav_settings:
@@ -104,11 +111,30 @@ public class MainActivity extends AppCompatActivity
                 break;
 
         }
-        Log.i(TAG, "onNavigationItemSelected: " + getSupportFragmentManager().getBackStackEntryCount());
         if (fragment != null && !fragment.isVisible()) {
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.main_fragment_container, fragment, fragTag);
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            if (fragment.getTag() != null) {
+                /*
+                if fragment is TimerFragment then it
+                gets all fragments removes all but not the TimerFragment
+                */
+                if (fragment.getTag().equals(TIMER_FRAGMENT_TAG)) {
+                    for (Fragment frag : getSupportFragmentManager().getFragments()) {
+                        if (frag != null && frag != fragment) {
+                            fragmentTransaction.remove(frag);
+                        }
+                    }
+                 // then it shows the TimerFragment
+                    fragmentTransaction.show(fragment);
+                }
+            /*
+            if it's not TimeFragment then it hides TimerFragment and adds
+            other passed fragment
+            */
+            } else {
+                fragmentTransaction.hide(getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG));
+                fragmentTransaction.add(R.id.main_fragment_container, fragment, fragTag);
+            }
             fragmentTransaction.commit();
         }
 
@@ -124,7 +150,7 @@ public class MainActivity extends AppCompatActivity
     private void setCheckedCurrentNavigationDrawer() {
         fragments = getSupportFragmentManager().getFragments();
         for (Fragment fragment : fragments) {
-            if (fragment.isAdded()) {
+            if (fragment.isAdded() && !fragment.isHidden()) {
                 switch (fragment.getTag()) {
                     case TIMER_FRAGMENT_TAG:
                         navigationView.getMenu().getItem(0).setChecked(true);
