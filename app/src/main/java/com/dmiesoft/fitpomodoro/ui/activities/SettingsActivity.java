@@ -1,9 +1,11 @@
-package com.dmiesoft.fitpomodoro;
+package com.dmiesoft.fitpomodoro.ui.activities;
 
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
+
+import com.dmiesoft.fitpomodoro.R;
 
 public class SettingsActivity extends AppCompatActivity {
 
