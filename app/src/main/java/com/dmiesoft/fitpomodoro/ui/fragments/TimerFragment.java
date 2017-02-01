@@ -1,11 +1,10 @@
-package com.dmiesoft.fitpomodoro.timerFragments;
+package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.SettingsActivity;
+import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 
 
 public class TimerFragment extends Fragment implements View.OnClickListener{

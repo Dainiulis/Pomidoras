@@ -1,10 +1,11 @@
-package com.dmiesoft.fitpomodoro;
+package com.dmiesoft.fitpomodoro.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,10 +16,14 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.dmiesoft.fitpomodoro.exercisesFragments.ExerciseGroupFragment;
-import com.dmiesoft.fitpomodoro.extras.AlertDialogFragment;
-import com.dmiesoft.fitpomodoro.historyFragments.HistoryFragment;
-import com.dmiesoft.fitpomodoro.timerFragments.TimerFragment;
+import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.events.DrawerItemClickedEvent;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.AlertDialogFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.TimerFragment;
+import com.dmiesoft.fitpomodoro.utils.EventBus;
+import com.squareup.otto.Subscribe;
 
 import java.util.List;
 
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private NavigationView navigationView;
     private List<Fragment> fragments;
+    private FragmentManager fragmentManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +48,11 @@ public class MainActivity extends AppCompatActivity
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
+        fragmentManager = getSupportFragmentManager();
         if (savedInstanceState == null) {
             TimerFragment timerFragment = new TimerFragment();
             timerFragment.setRetainInstance(true);
-            getSupportFragmentManager()
+            fragmentManager
                     .beginTransaction()
                     .add(R.id.main_fragment_container, timerFragment, TIMER_FRAGMENT_TAG)
                     .addToBackStack(null)
@@ -83,46 +90,14 @@ public class MainActivity extends AppCompatActivity
         String fragTag = "";
         switch (id) {
             case R.id.nav_timer:
-                if (isFragmentCreated(TIMER_FRAGMENT_TAG)) {
-                    fragment = getSupportFragmentManager()
-                            .findFragmentByTag(TIMER_FRAGMENT_TAG);
-                }
-                fragTag = TIMER_FRAGMENT_TAG;
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG)) ;
                 break;
 
             case R.id.nav_exercise_group:
-                /*
-                if fragment is created then it finds it by tag
-                but the problem is that it can find it by tag but
-                fragment could be null so if it's null it creates new fragment
-                 */
-                if (isFragmentCreated(EXERCISE_GROUP_FRAGMENT_TAG)) {
-                    fragment = getSupportFragmentManager()
-                            .findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
-                    if (fragment == null) {
-                        fragment = new ExerciseGroupFragment();
-                    }
-                } else {
-                    fragment = new ExerciseGroupFragment();
-                }
-                fragTag = EXERCISE_GROUP_FRAGMENT_TAG;
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG));
                 break;
-                /*
-                if fragment is created then it finds it by tag
-                but the problem is that it can find it by tag but
-                fragment could be null so if it's null it creates new fragment
-                 */
             case R.id.nav_history:
-                if (isFragmentCreated(HISTORY_FRAGMENT_TAG)) {
-                    fragment = getSupportFragmentManager()
-                            .findFragmentByTag(HISTORY_FRAGMENT_TAG);
-                    if (fragment == null) {
-                        fragment = new HistoryFragment();
-                    }
-                } else {
-                    fragment = new HistoryFragment();
-                }
-                fragTag = HISTORY_FRAGMENT_TAG;
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG));
                 break;
 
             case R.id.nav_settings:
@@ -131,53 +106,14 @@ public class MainActivity extends AppCompatActivity
                 break;
 
         }
-        if (fragment != null && !fragment.isVisible()) {
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            if (fragment.getTag() != null) {
-                /*
-                if fragment is TimerFragment then it
-                gets all fragments removes all but not the TimerFragment
-                */
-                if (fragment.getTag().equals(TIMER_FRAGMENT_TAG)) {
-                    removeAllFragmentsExceptTimer(fragmentTransaction);
-                    // then it shows the TimerFragment
-                    fragmentTransaction.show(fragment);
-                }
-            /*
-            if it's not TimeFragment then it hides TimerFragment and adds
-            other passed fragment
-            */
-            } else {
-                if (getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG).isVisible()) {
-                    fragmentTransaction.hide(getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG));
-                    fragmentTransaction.add(R.id.main_fragment_container, fragment, fragTag);
-                } else if (getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG).isHidden()) {
-                    removeAllFragmentsExceptTimer(fragmentTransaction);
-                    fragmentTransaction.add(R.id.main_fragment_container, fragment, fragTag);
-                }
-            }
-            fragmentTransaction.commit();
-        }
         Log.i(TAG, "fragai po visu sou " + getSupportFragmentManager().getFragments());
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private void removeAllFragmentsExceptTimer(FragmentTransaction fragmentTransaction) {
-        for (Fragment frag : getSupportFragmentManager().getFragments()) {
-            if (frag != null && frag != getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG)) {
-                fragmentTransaction.remove(frag);
-            }
-        }
-    }
-
-    private boolean isFragmentCreated(String tag) {
-        return fragments.contains(getSupportFragmentManager().findFragmentByTag(tag));
-    }
-
     private void setCheckedCurrentNavigationDrawer() {
-        fragments = getSupportFragmentManager().getFragments();
+        fragments = fragmentManager.getFragments();
         try {
             for (Fragment fragment : fragments) {
                 if (fragment.isAdded() && !fragment.isHidden()) {
@@ -203,6 +139,21 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        EventBus.getInstance().register(this);
         setCheckedCurrentNavigationDrawer();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        EventBus.getInstance().unregister(this);
+    }
+
+    @Subscribe
+    public void onDrawerItemClicked(DrawerItemClickedEvent event){
+        if (event.getFragmentTransaction() != null) {
+            event.getFragmentTransaction().commit();
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-package com.dmiesoft.fitpomodoro.extras;
+package com.dmiesoft.fitpomodoro.utils;
 
 import android.text.InputFilter;
 import android.text.Spanned;
