@@ -6,29 +6,29 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.events.DrawerItemClickedEvent;
-import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
-import com.dmiesoft.fitpomodoro.ui.fragments.AlertDialogFragment;
-import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerFragment;
 import com.dmiesoft.fitpomodoro.utils.EventBus;
 import com.squareup.otto.Subscribe;
 
+import java.io.File;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ExitDialogFragment.ExitListener {
 
     private static final String TAG = "TAGAS";
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity
             fragmentManager
                     .beginTransaction()
                     .add(R.id.main_fragment_container, timerFragment, TIMER_FRAGMENT_TAG)
-                    .addToBackStack(null)
+//                    .addToBackStack(null)
                     .commit();
         }
 
@@ -75,9 +75,8 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            AlertDialogFragment alertDialogFragment = new AlertDialogFragment();
-            alertDialogFragment.show(getSupportFragmentManager(), EXIT_DIALOG);
-            Toast.makeText(this, "Ot ir neiseisiu is fragmento", Toast.LENGTH_SHORT).show();
+            ExitDialogFragment exitDialogFragment = new ExitDialogFragment();
+            exitDialogFragment.show(getSupportFragmentManager(), EXIT_DIALOG);
         }
     }
 
@@ -86,8 +85,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        Fragment fragment = null;
-        String fragTag = "";
         switch (id) {
             case R.id.nav_timer:
                 EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG)) ;
@@ -156,4 +153,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public void onExit(boolean exit) {
+        if(exit) {
+            finish();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_deleteDB:
+                File dbStorage = getDatabasePath(DatabaseContract.DATABASE_NAME);
+                dbStorage.delete();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,44 @@ public class ExercisesDataSource {
     }
 
     /*
+    Manage database "exercises_groups" table
+     */
+
+    public ExercisesGroup createExercisesGroup(ExercisesGroup exercisesGroup) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
+
+        long newRowId = database.insert(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, null, values);
+        exercisesGroup.setId(newRowId);
+        return exercisesGroup;
+    }
+
+    public List<ExercisesGroup> findAllExerciseGroups() {
+        List<ExercisesGroup> exercisesGroups = new ArrayList<>();
+
+        Cursor cursor = database.query(
+                DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
+                exercises_groups_columns,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                ExercisesGroup exercisesGroup = new ExercisesGroup();
+                exercisesGroup.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable._ID)));
+                exercisesGroup.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME)));
+                exercisesGroup.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_DATE)));
+                exercisesGroups.add(exercisesGroup);
+            }
+        }
+        return exercisesGroups;
+    }
+
+    /*
     Manage database "exercises" table
      */
     public Exercise createExercise(Exercise exercise) {
@@ -54,14 +93,13 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
         values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExercise_group_id());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
-        values.put(DatabaseContract.ExercisesTable.COLUMN_DATE, exercise.getDate());
 
         long newRowId = database.insert(DatabaseContract.ExercisesTable.TABLE_NAME, null, values);
         exercise.setId(newRowId);
         return exercise;
     }
 
-    public List<Exercise> findAll() {
+    public List<Exercise> findAllExercises() {
         String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
         List<Exercise> exercises = new ArrayList<>();
 
