@@ -24,7 +24,7 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
     public static final String TAG = "TAG";
     private CountDownTimer timer;
     private TextView timerText;
-    private static boolean timerRunning = false, timerPaused = false, workTimer = true;
+    private boolean timerRunning, timerPaused, workTimer;
     private long millisecs;
     private int longBreakCounter;
     private SharedPreferences sharedPref;
@@ -39,8 +39,12 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        timerRunning = false;
+        timerPaused = false;
+        workTimer = true;
         longBreakCounter = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        Log.i(TAG, "onCreate: TIMER");
     }
 
     @Override
@@ -79,6 +83,15 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
     public void onDestroyView() {
         super.onDestroyView();
         Log.i(TAG, "onDestroyView: TIMER");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (timer != null) {
+            timer.cancel();
+        }
+        Log.i(TAG, "onDestroy: TIMER");
     }
 
     //  **Handle millisecs and timer**

@@ -1,0 +1,54 @@
+[
+  {
+    "exercise_group" : "Push",
+    "exercises" : [
+      {"name" : "Push up", "type" : "reps"},
+      {"name" : "Push up hold", "type" : "time"},
+      {"name" : "Kneeling push up", "type" : "reps"},
+      {"name" : "Close push up", "type" : "reps"}
+    ]
+  },
+  {
+    "exercise_group" : "Pull",
+    "exercises" : [
+      {"name" : "Pull up", "type" : "reps"},
+      {"name" : "Pull up hold", "type" : "time"},
+      {"name" : "Row", "type" : "reps"}
+    ]
+  },
+  {
+    "exercise_group" : "Handstand",
+    "exercises" : [
+      {"name" : "Headstand", "type" : "time"},
+      {"name" : "Crow hold", "type" : "time"},
+      {"name" : "Pike push up", "type" : "reps"},
+      {"name" : "Handstand push up", "type" : "reps"}
+    ]
+  },
+  {
+    "exercise_group" : "Core",
+    "exercises" : [
+      {"name" : "Plank", "type" : "time"},
+      {"name" : "Push up hold", "type" : "time"},
+      {"name" : "Sit up", "type" : "reps"}
+    ]
+  },
+  {
+    "exercise_group" : "Bridge",
+    "exercises" : [
+      {"name" : "Half bridge", "type" : "reps"},
+      {"name" : "Half bridge hold", "type" : "time"},
+      {"name" : "Table bridge", "type" : "reps"},
+      {"name" : "Table bridge hold", "type" : "time"}
+    ]
+  },
+  {
+    "exercise_group" : "Legs",
+    "exercises" : [
+      {"name" : "Squat", "type" : "reps"},
+      {"name" : "Squat hold", "type" : "time"},
+      {"name" : "Lunge", "type" : "reps"},
+      {"name" : "Cossac squat", "type" : "reps"}
+    ]
+  }
+]

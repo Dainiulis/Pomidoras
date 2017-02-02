@@ -1,5 +1,6 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -7,7 +8,9 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 
-public class AlertDialogFragment extends DialogFragment {
+public class ExitDialogFragment extends DialogFragment {
+
+    private ExitListener exitListener;
 
     @NonNull
     @Override
@@ -20,7 +23,7 @@ public class AlertDialogFragment extends DialogFragment {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        getActivity().finish();
+                        exitListener.onExit(true);
                         dialog.dismiss();
                     }
                 });
@@ -32,5 +35,15 @@ public class AlertDialogFragment extends DialogFragment {
                     }
                 });
         return alertDialog;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        exitListener = (ExitListener) activity;
+    }
+
+    public interface ExitListener {
+        void onExit(boolean exit);
     }
 }
