@@ -18,13 +18,19 @@ import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DrawerItemClickedEvent;
+import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerFragment;
 import com.dmiesoft.fitpomodoro.utils.EventBus;
+import com.dmiesoft.fitpomodoro.utils.InitialDatabasePopulation;
 import com.squareup.otto.Subscribe;
 
+import org.json.JSONException;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -34,10 +40,13 @@ public class MainActivity extends AppCompatActivity
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
     private static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     private static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
+    private static final String EXERCISES_FRAGMENT = "exercises_fragment";
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private NavigationView navigationView;
     private List<Fragment> fragments;
     private FragmentManager fragmentManager;
+    private ExercisesDataSource dataSource;
+    private List<ExercisesGroup> exercisesGroups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +54,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        initData();
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -69,6 +81,22 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void initData() {
+        dataSource = new ExercisesDataSource(this);
+        dataSource.open();
+        exercisesGroups = dataSource.findAllExerciseGroups();
+        if (exercisesGroups.size() == 0) {
+            InitialDatabasePopulation idp = new InitialDatabasePopulation(this, dataSource);
+            try {
+                exercisesGroups = idp.readJson();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -87,14 +115,14 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_timer:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG)) ;
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, null)) ;
                 break;
 
             case R.id.nav_exercise_group:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG));
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups));
                 break;
             case R.id.nav_history:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG));
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, null));
                 break;
 
             case R.id.nav_settings:
@@ -138,12 +166,14 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         EventBus.getInstance().register(this);
         setCheckedCurrentNavigationDrawer();
+        dataSource.open();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         EventBus.getInstance().unregister(this);
+        dataSource.close();
     }
 
     @Subscribe
@@ -180,4 +210,5 @@ public class MainActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
+
 }

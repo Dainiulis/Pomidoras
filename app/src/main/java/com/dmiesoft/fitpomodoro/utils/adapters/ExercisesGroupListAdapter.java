@@ -27,7 +27,8 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_exercise_groups, parent, false);
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.list_exercise_groups, parent, false);
         }
 
         ExercisesGroup exerciseGroup = exercisesGroups.get(position);

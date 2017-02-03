@@ -6,8 +6,10 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
@@ -16,19 +18,22 @@ import java.util.List;
 
 public class DrawerItemClickedEvent {
 
+    private static final String TAG = "DICE";
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
     private List<Fragment> fragments;
     private String fragTag;
+    private List<?> objects;
 
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
     private static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     private static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
 
-    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag) {
+    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, List<?> objects) {
         this.fragmentManager = fragmentManager;
         this.fragTag = fragTag;
         this.fragments = fragmentManager.getFragments();
+        this.objects = objects;
 
     }
 
@@ -51,10 +56,10 @@ public class DrawerItemClickedEvent {
                     fragment = fragmentManager
                             .findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
                     if (fragment == null) {
-                        fragment = new ExerciseGroupFragment();
+                        fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
                     }
                 } else {
-                    fragment = new ExerciseGroupFragment();
+                    fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
                 }
                 break;
 
