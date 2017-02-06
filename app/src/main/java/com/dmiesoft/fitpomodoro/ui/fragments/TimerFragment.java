@@ -21,7 +21,7 @@ public class TimerFragment extends Fragment implements View.OnClickListener{
 
     private static final int BTN_START = 1001;
     private static final int BTN_PAUSE = 1002;
-    public static final String TAG = "TAG";
+    public static final String TAG = "TIMER";
     private CountDownTimer timer;
     private TextView timerText;
     private boolean timerRunning, timerPaused, workTimer;

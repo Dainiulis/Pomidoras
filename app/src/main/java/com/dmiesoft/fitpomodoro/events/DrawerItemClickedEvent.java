@@ -6,30 +6,39 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
 
 import java.util.List;
 
 public class DrawerItemClickedEvent {
 
+    private static final String TAG = "DICE";
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
     private List<Fragment> fragments;
     private String fragTag;
+    private List<?> objects;
+    private boolean addToBackStack;
 
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
     private static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     private static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
+    private static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
 
-    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag) {
+    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, List<?> objects, boolean addToBackStack) {
         this.fragmentManager = fragmentManager;
         this.fragTag = fragTag;
         this.fragments = fragmentManager.getFragments();
-
+        this.objects = objects;
+        this.addToBackStack = addToBackStack;
     }
 
     private void initFragment(String fragTag) {
@@ -51,10 +60,10 @@ public class DrawerItemClickedEvent {
                     fragment = fragmentManager
                             .findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
                     if (fragment == null) {
-                        fragment = new ExerciseGroupFragment();
+                        fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
                     }
                 } else {
-                    fragment = new ExerciseGroupFragment();
+                    fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
                 }
                 break;
 
@@ -69,6 +78,17 @@ public class DrawerItemClickedEvent {
                     fragment = new HistoryFragment();
                 }
                 break;
+            case EXERCISES_FRAGMENT_TAG:
+                if (isFragmentCreated(EXERCISES_FRAGMENT_TAG)) {
+                    fragment = fragmentManager
+                            .findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+                    if (fragment == null) {
+                        fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
+                    }
+                } else {
+                    fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
+                }
+                break;
         }
     }
 
@@ -76,6 +96,11 @@ public class DrawerItemClickedEvent {
         initFragment(fragTag);
         if (fragment != null && !fragment.isVisible()) {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            if (fragmentManager.getBackStackEntryCount() > 0) {
+                for (int i = 0; i < fragmentManager.getBackStackEntryCount(); i++) {
+                    fragmentManager.popBackStack();
+                }
+            }
             if (fragment.getTag() != null) {
                 /*
                 if fragment is TimerFragment then it
@@ -97,6 +122,9 @@ public class DrawerItemClickedEvent {
                 } else if (fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG).isHidden()) {
                     removeAllFragmentsExceptTimer(fragmentTransaction);
                     fragmentTransaction.add(R.id.main_fragment_container, fragment, fragTag);
+                    if (addToBackStack) {
+                        fragmentTransaction.addToBackStack(null);
+                    }
                 }
             }
             return fragmentTransaction;

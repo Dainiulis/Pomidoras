@@ -14,30 +14,38 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.database.DatabaseContract;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DrawerItemClickedEvent;
+import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerFragment;
 import com.dmiesoft.fitpomodoro.utils.EventBus;
+import com.dmiesoft.fitpomodoro.utils.InitialDatabasePopulation;
 import com.squareup.otto.Subscribe;
 
-import java.io.File;
+import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ExitDialogFragment.ExitListener {
+        implements NavigationView.OnNavigationItemSelectedListener, ExitDialogFragment.ExitListener, ExerciseGroupFragment.ExerciseGroupListFragmentListener {
 
     private static final String TAG = "TAGAS";
     private static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
     private static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     private static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
+    private static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private NavigationView navigationView;
     private List<Fragment> fragments;
     private FragmentManager fragmentManager;
+    private ExercisesDataSource dataSource;
+    private List<ExercisesGroup> exercisesGroups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        initData();
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -69,12 +80,34 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void initData() {
+        dataSource = new ExercisesDataSource(this);
+        dataSource.open();
+        exercisesGroups = dataSource.findAllExerciseGroups();
+        if (exercisesGroups.size() == 0) {
+            InitialDatabasePopulation idp = new InitialDatabasePopulation(this, dataSource);
+            try {
+                exercisesGroups = idp.readJson();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        } else if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack();
+        } else if (!getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG).isVisible()) {
+            EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, null, false)) ;
+            navigationView.getMenu().getItem(0).setChecked(true);
+        }
+        else {
             ExitDialogFragment exitDialogFragment = new ExitDialogFragment();
             exitDialogFragment.show(getSupportFragmentManager(), EXIT_DIALOG);
         }
@@ -87,14 +120,14 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_timer:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG)) ;
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, null, false)) ;
                 break;
 
             case R.id.nav_exercise_group:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG));
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups, false));
                 break;
             case R.id.nav_history:
-                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG));
+                EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, null, false));
                 break;
 
             case R.id.nav_settings:
@@ -138,12 +171,14 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         EventBus.getInstance().register(this);
         setCheckedCurrentNavigationDrawer();
+        dataSource.open();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         EventBus.getInstance().unregister(this);
+        dataSource.close();
     }
 
     @Subscribe
@@ -173,11 +208,16 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_deleteDB:
-                File dbStorage = getDatabasePath(DatabaseContract.DATABASE_NAME);
-                dbStorage.delete();
+
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onExerciseGroupItemClicked(long exercisesGroupId) {
+        List<Exercise> exercises = dataSource.findAllGroupExercises(exercisesGroupId);
+        EventBus.getInstance().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true));
     }
 }
