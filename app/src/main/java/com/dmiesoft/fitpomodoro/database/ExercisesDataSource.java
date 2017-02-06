@@ -99,15 +99,17 @@ public class ExercisesDataSource {
         return exercise;
     }
 
-    public List<Exercise> findAllExercises() {
+    public List<Exercise> findAllGroupExercises(long groupId) {
         String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
+        String where = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
+        String[] whereArgs = {String.valueOf(groupId)};
         List<Exercise> exercises = new ArrayList<>();
 
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesTable.TABLE_NAME,
                 exercises_columns,
-                null,
-                null,
+                where,
+                whereArgs,
                 null,
                 null,
                 orderBy

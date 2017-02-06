@@ -2,6 +2,7 @@ package com.dmiesoft.fitpomodoro.ui.fragments;
 
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,12 +31,9 @@ public class ExerciseGroupFragment extends ListFragment {
 
     private static final String TAG = "EXERCISEGROUP";
     private static final String PACKAGE_EXERCISES_GROUP = "com.dmiesoft.fitpomodoro.model.ExercisesGroup";
-//    private ExercisesDataSource dataSource;
     private List<ExercisesGroup> exercisesGroups;
     private ExercisesGroupListAdapter adapter;
-
-
-
+    private ExerciseGroupListFragmentListener mListener;
 
     public ExerciseGroupFragment() {}
 
@@ -48,7 +46,17 @@ public class ExerciseGroupFragment extends ListFragment {
         fragment.setArguments(args);
         return fragment;
     }
-    
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof ExerciseGroupListFragmentListener) {
+            mListener = (ExerciseGroupListFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement ExerciseGroupListFragmentListener");
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,25 +80,29 @@ public class ExerciseGroupFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
+        long exercisesGroupId = exercisesGroups.get(position).getId();
+        mListener.onExerciseGroupItemClicked(exercisesGroupId);
 
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        dataSource.close();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-//        dataSource.open();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         Log.i(TAG, "onDetach: Exercise");
+    }
+
+    public interface ExerciseGroupListFragmentListener {
+        void onExerciseGroupItemClicked(long exercisesGroupId);
     }
 
 }
