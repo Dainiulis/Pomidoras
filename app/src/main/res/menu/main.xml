@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_deleteDB"
+        android:id="@+id/action_log"
         android:orderInCategory="100"
-        android:title="Delete db"
+        android:title="Log"
         app:showAsAction="ifRoom" />
 </menu>
