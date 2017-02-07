@@ -8,21 +8,37 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.dmiesoft.fitpomodoro.ui.fragments.TimerFragment"
+    tools:context="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <TextView
+        android:id="@+id/timerType"
+        android:textSize="24sp"
+        android:text="timerType"
+        android:textColor="@android:color/black"
+        android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/timerText"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="timerText"
+        android:layout_centerHorizontal="true"
         android:id="@+id/timerText"
         android:textSize="24sp"
+        android:padding="10dp"
         android:textColor="@android:color/black"
-        android:layout_centerInParent="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true" />
+
     <LinearLayout
         android:layout_below="@+id/timerText"
+        android:padding="10dp"
+        android:layout_centerHorizontal="true"
         android:orientation="horizontal"
         android:id="@+id/btnLayout"
-        android:layout_centerInParent="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
@@ -48,5 +64,6 @@
             android:layout_height="wrap_content"/>
 
     </LinearLayout>
+
 </RelativeLayout>
 
