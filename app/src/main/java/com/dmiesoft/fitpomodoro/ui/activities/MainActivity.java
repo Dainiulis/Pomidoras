@@ -20,7 +20,8 @@ import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
-import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
@@ -34,7 +35,11 @@ import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, ExitDialogFragment.ExitListener, ExerciseGroupFragment.ExerciseGroupListFragmentListener {
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
+        ExitDialogFragment.ExitListener,
+        ExercisesGroupsFragment.ExercisesGroupsListFragmentListener,
+        ExercisesFragment.ExercisesListFragmentListener {
 
     private static final String TAG = "TAGAS";
 
@@ -43,6 +48,7 @@ public class MainActivity extends AppCompatActivity
     public static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     public static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
     public static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
+    public static final String EXERCISE_DETAIL_FRAGMENT_TAG = "exercise_detail_fragment_tag";
 
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private NavigationView navigationView;
@@ -107,10 +113,9 @@ public class MainActivity extends AppCompatActivity
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
         } else if (getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG) == null) {
-            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, null, false)) ;
+            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
             navigationView.getMenu().getItem(0).setChecked(true);
-        }
-        else {
+        } else {
             ExitDialogFragment exitDialogFragment = new ExitDialogFragment();
             exitDialogFragment.show(getSupportFragmentManager(), EXIT_DIALOG);
         }
@@ -123,14 +128,14 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_timer:
-                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, null, false)) ;
+                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
                 break;
 
             case R.id.nav_exercise_group:
                 EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups, false));
                 break;
             case R.id.nav_history:
-                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, null, false));
+                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, false));
                 break;
 
             case R.id.nav_settings:
@@ -184,7 +189,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onExit(boolean exit) {
-        if(exit) {
+        if (exit) {
             finish();
         }
     }
@@ -211,17 +216,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onExerciseGroupItemClicked(long exercisesGroupId) {
+    public void onExercisesGroupItemClicked(long exercisesGroupId) {
         List<Exercise> exercises = dataSource.findAllGroupExercises(exercisesGroupId);
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true));
     }
 
+    @Override
+    public void onExerciseClicked(Exercise exercise) {
+        EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_DETAIL_FRAGMENT_TAG, exercise, true));
+    }
+
     @Subscribe
-    public void onDrawerItemClicked(DrawerItemClickedEvent event){
+    public void onDrawerItemClicked(DrawerItemClickedEvent event) {
         Log.i(TAG, "onDrawerItemClicked: ");
         if (event.getFragmentTransaction() != null) {
             event.getFragmentTransaction().commit();
         }
     }
-
 }

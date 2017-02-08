@@ -30,6 +30,7 @@ public class ExercisesDataSource {
     private static String[] exercises_groups_columns = {
             DatabaseContract.ExercisesGroupsTable._ID,
             DatabaseContract.ExercisesGroupsTable.COLUMN_NAME,
+            DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE,
             DatabaseContract.ExercisesGroupsTable.COLUMN_DATE
     };
 
@@ -52,6 +53,7 @@ public class ExercisesDataSource {
     public ExercisesGroup createExercisesGroup(ExercisesGroup exercisesGroup) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
+        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
 
         long newRowId = database.insert(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, null, values);
         exercisesGroup.setId(newRowId);
@@ -76,6 +78,7 @@ public class ExercisesDataSource {
                 ExercisesGroup exercisesGroup = new ExercisesGroup();
                 exercisesGroup.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable._ID)));
                 exercisesGroup.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME)));
+                exercisesGroup.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE)));
                 exercisesGroup.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_DATE)));
                 exercisesGroups.add(exercisesGroup);
             }
