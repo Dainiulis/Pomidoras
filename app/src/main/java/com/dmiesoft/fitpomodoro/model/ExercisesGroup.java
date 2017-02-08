@@ -8,6 +8,7 @@ import java.util.List;
 public class ExercisesGroup implements Parcelable{
     private long id;
     private String name;
+    private String image;
     private List<Exercise> exercises;
     private long date;
 
@@ -16,6 +17,7 @@ public class ExercisesGroup implements Parcelable{
     protected ExercisesGroup(Parcel in) {
         id = in.readLong();
         name = in.readString();
+        image = in.readString();
         exercises = in.createTypedArrayList(Exercise.CREATOR);
         date = in.readLong();
     }
@@ -48,6 +50,14 @@ public class ExercisesGroup implements Parcelable{
         this.name = name;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public List<Exercise> getExercises() {
         return exercises;
     }
@@ -73,6 +83,7 @@ public class ExercisesGroup implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(id);
         dest.writeString(name);
+        dest.writeString(image);
         dest.writeTypedList(exercises);
         dest.writeLong(date);
     }

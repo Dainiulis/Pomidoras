@@ -47,7 +47,9 @@ public class InitialDatabasePopulation {
 
             ExercisesGroup exercisesGroup = new ExercisesGroup();
             String exerciseGroupName = allData.getJSONObject(i).getString("exercise_group");
+            String exerciseGroupImage = allData.getJSONObject(i).getString("image");
             exercisesGroup.setName(exerciseGroupName);
+            exercisesGroup.setImage(exerciseGroupImage);
             exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
 
             List<Exercise> exercises = new ArrayList<>();
@@ -56,6 +58,8 @@ public class InitialDatabasePopulation {
                 Exercise exercise = new Exercise();
                 exercise.setName(exercisesData.getJSONObject(j).getString("name"));
                 exercise.setType(exercisesData.getJSONObject(j).getString("type"));
+                exercise.setImage(exercisesData.getJSONObject(j).getString("image"));
+                exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
                 exercise.setExercise_group_id(exercisesGroup.getId());
                 exercise = dataSource.createExercise(exercise);
                 exercises.add(exercise);

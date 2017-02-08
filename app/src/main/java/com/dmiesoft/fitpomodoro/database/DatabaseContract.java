@@ -38,12 +38,14 @@ public class DatabaseContract {
     public static abstract class ExercisesGroupsTable implements BaseColumns {
         public static final String TABLE_NAME = "exercises_groups";
         public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_IMAGE = "image";
         public static final String COLUMN_DATE = "date_timestamp";
 
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         COLUMN_NAME + TEXT + COMMA_SEP +
+                        COLUMN_IMAGE + TEXT + COMMA_SEP +
                         COLUMN_DATE + " TIMESTAMP NOT NULL DEFAULT current_timestamp" +
                         ");";
 

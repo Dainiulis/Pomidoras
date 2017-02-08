@@ -202,7 +202,11 @@ public class TimerTaskFragment extends Fragment {
             mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
             Log.i(TAG, "onTimerButtonClicked: STOPPED");
-            timer.cancel();
+            try {
+                timer.cancel();
+            } catch (NullPointerException e) {
+                Log.i(TAG, e.getMessage());
+            }
             setTimer();
             mCurrentState = STATE_STOPPED;
         }

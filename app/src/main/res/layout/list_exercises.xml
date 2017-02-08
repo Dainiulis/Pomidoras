@@ -7,20 +7,18 @@
 
     <ImageView
         android:id="@+id/imageExercise"
-        android:scaleType="fitStart"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_weight="1"
         android:layout_margin="5dp"
         android:src="@android:drawable/alert_light_frame"/>
     <TextView
         android:id="@+id/nameExercise"
-        android:layout_margin="5dp"
         android:layout_weight="20"
         android:layout_width="0dp"
-        android:layout_height="30dp"
+        android:layout_height="wrap_content"
         android:textSize="24sp"
-        android:gravity="center_vertical"
+        android:layout_gravity="center_vertical"
         android:text="@string/exercise_group"/>
 
 </LinearLayout>

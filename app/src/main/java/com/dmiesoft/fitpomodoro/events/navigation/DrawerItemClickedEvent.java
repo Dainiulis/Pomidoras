@@ -9,7 +9,8 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
-import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseGroupFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
@@ -25,7 +26,25 @@ public class DrawerItemClickedEvent {
     private String fragTag;
     private List<?> objects;
     private boolean addToBackStack;
+    private Exercise exercise;
 
+    /*
+     * ~~~~~~~~~~ Constructor methods ~~~~~~~~~~~
+     */
+
+    /*
+     * Constructor for instatiating DrawerItemClickedEvent object if not passing info to fragment
+     */
+    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, boolean addToBackStack) {
+        this.fragmentManager = fragmentManager;
+        this.fragTag = fragTag;
+        this.fragments = fragmentManager.getFragments();
+        this.addToBackStack = addToBackStack;
+    }
+
+    /*
+     * Constructor for instantiating DrawerItemClickedEvent object if navigating to ExercisesGroups or Exercises list
+     */
     public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, List<?> objects, boolean addToBackStack) {
         this.fragmentManager = fragmentManager;
         this.fragTag = fragTag;
@@ -34,12 +53,25 @@ public class DrawerItemClickedEvent {
         this.addToBackStack = addToBackStack;
     }
 
+    /*
+     * Constructor for instatiating DrawerItemClickedEvent object if navigating to Exercises details
+     */
+    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, Exercise exercise, boolean addToBackStack) {
+        this.fragmentManager = fragmentManager;
+        this.fragTag = fragTag;
+        this.fragments = fragmentManager.getFragments();
+        this.exercise = exercise;
+        this.addToBackStack = addToBackStack;
+    }
+    /*
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
+
     private void initFragment(String fragTag) {
         switch (fragTag) {
             case MainActivity.TIMER_FRAGMENT_TAG:
                 if (isFragmentCreated(MainActivity.TIMER_FRAGMENT_TAG)) {
-                    fragment = fragmentManager
-                            .findFragmentByTag(MainActivity.TIMER_FRAGMENT_TAG);
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.TIMER_FRAGMENT_TAG);
                     if (fragment == null) {
                         fragment = new TimerUIFragment();
                     }
@@ -50,25 +82,25 @@ public class DrawerItemClickedEvent {
 
             case MainActivity.EXERCISE_GROUP_FRAGMENT_TAG:
                 /*
-                if fragment is created then it finds it by tag
-                but the problem is that it can find it by tag but
-                fragment could be null so if it's null it creates new fragment
+                 * jeigu fragment yra sukurtas, tuomet ji randa pagal fragTag
+                 * bet gali rasti pagal fragTag net jei fragment == null
+                 * todel reikia patikrinti salyga fragment == null
+                 * jei fragment nebuvo sukurtas tuomet sukuriamas naujas fragment
+                 *
                  */
                 if (isFragmentCreated(MainActivity.EXERCISE_GROUP_FRAGMENT_TAG)) {
-                    fragment = fragmentManager
-                            .findFragmentByTag(MainActivity.EXERCISE_GROUP_FRAGMENT_TAG);
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.EXERCISE_GROUP_FRAGMENT_TAG);
                     if (fragment == null) {
-                        fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
+                        fragment = ExercisesGroupsFragment.newInstance((List<ExercisesGroup>) objects);
                     }
                 } else {
-                    fragment = ExerciseGroupFragment.newInstance((List<ExercisesGroup>) objects);
+                    fragment = ExercisesGroupsFragment.newInstance((List<ExercisesGroup>) objects);
                 }
                 break;
 
             case MainActivity.HISTORY_FRAGMENT_TAG:
                 if (isFragmentCreated(MainActivity.HISTORY_FRAGMENT_TAG)) {
-                    fragment = fragmentManager
-                            .findFragmentByTag(MainActivity.HISTORY_FRAGMENT_TAG);
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.HISTORY_FRAGMENT_TAG);
                     if (fragment == null) {
                         fragment = new HistoryFragment();
                     }
@@ -78,8 +110,7 @@ public class DrawerItemClickedEvent {
                 break;
             case MainActivity.EXERCISES_FRAGMENT_TAG:
                 if (isFragmentCreated(MainActivity.EXERCISES_FRAGMENT_TAG)) {
-                    fragment = fragmentManager
-                            .findFragmentByTag(MainActivity.EXERCISES_FRAGMENT_TAG);
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.EXERCISES_FRAGMENT_TAG);
                     if (fragment == null) {
                         fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
                     }
@@ -87,17 +118,29 @@ public class DrawerItemClickedEvent {
                     fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
                 }
                 break;
+            case MainActivity.EXERCISE_DETAIL_FRAGMENT_TAG:
+                if (isFragmentCreated(MainActivity.EXERCISE_DETAIL_FRAGMENT_TAG)) {
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.EXERCISE_DETAIL_FRAGMENT_TAG);
+                    if (fragment == null) {
+                        fragment = ExerciseDetailFragment.newInstance(exercise);
+                    }
+                } else {
+                    fragment = ExerciseDetailFragment.newInstance(exercise);
+                }
+                break;
         }
     }
 
     public FragmentTransaction getFragmentTransaction() {
-        initFragment(fragTag);
+        initFragment(fragTag); // getting fragment object
         if (fragment != null && !fragment.isVisible()) {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            if (fragmentManager.getBackStackEntryCount() > 0) {
-                removeAllFragmentsExceptTimer(fragmentTransaction);
+            if (fragmentManager.getBackStackEntryCount() > 0 && exercise == null) {
+//                if (fragTag.equals(MainActivity.TIMER_FRAGMENT_TAG)) {
+//                    removeAllFragmentsExceptTimer(fragmentTransaction);
+//                }
                 for (int i = 0; i < fragmentManager.getBackStackEntryCount(); i++) {
-                    fragmentManager.popBackStack();
+                    fragmentManager.popBackStackImmediate();
                 }
             }
             fragmentTransaction.replace(R.id.main_fragment_container, fragment, fragTag);
