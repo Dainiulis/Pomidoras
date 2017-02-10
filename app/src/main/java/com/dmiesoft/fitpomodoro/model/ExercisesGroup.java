@@ -9,7 +9,6 @@ public class ExercisesGroup implements Parcelable{
     private long id;
     private String name;
     private String image;
-    private List<Exercise> exercises;
     private long date;
 
     public ExercisesGroup(){}
@@ -18,7 +17,6 @@ public class ExercisesGroup implements Parcelable{
         id = in.readLong();
         name = in.readString();
         image = in.readString();
-        exercises = in.createTypedArrayList(Exercise.CREATOR);
         date = in.readLong();
     }
 
@@ -58,14 +56,6 @@ public class ExercisesGroup implements Parcelable{
         this.image = image;
     }
 
-    public List<Exercise> getExercises() {
-        return exercises;
-    }
-
-    public void setExercises(List<Exercise> exercises) {
-        this.exercises = exercises;
-    }
-
     public long getDate() {
         return date;
     }
@@ -84,7 +74,6 @@ public class ExercisesGroup implements Parcelable{
         dest.writeLong(id);
         dest.writeString(name);
         dest.writeString(image);
-        dest.writeTypedList(exercises);
         dest.writeLong(date);
     }
 }

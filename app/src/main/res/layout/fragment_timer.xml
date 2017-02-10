@@ -33,19 +33,19 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_below="@+id/timerText"
         android:padding="10dp"
         android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
         android:id="@+id/btnLayout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnSkipTimer"
-            app:srcCompat="@android:drawable/ic_media_next"
+            android:id="@+id/btnStopTimer"
+            app:srcCompat="@android:drawable/alert_light_frame"
             android:layout_margin="@dimen/fab_margin"
+            android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -54,16 +54,11 @@
             app:srcCompat="@android:drawable/ic_media_play"
             android:layout_margin="@dimen/fab_margin"
             android:layout_width="wrap_content"
+            android:layout_centerInParent="true"
             android:layout_height="wrap_content"/>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnStopTimer"
-            app:srcCompat="@android:drawable/alert_light_frame"
-            android:layout_margin="@dimen/fab_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
 

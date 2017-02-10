@@ -32,20 +32,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <LinearLayout
+    <RelativeLayout
         android:padding="10dp"
         android:layout_marginLeft="30dp"
+        android:layout_marginStart="30dp"
         android:orientation="vertical"
         android:layout_toEndOf="@+id/timerText"
         android:layout_toRightOf="@+id/timerText"
         android:id="@+id/btnLayout"
+        android:layout_centerInParent="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnSkipTimer"
-            app:srcCompat="@android:drawable/ic_media_next"
-            android:layout_margin="@dimen/fab_margin"
+            android:id="@+id/btnStopTimer"
+            app:srcCompat="@android:drawable/alert_light_frame"
+            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="@dimen/fab_margin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -53,17 +57,12 @@
             android:id="@+id/btnStartPauseTimer"
             app:srcCompat="@android:drawable/ic_media_play"
             android:layout_margin="@dimen/fab_margin"
+            android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnStopTimer"
-            app:srcCompat="@android:drawable/alert_light_frame"
-            android:layout_margin="@dimen/fab_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
 
