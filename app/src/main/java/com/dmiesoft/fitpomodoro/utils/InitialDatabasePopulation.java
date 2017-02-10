@@ -52,7 +52,6 @@ public class InitialDatabasePopulation {
             exercisesGroup.setImage(exerciseGroupImage);
             exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
 
-            List<Exercise> exercises = new ArrayList<>();
             JSONArray exercisesData = allData.getJSONObject(i).getJSONArray("exercises");
             for (int j = 0; j < exercisesData.length(); j++) {
                 Exercise exercise = new Exercise();
@@ -61,10 +60,8 @@ public class InitialDatabasePopulation {
                 exercise.setImage(exercisesData.getJSONObject(j).getString("image"));
                 exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
                 exercise.setExercise_group_id(exercisesGroup.getId());
-                exercise = dataSource.createExercise(exercise);
-                exercises.add(exercise);
+                dataSource.createExercise(exercise);
             }
-            exercisesGroup.setExercises(exercises);
             exercisesGroups.add(exercisesGroup);
         }
         return exercisesGroups;

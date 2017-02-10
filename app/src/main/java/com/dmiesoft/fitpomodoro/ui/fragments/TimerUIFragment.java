@@ -1,12 +1,21 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.content.res.Configuration;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -24,11 +33,17 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private static final int BTN_PAUSE = 1002;
     private static final int BTN_STOP = 1003;
     public static final String TAG = "TIMER";
+    private static final long LONG_DURATION = 1000;
+    private static final long NO_DURATION = 0;
 
     private int mCurrentState, mCurrentType;
     private long millisecs;
     private TextView timerText, timerTypeText;
-    private FloatingActionButton btnStartPauseTimer, btnStopTimer, btnSkipTimer;
+    private FloatingActionButton btnStartPauseTimer, btnStopTimer;
+    private ObjectAnimator oA;
+    private ObjectAnimator oA1;
+    private String propertyName;
+    private long animLength;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -79,9 +94,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         btnStopTimer = (FloatingActionButton) view.findViewById(R.id.btnStopTimer);
         btnStopTimer.setOnClickListener(this);
 
-        btnSkipTimer = (FloatingActionButton) view.findViewById(R.id.btnSkipTimer);
-        btnSkipTimer.setOnClickListener(this);
-        btnSkipTimer.setVisibility(View.GONE);
+        // tik bandymams
+        timerTypeText.setOnClickListener(this);
 
     }
 
@@ -98,12 +112,13 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
                 handleBtnStartPause();
                 break;
 
-            case R.id.btnSkipTimer:
-
-                break;
-
             case R.id.btnStopTimer:
                 handleBtnStop();
+                break;
+
+            //bandymams
+            case R.id.timerType:
+                getOrientation();
                 break;
         }
     }
@@ -131,21 +146,116 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 //  *********************************************
 
-    //  Change buttons and timer textview according to btn tag
+//      Change buttons and timer textview according to btn tag
     private void setBtnTypes(int clickedButtonTag) {
+        if (getOrientation() == Configuration.ORIENTATION_PORTRAIT){
+            propertyName = "translationX";
+        } else {
+            propertyName = "translationY";
+        }
         if (clickedButtonTag == BTN_START) {
+
+            try {
+                if (oA == null)
+                    initObjectAnimators();
+            } catch (NullPointerException ignored) {}
+
+
             btnStartPauseTimer.setTag(BTN_PAUSE);
             btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_pause);
             btnStopTimer.setVisibility(View.VISIBLE);
+            btnStopTimer.setClickable(true);
         } else if (clickedButtonTag == BTN_PAUSE) {
+            animLength = NO_DURATION;
+            initObjectAnimators();
             btnStartPauseTimer.setTag(BTN_START);
             btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_play);
             btnStopTimer.setVisibility(View.VISIBLE);
         } else {
-            btnStopTimer.setVisibility(View.GONE);
+
+            try {
+                endObjectAnimators();
+            } catch (NullPointerException ignored) {}
+
             btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_play);
             btnStartPauseTimer.setTag(BTN_START);
         }
+    }
+
+    private void endObjectAnimators() {
+        oA.setDuration(LONG_DURATION);
+        oA1.setDuration(LONG_DURATION);
+        oA.end();
+        oA1.end();
+        oA.reverse();
+        oA1.reverse();
+        oA = null;
+        oA1 = null;
+    }
+
+    private void initObjectAnimators() {
+        oA = ObjectAnimator.ofFloat(btnStartPauseTimer, propertyName, 0f, getPixels(-40));
+        oA.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                btnStartPauseTimer.setClickable(false);
+                btnStopTimer.setClickable(false);
+                if (btnStopTimer.getVisibility() == View.INVISIBLE) {
+                    btnStopTimer.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                btnStartPauseTimer.setClickable(true);
+                if (mCurrentState == BTN_STOP) {
+                    btnStopTimer.setVisibility(View.INVISIBLE);
+                    btnStopTimer.setClickable(false);
+                } else {
+                    btnStopTimer.setClickable(true);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        oA.setDuration(animLength);
+        oA1 = ObjectAnimator.ofFloat(btnStopTimer, propertyName, 0f, getPixels(40));
+        oA1.setDuration(animLength);
+
+        oA.start();
+        oA1.start();
+
+    }
+
+    private float getPixels(float dp) {
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+        float pixels = dp * outMetrics.density;
+        return pixels;
+    }
+
+    private int getOrientation() {
+        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        int orientation;
+        Point size = new Point();
+        display.getSize(size);
+        float width = size.x;
+        float height = size.y;
+        if (width<height) {
+            orientation = Configuration.ORIENTATION_PORTRAIT;
+        } else {
+            orientation = Configuration.ORIENTATION_LANDSCAPE;
+        }
+        return orientation;
     }
 
     @Subscribe
@@ -156,21 +266,22 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     @Subscribe
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
-        int currentState = event.getCurrentState();
+        mCurrentState = event.getCurrentState();
         int currentType = event.getCurrentType();
-        Log.i(TAG, "onTimerTypeStateRequest: " + currentState);
-        if (currentState == TimerTaskFragment.STATE_RUNNING) {
+        if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
+            animLength = NO_DURATION;
             setBtnTypes(BTN_START);
-        } else if (currentState == TimerTaskFragment.STATE_PAUSED) {
+        } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED) {
             setBtnTypes(BTN_PAUSE);
         } else {
+            animLength = LONG_DURATION;
             setBtnTypes(BTN_STOP);
         }
         if (currentType == TimerTaskFragment.TYPE_WORK) {
             timerTypeText.setText("Work");
         } else if (currentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
             timerTypeText.setText("Short break");
-        } else if (currentType == TimerTaskFragment.TYPE_LONG_BREAK){
+        } else if (currentType == TimerTaskFragment.TYPE_LONG_BREAK) {
             timerTypeText.setText("Long break");
         }
     }

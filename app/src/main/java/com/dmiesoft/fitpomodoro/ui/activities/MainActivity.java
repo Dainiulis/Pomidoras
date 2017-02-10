@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
         dataSource.open();
+        Log.i(TAG, "onResume: MainActivity");
     }
 
     @Override
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity
     public void onExerciseClicked(Exercise exercise) {
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_DETAIL_FRAGMENT_TAG, exercise, true));
     }
-
+    
     @Subscribe
     public void onDrawerItemClicked(DrawerItemClickedEvent event) {
         Log.i(TAG, "onDrawerItemClicked: ");
