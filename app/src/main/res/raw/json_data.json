@@ -1,7 +1,7 @@
 [
   {
     "exercise_group" : "Push",
-    "image" : "push-up",
+    "image" : "push-up.png",
     "exercises" : [
       {"name" : "Push up", "type" : "reps", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Push up hold", "type" : "time", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
@@ -11,7 +11,7 @@
   },
   {
     "exercise_group" : "Pull",
-    "image" : "pull-up",
+    "image" : "pull-up.png",
     "exercises" : [
       {"name" : "Pull up", "type" : "reps", "image" : "pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Pull up hold", "type" : "time", "image" : "pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
@@ -20,7 +20,7 @@
   },
   {
     "exercise_group" : "Handstand",
-    "image" : "handstand",
+    "image" : "handstand.png",
     "exercises" : [
       {"name" : "Headstand", "type" : "time", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Crow hold", "type" : "time", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
@@ -30,7 +30,7 @@
   },
   {
     "exercise_group" : "Core",
-    "image" : "core",
+    "image" : "core.png",
     "exercises" : [
       {"name" : "Plank", "type" : "time", "image" : "core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Push up hold", "type" : "time", "image" : "core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
@@ -39,7 +39,7 @@
   },
   {
     "exercise_group" : "Bridge",
-    "image" : "bridge",
+    "image" : "bridge.png",
     "exercises" : [
       {"name" : "Half bridge", "type" : "reps", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Half bridge hold", "type" : "time", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
@@ -49,7 +49,7 @@
   },
   {
     "exercise_group" : "Legs",
-    "image" : "squat",
+    "image" : "squat.png",
     "exercises" : [
       {"name" : "Squat", "type" : "reps", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
       {"name" : "Squat hold", "type" : "time", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},

@@ -2,6 +2,7 @@ package com.dmiesoft.fitpomodoro.utils;
 
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -13,8 +14,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +34,8 @@ public class InitialDatabasePopulation {
     }
 
     public List<ExercisesGroup> readJson() throws IOException, JSONException {
+
+        copyAssets();
 
         InputStream stream = context.getResources().openRawResource(R.raw.json_data);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(stream);
@@ -65,6 +71,51 @@ public class InitialDatabasePopulation {
             exercisesGroups.add(exercisesGroup);
         }
         return exercisesGroups;
+    }
+
+    private void copyAssets() {
+        File f = new File(context.getFilesDir(), "images");
+        if (!f.exists()) {
+            f.mkdir();
+        }
+
+        AssetManager assetManager = context.getAssets();
+        InputStream stream = null;
+        FileOutputStream fous = null;
+
+        String[] list;
+
+        try {
+            list = context.getAssets().list("");
+            if (list.length > 0) {
+                for (String file : list) {
+                    if (file.contains(".png")) {
+                        Log.i(TAG, "copyAssets: " + file);
+                        fous = new FileOutputStream(f + "/" + file);
+                        stream = assetManager.open(file);
+                        copyFile(stream, fous);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                stream.close();
+                fous.flush();
+                fous.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void copyFile (InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            out.write(buffer, 0, read);
+        }
     }
 
 }

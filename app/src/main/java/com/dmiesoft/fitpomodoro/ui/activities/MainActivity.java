@@ -3,6 +3,7 @@ package com.dmiesoft.fitpomodoro.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,7 +23,8 @@ import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
-import com.dmiesoft.fitpomodoro.ui.fragments.ExitDialogFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseGroupDialog;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.InitialDatabasePopulation;
@@ -39,7 +41,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView.OnNavigationItemSelectedListener,
         ExitDialogFragment.ExitListener,
         ExercisesGroupsFragment.ExercisesGroupsListFragmentListener,
-        ExercisesFragment.ExercisesListFragmentListener {
+        ExercisesFragment.ExercisesListFragmentListener,
+        AddExerciseGroupDialog.AddExerciseGroupDialogListener {
 
     private static final String TAG = "TAGAS";
 
@@ -49,13 +52,16 @@ public class MainActivity extends AppCompatActivity
     public static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
     public static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
     public static final String EXERCISE_DETAIL_FRAGMENT_TAG = "exercise_detail_fragment_tag";
-
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
+    private static final String ADD_EXERCISE_GROUP_DIALOG = "add_exercise_group_dialog";
+
     private NavigationView navigationView;
     private List<Fragment> fragments;
     private FragmentManager fragmentManager;
     private ExercisesDataSource dataSource;
     private List<ExercisesGroup> exercisesGroups;
+
+    private FloatingActionButton mainFab, addFab, addFavFab, deleteFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         initData();
+        initFabs();
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -87,6 +94,29 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void initFabs() {
+        mainFab = (FloatingActionButton) findViewById(R.id.fab_main);
+        addFab = (FloatingActionButton) findViewById(R.id.fab_add);
+        addFavFab = (FloatingActionButton) findViewById(R.id.fab_add_favorites);
+        deleteFab = (FloatingActionButton) findViewById(R.id.fab_delete);
+    }
+
+    public FloatingActionButton getDeleteFab() {
+        return deleteFab;
+    }
+
+    public FloatingActionButton getMainFab() {
+        return mainFab;
+    }
+
+    public FloatingActionButton getAddFab() {
+        return addFab;
+    }
+
+    public FloatingActionButton getAddFavFab() {
+        return addFavFab;
     }
 
     private void initData() {
@@ -208,8 +238,6 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
-                Log.i(TAG, "fragai po visu sou " + getSupportFragmentManager().getFragments());
-                Log.i(TAG, "Fragu skaicius " + getSupportFragmentManager().getFragments().size());
                 break;
         }
 
@@ -223,10 +251,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onAddExerciseGroupBtnClicked() {
+        AddExerciseGroupDialog dialog = new AddExerciseGroupDialog();
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
+    }
+
+    @Override
     public void onExerciseClicked(Exercise exercise) {
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_DETAIL_FRAGMENT_TAG, exercise, true));
     }
-    
+
     @Subscribe
     public void onDrawerItemClicked(DrawerItemClickedEvent event) {
         Log.i(TAG, "onDrawerItemClicked: ");
@@ -234,4 +269,16 @@ public class MainActivity extends AppCompatActivity
             event.getFragmentTransaction().commit();
         }
     }
+
+    @Override
+    public void onSaveExerciseGroupClicked(ExercisesGroup exercisesGroup) {
+        ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+
+        ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
+        if (fragment != null) {
+            fragment.updateListView(newExercisesGroup);
+        }
+
+    }
+
 }

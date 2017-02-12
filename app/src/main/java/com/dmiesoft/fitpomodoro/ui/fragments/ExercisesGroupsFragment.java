@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesGroupListAdapter;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     private ExercisesGroupListAdapter adapter;
     private ExercisesGroupsListFragmentListener mListener;
     private boolean isFabOpen = false;
-    private FloatingActionButton mainFab, addExGrFab, addExFab, deleteFab, addFavFab;
+    private FloatingActionButton mainFab, addExGrFab, deleteFab, addFavFab;
     private Animation fabOpen, fabClose, fabRotateFroward, fabRotateBackward;
 
     public ExercisesGroupsFragment() {}
@@ -78,11 +79,10 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     }
 
     private void initViews(View rootView) {
-        mainFab = (FloatingActionButton) rootView.findViewById(R.id.fab_main);
-        addExFab = (FloatingActionButton) rootView.findViewById(R.id.fab_add_exercise);
-        addExGrFab = (FloatingActionButton) rootView.findViewById(R.id.fab_add_exercise_group);
-        addFavFab = (FloatingActionButton) rootView.findViewById(R.id.fab_add_favorites);
-        deleteFab = (FloatingActionButton) rootView.findViewById(R.id.fab_delete);
+        mainFab = (FloatingActionButton) ((MainActivity) getActivity()).getMainFab();
+        addExGrFab = (FloatingActionButton) ((MainActivity) getActivity()).getAddFab();
+        addFavFab = (FloatingActionButton) ((MainActivity) getActivity()).getAddFavFab();
+        deleteFab = (FloatingActionButton) ((MainActivity) getActivity()).getDeleteFab();
         /*
          * Load animations
          */
@@ -94,7 +94,6 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
          * Set onClickListeners
          */
         mainFab.setOnClickListener(this);
-        addExFab.setOnClickListener(this);
         addExGrFab.setOnClickListener(this);
         addFavFab.setOnClickListener(this);
         deleteFab.setOnClickListener(this);
@@ -104,22 +103,18 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
         if (isFabOpen) {
             mainFab.startAnimation(fabRotateBackward);
             addExGrFab.startAnimation(fabClose);
-            addExFab.startAnimation(fabClose);
             addFavFab.startAnimation(fabClose);
             deleteFab.startAnimation(fabClose);
             addExGrFab.setClickable(false);
-            addExFab.setClickable(false);
             addFavFab.setClickable(false);
             deleteFab.setClickable(false);
             isFabOpen = false;
         } else {
             mainFab.startAnimation(fabRotateFroward);
             addExGrFab.startAnimation(fabOpen);
-            addExFab.startAnimation(fabOpen);
             addFavFab.startAnimation(fabOpen);
             deleteFab.startAnimation(fabOpen);
             addExGrFab.setClickable(true);
-            addExFab.setClickable(true);
             addFavFab.setClickable(true);
             deleteFab.setClickable(true);
             isFabOpen = true;
@@ -129,7 +124,7 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        isFabOpen=false;
+//        isFabOpen=false;
         long exercisesGroupId = exercisesGroups.get(position).getId();
         mListener.onExercisesGroupItemClicked(exercisesGroupId);
 
@@ -138,11 +133,16 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     @Override
     public void onPause() {
         super.onPause();
+        if (isFabOpen) {
+            animateFab();
+        }
+        mainFab.hide();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        mainFab.show();
     }
 
     @Override
@@ -158,11 +158,19 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
             case R.id.fab_main:
                 animateFab();
                 break;
+            case R.id.fab_add:
+                mListener.onAddExerciseGroupBtnClicked();
+                break;
         }
     }
 
     public interface ExercisesGroupsListFragmentListener {
         void onExercisesGroupItemClicked(long exercisesGroupId);
+        void onAddExerciseGroupBtnClicked();
     }
 
+    public void updateListView(ExercisesGroup exercisesGroup) {
+        exercisesGroups.add(exercisesGroup);
+        adapter.notifyDataSetChanged();
+    }
 }
