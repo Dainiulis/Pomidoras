@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:padding="@dimen/activity_horizontal_margin"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="@dimen/activity_horizontal_margin">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:text="Choose logo: "/>
+        android:text="Choose logo: "
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:orientation="horizontal"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
             android:id="@+id/imageLogo"
-            android:layout_marginRight="20dp"/>
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_marginRight="20dp" />
 
         <ImageButton
+            android:id="@+id/btnImage"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/btnImage"
-            android:src="@android:drawable/ic_input_get"/>
+            android:layout_gravity="center"
+            android:src="@drawable/ic_image" />
+
 
     </LinearLayout>
 
@@ -34,34 +37,36 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:text="@string/enter_new_category"/>
+        android:text="@string/enter_new_category"
+        android:textSize="16sp" />
+
     <EditText
+        android:id="@+id/editCategoryText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textCapWords"
-        android:id="@+id/editCategoryText"/>
+        android:inputType="textCapWords|textFilter" />
 
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_marginTop="10dp"
-        android:gravity="end"
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnCancel"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="?android:attr/borderlessButtonStyle"
-            android:text="@string/cancel"
-            android:id="@+id/btnCancel"/>
+            android:text="@string/cancel" />
+
         <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="?android:attr/borderlessButtonStyle"
-                android:text="@string/save"
-                android:id="@+id/btnSave"/>
+            android:id="@+id/btnSave"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save" />
 
     </LinearLayout>
 

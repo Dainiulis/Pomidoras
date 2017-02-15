@@ -1,11 +1,16 @@
 package com.dmiesoft.fitpomodoro.utils.adapters;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,18 +19,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import com.dmiesoft.fitpomodoro.utils.UtilityFunctions;
 import java.util.List;
 
 public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
 
+    private static final String TAG = "EGLA";
     private List<ExercisesGroup> exercisesGroups;
 
     public ExercisesGroupListAdapter(Context context, int resource, List<ExercisesGroup> exercisesGroups) {
@@ -48,32 +51,46 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
         nameText.setText(exerciseGroup.getName());
 
         ImageView imageView = (ImageView) convertView.findViewById(R.id.imageExerciseGroup);
-//        Drawable drawable = getDrawableFromAssets(exerciseGroup.getImage());
-//        imageView.setImageDrawable(drawable);
-        Bitmap bitmap = getBitmapFromFiles(exerciseGroup.getImage());
-        imageView.setImageBitmap(bitmap);
+        if (exerciseGroup.getImage() != null) {
+            Bitmap bitmap = UtilityFunctions.getBitmapFromFiles(getContext(), exerciseGroup.getImage());
+//            bitmap = getCroppedBitmap(bitmap);
+            imageView.setImageBitmap(bitmap);
+        } else {
+            String firstChar = exerciseGroup.getName().substring(0, 1).toUpperCase();
+            ColorGenerator generator = ColorGenerator.MATERIAL;
+            int color = generator.getColor(exerciseGroup.getName());
+            TextDrawable drawable = TextDrawable.builder().buildRound(firstChar, color);
+            imageView.setImageDrawable(drawable);
+        }
+
 
         return convertView;
     }
 
-    private Bitmap getBitmapFromFiles(String image) {
-        File folder = new File(getContext().getFilesDir(), "images");
-        File f = new File(folder, image);
-        Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
-        return bitmap;
+    public Bitmap getCroppedBitmap(Bitmap bitmap) {
+        int x = bitmap.getWidth();
+        int y = bitmap.getHeight();
+        final int color = 0xff424242;
+        int radius = bitmap.getWidth() / 2;
+
+        Bitmap output = Bitmap.createBitmap(x,
+                y, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        int x2 = output.getWidth();
+        int y2 = output.getHeight();
+
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, x, y);
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+
+        canvas.drawCircle(x / 2, y / 2, radius, paint);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
     }
 
-    private Drawable getDrawableFromAssets(String image) {
-        AssetManager assetManager = getContext().getAssets();
-        InputStream stream = null;
-
-        try {
-            stream = assetManager.open(image + ".png");
-            Drawable drawable = Drawable.createFromStream(stream, null);
-            return drawable;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }
