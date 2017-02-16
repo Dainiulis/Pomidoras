@@ -35,6 +35,7 @@ import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseDialog;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseGroupDialog;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity
         ExitDialogFragment.ExitListener,
         ExercisesGroupsFragment.ExercisesGroupsListFragmentListener,
         ExercisesFragment.ExercisesListFragmentListener,
-        AddExerciseGroupDialog.AddExerciseGroupDialogListener {
+        AddExerciseGroupDialog.AddExerciseGroupDialogListener, AddExerciseDialog.AddExerciseDialogListener {
 
     private static final String TAG = "TAGAS";
 
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity
     public static final String EXERCISE_DETAIL_FRAGMENT_TAG = "exercise_detail_fragment_tag";
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
     private static final String ADD_EXERCISE_GROUP_DIALOG = "add_exercise_group_dialog";
+    private static final String ADD_EXERCISE_DIALOG = "add_exercise_dialog";
     /*
      * @PERMISSIONS CODES
      */
@@ -183,7 +185,7 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.nav_exercise_group:
-                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups, false));
+                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups, false, -1));
                 break;
             case R.id.nav_history:
                 EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, false));
@@ -259,6 +261,14 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
+                InitialDatabasePopulation logidp = new InitialDatabasePopulation(this, dataSource);
+                try {
+                    logidp.readJson();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
         }
 
@@ -268,7 +278,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onExercisesGroupItemClicked(long exercisesGroupId) {
         List<Exercise> exercises = dataSource.findAllGroupExercises(exercisesGroupId);
-        EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true));
+        EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
     }
 
     @Override
@@ -276,6 +286,14 @@ public class MainActivity extends AppCompatActivity
         AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, null, false);
         dialog.setCancelable(false);
         dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
+    }
+
+    @Override
+    public void onAddExerciseBtnClicked(long exerciseGroupId) {
+        List<Exercise> exercises = dataSource.findAllGroupExercises(exerciseGroupId);
+        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exerciseGroupId);
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
     }
 
     @Override
@@ -299,6 +317,15 @@ public class MainActivity extends AppCompatActivity
         Log.i(TAG, "onDrawerItemClicked: ");
         if (event.getFragmentTransaction() != null) {
             event.getFragmentTransaction().commit();
+        }
+    }
+
+    @Override
+    public void onSaveExerciseClicked(Exercise exercise) {
+        Exercise newExercise = dataSource.createExercise(exercise);
+        ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+        if (fragment != null) {
+            fragment.updateListView(newExercise);
         }
     }
 

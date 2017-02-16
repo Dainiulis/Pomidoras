@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +74,7 @@ public class ExerciseDetailFragment extends Fragment {
         exerciseNameTV.setText(exercise.getName());
         exerciseTypeTV.setText(exercise.getType());
         exerciseDescriptionTV.setText(exercise.getDescription());
-        exerciseIV.setImageDrawable(getDrawableFromAssets(exercise.getImage()));
+        exerciseIV.setImageBitmap(BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false));
     }
 
     @Override

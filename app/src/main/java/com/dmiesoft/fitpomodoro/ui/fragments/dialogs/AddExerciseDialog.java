@@ -5,10 +5,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
@@ -22,51 +22,51 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
 import com.dmiesoft.fitpomodoro.utils.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.EditTextInputFilter;
 import com.dmiesoft.fitpomodoro.utils.FilePathGetter;
-import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddExerciseGroupDialog extends DialogFragment {
+public class AddExerciseDialog extends DialogFragment {
 
-    private static final int PICKFILE_RESULT_CODE = 1;
-    private static final String PACKAGE_EXERCISES_GROUP_ARRAY = "com.dmiesoft.fitpomodoro.model.ExercisesGroup.Array";
-    private static final String PACKAGE_EXERCISES_GROUP = "com.dmiesoft.fitpomodoro.model.ExercisesGroup";
-    private static final String IS_EDIT = "IS_EDIT";
-    private static final String TAG = "AEGD";
+    private static final int PICKFILE_RESULT_CODE = 2;
+    private static final String PACKAGE_EXERCISE_ARRAY = "com.dmiesoft.fitpomodoro.model.Exercise.Array";
+    private static final String EXERCISE_GROUP_ID_KEY = "EXERCISE_GROUP_ID_KEY";
+    private static final String TAG = "AddED";
+
     private Button btnSave, btnCancel;
     private EditText editText;
-    private AddExerciseGroupDialogListener mListener;
+    private RadioButton radioReps, radioTime;
+    private RadioGroup radioGroup;
     private ImageView imageView;
     private ImageButton imageButton;
-    private List<ExercisesGroup> exercisesGroups;
-    private ExercisesGroup exercisesGroup;
     private Bitmap bitmap;
     private View rootView;
-    private boolean edit;
+    private Exercise exercise;
+    private List<Exercise> exercises;
+    private AddExerciseDialogListener mListener;
+    private String exerciseType = "reps";
+    private long exerciseGroupId;
 
-
-    public AddExerciseGroupDialog() {
+    public AddExerciseDialog() {
     }
 
-    public static AddExerciseGroupDialog newInstance(List<ExercisesGroup> exercisesGroupsNames, ExercisesGroup exercisesGroup, boolean edit) {
+    public static AddExerciseDialog newInstance(List<Exercise> exercises, long exerciseGroupId) {
 
         Bundle args = new Bundle();
-        AddExerciseGroupDialog fragment = new AddExerciseGroupDialog();
-
-        args.putParcelableArrayList(PACKAGE_EXERCISES_GROUP_ARRAY, (ArrayList<ExercisesGroup>) exercisesGroupsNames);
-        args.putParcelable(PACKAGE_EXERCISES_GROUP, exercisesGroup);
-        args.putBoolean(IS_EDIT, edit);
-
+        AddExerciseDialog fragment = new AddExerciseDialog();
+        args.putParcelableArrayList(PACKAGE_EXERCISE_ARRAY, (ArrayList<Exercise>) exercises);
+        args.putLong(EXERCISE_GROUP_ID_KEY, exerciseGroupId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -74,52 +74,35 @@ public class AddExerciseGroupDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof AddExerciseGroupDialogListener) {
-            mListener = (AddExerciseGroupDialogListener) context;
+        if (context instanceof AddExerciseDialogListener) {
+            mListener = (AddExerciseDialogListener) context;
         } else {
-            throw new RuntimeException(context.toString() + " must implement AddExerciseGroupDialogListener");
+            throw new RuntimeException(context.toString() + " must implement AddExerciseDialogListener");
         }
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.i(TAG, "onCreate: ");
         if (getArguments() != null) {
-            exercisesGroups = getArguments().getParcelableArrayList(PACKAGE_EXERCISES_GROUP_ARRAY);
-            edit = getArguments().getBoolean(IS_EDIT);
-            if (edit) {
-                exercisesGroup = getArguments().getParcelable(PACKAGE_EXERCISES_GROUP);
-            }
+            exercises = getArguments().getParcelableArrayList(PACKAGE_EXERCISE_ARRAY);
+            exerciseGroupId = getArguments().getLong(EXERCISE_GROUP_ID_KEY);
         }
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.add_exercise_group_dialog, container, false);
+        rootView = inflater.inflate(R.layout.add_exercise_dialog, container, false);
 
-        editText = (EditText) rootView.findViewById(R.id.editCategoryText);
+        radioGroup = (RadioGroup) rootView.findViewById(R.id.radioGroup);
+        editText = (EditText) rootView.findViewById(R.id.editExerciseText);
         imageView = (ImageView) rootView.findViewById(R.id.imageLogo);
-
-        /*
-         * If editing exercise group
-         */
-        if (edit && exercisesGroup != null) {
-            editText.setText(exercisesGroup.getName());
-            if (exercisesGroup.getImage() != null) {
-                bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercisesGroup.getImage(), false);
-                if (bitmap != null)
-                    imageView.setImageBitmap(bitmap);
-            }
-        }
-        /***********************************/
-
-        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
         btnSave = (Button) rootView.findViewById(R.id.btnSave);
         btnCancel = (Button) rootView.findViewById(R.id.btnCancel);
-
         imageButton = (ImageButton) rootView.findViewById(R.id.btnImage);
+        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,15 +130,11 @@ public class AddExerciseGroupDialog extends DialogFragment {
             public void onClick(View v) {
                 String name = editText.getText().toString().trim();
                 if (name.equals("")) {
-                    Toast.makeText(getActivity(), "Please enter category name...", Toast.LENGTH_SHORT).show();
-                } else if (doesExercisesGroupExist(name)) {
-                    Toast.makeText(getActivity(), "Category " + name + " already exist", Toast.LENGTH_SHORT).show();
-                } else if (edit) {
-                    updateExercisesGroup(name);
-                    dismiss();
+                    Toast.makeText(getActivity(), "Please enter exercise name...", Toast.LENGTH_SHORT).show();
+                } else if (doesExerciseExist(name)) {
+                    Toast.makeText(getActivity(), "Exercise " + name + " already exist", Toast.LENGTH_SHORT).show();
                 } else {
-                    saveExercisesGroup(name);
-                    dismiss();
+                    saveExercise(name);
                 }
             }
         });
@@ -167,7 +146,35 @@ public class AddExerciseGroupDialog extends DialogFragment {
             }
         });
 
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.radioReps:
+                        exerciseType = "reps";
+                        break;
+                    case R.id.radioTime:
+                        exerciseType = "time";
+                        break;
+                }
+            }
+        });
+
         return rootView;
+    }
+
+    private void saveExercise(String name) {
+        Exercise exercise = new Exercise();
+        exercise.setName(name);
+        if (bitmap != null) {
+            exercise.setImage("[" + name + ".png");
+            BitmapHelper.saveImage("[" + name + ".png", bitmap, getContext());
+        }
+        exercise.setType(exerciseType);
+        exercise.setExercise_group_id(exerciseGroupId);
+        mListener.onSaveExerciseClicked(exercise);
+        dismiss();
+
     }
 
     private void startIntentGetContent() {
@@ -176,48 +183,16 @@ public class AddExerciseGroupDialog extends DialogFragment {
         startActivityForResult(intent, PICKFILE_RESULT_CODE);
     }
 
-    /**
-     * Checks if Category exists
-     * @param enteredText
-     * @return
-     */
-    private boolean doesExercisesGroupExist(String enteredText) {
-        if (exercisesGroups.size() <= 0) {
+    private boolean doesExerciseExist(String name) {
+        if (exercises.size() <= 0) {
             return false;
         }
-        for (ExercisesGroup currentExercisesGroup : exercisesGroups) {
-            if (currentExercisesGroup.getName().equalsIgnoreCase(enteredText)) {
-                if (edit) {
-                    return !enteredText.equalsIgnoreCase(exercisesGroup.getName());
-                } else {
-                    return true;
-                }
+        for (Exercise currentExercise : exercises) {
+            if (currentExercise.getName().equalsIgnoreCase(name)) {
+                return true;
             }
         }
         return false;
-    }
-
-    private void updateExercisesGroup(String name) {
-        if (exercisesGroup.getImage() != null) {
-            File oldImage = BitmapHelper.getFileFromImages(exercisesGroup.getImage(), getContext());
-            boolean deleted = oldImage.delete();
-        }
-        if (bitmap != null) {
-            exercisesGroup.setImage("@" + name + ".png");
-            BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
-        }
-        exercisesGroup.setName(name);
-        mListener.onUpdateExerciseGroupClicked(exercisesGroup);
-    }
-
-    private void saveExercisesGroup(String name) {
-        ExercisesGroup exercisesGroup = new ExercisesGroup();
-        exercisesGroup.setName(name);
-        if (bitmap != null) {
-            exercisesGroup.setImage("@" + name + ".png");
-            BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
-        }
-        mListener.onSaveExerciseGroupClicked(exercisesGroup);
     }
 
     @Override
@@ -237,9 +212,8 @@ public class AddExerciseGroupDialog extends DialogFragment {
         }
     }
 
-    public interface AddExerciseGroupDialogListener {
-        void onSaveExerciseGroupClicked(ExercisesGroup exercisesGroup);
-        void onUpdateExerciseGroupClicked(ExercisesGroup exercisesGroup);
+    public interface AddExerciseDialogListener {
+        void onSaveExerciseClicked(Exercise exercise);
     }
 
     @Override
@@ -275,5 +249,4 @@ public class AddExerciseGroupDialog extends DialogFragment {
             imageView.setImageBitmap(bitmap);
         }
     }
-
 }

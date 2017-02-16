@@ -31,7 +31,7 @@ public class InitialDatabasePopulation {
     private Context context;
     private ExercisesDataSource dataSource;
 
-    public InitialDatabasePopulation(Context context, ExercisesDataSource dataSource){
+    public InitialDatabasePopulation(Context context, ExercisesDataSource dataSource) {
         this.context = context;
         this.dataSource = dataSource;
     }
@@ -96,8 +96,17 @@ public class InitialDatabasePopulation {
                         fous = new FileOutputStream(f + "/" + file);
                         stream = assetManager.open(file);
 
-                        Log.i(TAG, "copyAssets: " + file);
                         copyFile(stream, fous);
+                        String path = BitmapHelper.getFileFromImages(file, context).getAbsolutePath();
+                        Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.requiredWidth, BitmapHelper.requiredHeigth);
+//                        Log.i(TAG, "pixel: " + ((bitmap.getPixel(0,0) & 0xff000000) >> 24));
+//                        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
+//                        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+//                        for (int i : pixels) {
+//
+//                        }
+                        bitmap = BitmapHelper.getScaledAndCroppedBitmapCircle(bitmap, BitmapHelper.maxSize, BitmapHelper.borderSize);
+                        BitmapHelper.saveImage(file, bitmap, context);
                     }
                 }
             }
@@ -114,12 +123,13 @@ public class InitialDatabasePopulation {
         }
     }
 
-    private void copyFile (InputStream in, OutputStream out) throws IOException {
+    private void copyFile(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
         while ((read = in.read(buffer)) != -1) {
             out.write(buffer, 0, read);
         }
     }
+
 
 }

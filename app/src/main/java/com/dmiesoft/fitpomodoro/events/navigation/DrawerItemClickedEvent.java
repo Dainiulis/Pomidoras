@@ -27,6 +27,7 @@ public class DrawerItemClickedEvent {
     private List<?> objects;
     private boolean addToBackStack;
     private Exercise exercise;
+    private long exerciseGroupId;
 
     /*
      * ~~~~~~~~~~ Constructor methods ~~~~~~~~~~~
@@ -45,12 +46,15 @@ public class DrawerItemClickedEvent {
     /*
      * Constructor for instantiating DrawerItemClickedEvent object if navigating to ExercisesGroups or Exercises list
      */
-    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, List<?> objects, boolean addToBackStack) {
+    public DrawerItemClickedEvent(FragmentManager fragmentManager, String fragTag, List<?> objects, boolean addToBackStack, long exerciseGroupId) {
         this.fragmentManager = fragmentManager;
         this.fragTag = fragTag;
         this.fragments = fragmentManager.getFragments();
         this.objects = objects;
         this.addToBackStack = addToBackStack;
+        if (exerciseGroupId != -1) {
+            this.exerciseGroupId = exerciseGroupId;
+        }
     }
 
     /*
@@ -112,10 +116,10 @@ public class DrawerItemClickedEvent {
                 if (isFragmentCreated(MainActivity.EXERCISES_FRAGMENT_TAG)) {
                     fragment = fragmentManager.findFragmentByTag(MainActivity.EXERCISES_FRAGMENT_TAG);
                     if (fragment == null) {
-                        fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
+                        fragment = ExercisesFragment.newInstance((List<Exercise>) objects, exerciseGroupId);
                     }
                 } else {
-                    fragment = ExercisesFragment.newInstance((List<Exercise>) objects);
+                    fragment = ExercisesFragment.newInstance((List<Exercise>) objects, exerciseGroupId);
                 }
                 break;
             case MainActivity.EXERCISE_DETAIL_FRAGMENT_TAG:

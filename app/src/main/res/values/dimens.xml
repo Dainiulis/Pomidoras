@@ -8,4 +8,5 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_elevation">10dp</dimen>
     <dimen name="fab_pressed_translationZ">20dp</dimen>
+    <dimen name="list_img_dimen">60dp</dimen>
 </resources>

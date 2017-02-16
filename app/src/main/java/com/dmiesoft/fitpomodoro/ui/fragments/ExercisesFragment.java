@@ -23,22 +23,25 @@ import java.util.List;
 public class ExercisesFragment extends ListFragment implements View.OnClickListener {
 
     private static final String PACKAGE_EXERCISES_ARRAY = "com.dmiesoft.fitpomodoro.model.Exercise.Array";
+    private static final String EXERCISE_GROUP_ID_KEY = "EXERCISE_GROUP_ID_KEY";
     private List<Exercise> exercises;
     private ExercisesListAdapter adapter;
     private ExercisesListFragmentListener mListener;
     private boolean isFabOpen = false;
     private FloatingActionButton mainFab, addExFab, deleteFab, addFavFab;
     private Animation fabOpen, fabClose, fabRotateFroward, fabRotateBackward;
+    private long exerciseGroupId;
 
-    public ExercisesFragment() {}
+    public ExercisesFragment() {
+    }
 
-    public static ExercisesFragment newInstance(List<Exercise> exercises) {
+    public static ExercisesFragment newInstance(List<Exercise> exercises, long exerciseGroupId) {
 
         Bundle args = new Bundle();
         ExercisesFragment fragment = new ExercisesFragment();
 
         args.putParcelableArrayList(PACKAGE_EXERCISES_ARRAY, (ArrayList) exercises);
-
+        args.putLong(EXERCISE_GROUP_ID_KEY, exerciseGroupId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -49,6 +52,7 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
 
         if (getArguments() != null) {
             exercises = getArguments().getParcelableArrayList(PACKAGE_EXERCISES_ARRAY);
+            exerciseGroupId = getArguments().getLong(EXERCISE_GROUP_ID_KEY);
         }
 
     }
@@ -124,6 +128,9 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
             case R.id.fab_main:
                 animateFab();
                 break;
+            case R.id.fab_add:
+                mListener.onAddExerciseBtnClicked(exerciseGroupId);
+                break;
         }
     }
 
@@ -151,6 +158,27 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
 
     public interface ExercisesListFragmentListener {
         void onExerciseClicked(Exercise exercise);
+
+        void onAddExerciseBtnClicked(long exerciseGroupId);
+    }
+
+    public void updateListView(Exercise exercise) {
+        int index = 0;
+        boolean found = false;
+        for (Exercise e : exercises) {
+            if (e.getId() == exercise.getId()) {
+                index = exercises.indexOf(e);
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            exercises.remove(index);
+            exercises.add(index, exercise);
+        } else {
+            exercises.add(exercise);
+        }
+        adapter.notifyDataSetChanged();
     }
 
 }
