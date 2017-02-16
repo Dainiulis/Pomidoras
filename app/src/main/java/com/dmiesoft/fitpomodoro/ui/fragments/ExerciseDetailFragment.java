@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import android.widget.TextView;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +31,7 @@ public class ExerciseDetailFragment extends Fragment {
     private View view;
     private ImageView exerciseIV;
     private TextView exerciseNameTV, exerciseTypeTV, exerciseDescriptionTV;
+    private FloatingActionButton mainFab;
 
     public ExerciseDetailFragment() {
         // Required empty public constructor
@@ -70,7 +74,16 @@ public class ExerciseDetailFragment extends Fragment {
         exerciseNameTV.setText(exercise.getName());
         exerciseTypeTV.setText(exercise.getType());
         exerciseDescriptionTV.setText(exercise.getDescription());
-        exerciseIV.setImageDrawable(getDrawableFromAssets(exercise.getImage()));
+        exerciseIV.setImageBitmap(BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false));
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mainFab = ((MainActivity) getActivity()).getMainFab();
+        if(mainFab != null) {
+            mainFab.hide();
+        }
     }
 
     private Drawable getDrawableFromAssets(String image) {

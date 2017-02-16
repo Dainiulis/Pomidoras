@@ -13,8 +13,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,25 +47,18 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
         nameText.setText(exercise.getName());
         ImageView imageView = (ImageView) convertView.findViewById(R.id.imageExercise);
 
-        Drawable drawable = getDrawableFromAssets(exercise.getImage());
-        imageView.setImageDrawable(drawable);
+        if (exercise.getImage() != null) {
+            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true);
+            imageView.setImageBitmap(bitmap);
+        } else {
+            String firstChar = exercise.getName().substring(0, 1).toUpperCase();
+            ColorGenerator generator = ColorGenerator.MATERIAL;
+            int color = generator.getColor(exercise.getName());
+            TextDrawable drawable = TextDrawable.builder().buildRound(firstChar, color);
+            imageView.setImageDrawable(drawable);
+        }
 
 
         return convertView;
     }
-
-    private Drawable getDrawableFromAssets(String image) {
-        AssetManager assetManager = getContext().getAssets();
-        InputStream stream = null;
-
-        try {
-            stream = assetManager.open(image + ".png");
-            Drawable drawable = Drawable.createFromStream(stream, null);
-            return drawable;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
 }

@@ -60,14 +60,14 @@ public class ExercisesDataSource {
         return exercisesGroup;
     }
 
-    public List<ExercisesGroup> findAllExerciseGroups() {
+    public List<ExercisesGroup> findExerciseGroups(String selection, String[] selectionArgs) {
         List<ExercisesGroup> exercisesGroups = new ArrayList<>();
 
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
                 exercises_groups_columns,
-                null,
-                null,
+                selection,
+                selectionArgs,
                 null,
                 null,
                 null
@@ -84,6 +84,16 @@ public class ExercisesDataSource {
             }
         }
         return exercisesGroups;
+    }
+
+    public void updateExercisesGroup(ExercisesGroup exercisesGroup) {
+        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+        String[] whereArgs = {String.valueOf(exercisesGroup.getId())};
+
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
+        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
+        database.update(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, values, where, whereArgs);
     }
 
     /*

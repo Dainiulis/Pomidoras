@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
@@ -22,6 +23,8 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
+import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.DisplayWidthHeight;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,7 +36,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private static final int BTN_PAUSE = 1002;
     private static final int BTN_STOP = 1003;
     public static final String TAG = "TIMER";
-    private static final long LONG_DURATION = 1000;
+    private static final long LONG_DURATION = 500;
     private static final long NO_DURATION = 0;
 
     private int mCurrentState, mCurrentType;
@@ -44,6 +47,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private ObjectAnimator oA1;
     private String propertyName;
     private long animLength;
+    private FloatingActionButton mainFab;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -52,7 +56,16 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: TIMER");
+        Log.i("TAGAS", "onCreate: TIMER");
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mainFab = ((MainActivity) getActivity()).getMainFab();
+        if(mainFab != null) {
+            mainFab.hide();
+        }
     }
 
     @Override
@@ -244,12 +257,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 
     private int getOrientation() {
-        Display display = getActivity().getWindowManager().getDefaultDisplay();
+        DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
+        float width = display.getWidth();
+        float height = display.getHeight();
+        Log.i(TAG, "getOrientation: " + width + " " + height);
         int orientation;
-        Point size = new Point();
-        display.getSize(size);
-        float width = size.x;
-        float height = size.y;
         if (width<height) {
             orientation = Configuration.ORIENTATION_PORTRAIT;
         } else {

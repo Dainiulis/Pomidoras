@@ -1,4 +1,4 @@
-package com.dmiesoft.fitpomodoro.ui.fragments;
+package com.dmiesoft.fitpomodoro.ui.fragments.dialogs;
 
 import android.app.Activity;
 import android.app.Dialog;
