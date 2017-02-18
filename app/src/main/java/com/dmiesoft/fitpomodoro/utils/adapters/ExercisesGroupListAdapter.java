@@ -2,11 +2,6 @@ package com.dmiesoft.fitpomodoro.utils.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -50,13 +45,17 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
 
         ImageView imageView = (ImageView) convertView.findViewById(R.id.imageExerciseGroup);
         if (exerciseGroup.getImage() != null) {
-            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exerciseGroup.getImage(), true);
-            imageView.setImageBitmap(bitmap);
+            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exerciseGroup.getImage(), true, resourceDimen);
+            if (bitmap != null) {
+                bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
+                imageView.setImageBitmap(bitmap);
+            } else {
+                TextDrawable drawable = BitmapHelper.getTextDrawable(exerciseGroup.getName());
+                imageView.setImageDrawable(drawable);
+            }
         } else {
-            String firstChar = exerciseGroup.getName().substring(0, 1).toUpperCase();
-            ColorGenerator generator = ColorGenerator.MATERIAL;
-            int color = generator.getColor(exerciseGroup.getName());
-            TextDrawable drawable = TextDrawable.builder().buildRound(firstChar, color);
+            TextDrawable drawable = BitmapHelper.getTextDrawable(exerciseGroup.getName());
             imageView.setImageDrawable(drawable);
         }
 

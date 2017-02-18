@@ -1,52 +1,81 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment">
+    android:layout_gravity="center"
+    android:overScrollMode="never">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/descHeadLayout">
+        android:orientation="vertical"
+        tools:context="com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment">
 
-        <ImageView
-            android:id="@+id/imageExercise"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_margin="5dp"
-            android:src="@android:drawable/alert_light_frame" />
+        <LinearLayout
+            android:id="@+id/imageLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/nameExercise"
+            <ImageView
+                android:id="@+id/imageExercise"
+                android:layout_width="@dimen/exercise_detail_image"
+                android:layout_height="@dimen/exercise_detail_image"
+                android:layout_gravity="center"
+                android:src="@android:drawable/alert_light_frame" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:paddingRight="@dimen/fragments_padding"
+            android:paddingLeft="@dimen/fragments_padding"
+            android:id="@+id/descHeadLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginTop="5dp"
-            android:layout_toEndOf="@+id/imageExercise"
-            android:layout_toRightOf="@+id/imageExercise"
-            android:text="@string/exercise_group"
-            android:textSize="24sp" />
+            android:layout_gravity="center">
 
-        <TextView
-            android:id="@+id/typeExercise"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/nameExercise"
-            android:layout_toEndOf="@+id/imageExercise"
-            android:layout_toRightOf="@+id/imageExercise"
-            android:text="Exercise type" />
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/nameExercise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="5dp"
+                android:text="@string/exercise_group"
+                android:textSize="24sp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/descriptionExercise"
-        android:textSize="18sp"
-        android:text="Description"/>
+            <TextView
+                android:layout_centerHorizontal="true"
+                android:id="@+id/typeExercise"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/nameExercise"
+                android:text="@string/exercise_type" />
 
-</LinearLayout>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:padding="@dimen/fragments_padding"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/description"
+                android:textSize="22sp"
+                android:layout_marginBottom="5dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/descriptionExercise"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/description"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
