@@ -4,9 +4,6 @@ package com.dmiesoft.fitpomodoro.utils;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.provider.DocumentsContract;
-import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
@@ -98,14 +95,9 @@ public class InitialDatabasePopulation {
 
                         copyFile(stream, fous);
                         String path = BitmapHelper.getFileFromImages(file, context).getAbsolutePath();
-                        Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.requiredWidth, BitmapHelper.requiredHeigth);
-//                        Log.i(TAG, "pixel: " + ((bitmap.getPixel(0,0) & 0xff000000) >> 24));
-//                        int[] pixels = new int[bitmap.getWidth() * bitmap.getHeight()];
-//                        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-//                        for (int i : pixels) {
-//
-//                        }
-                        bitmap = BitmapHelper.getScaledAndCroppedBitmapCircle(bitmap, BitmapHelper.maxSize, BitmapHelper.borderSize);
+                        Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
+                        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+//                        bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
                         BitmapHelper.saveImage(file, bitmap, context);
                     }
                 }

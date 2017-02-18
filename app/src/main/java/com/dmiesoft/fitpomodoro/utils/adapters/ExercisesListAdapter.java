@@ -5,7 +5,9 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ import java.util.List;
 
 public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
 
+    private static final String TAG = "ELA";
     private List<Exercise> exercises;
 
     public ExercisesListAdapter(Context context, int resource, List<Exercise> exercises) {
@@ -48,13 +51,17 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
         ImageView imageView = (ImageView) convertView.findViewById(R.id.imageExercise);
 
         if (exercise.getImage() != null) {
-            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true);
-            imageView.setImageBitmap(bitmap);
+            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
+            if (bitmap != null) {
+                bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
+                imageView.setImageBitmap(bitmap);
+            } else {
+                TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
+                imageView.setImageDrawable(drawable);
+            }
         } else {
-            String firstChar = exercise.getName().substring(0, 1).toUpperCase();
-            ColorGenerator generator = ColorGenerator.MATERIAL;
-            int color = generator.getColor(exercise.getName());
-            TextDrawable drawable = TextDrawable.builder().buildRound(firstChar, color);
+            TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
             imageView.setImageDrawable(drawable);
         }
 

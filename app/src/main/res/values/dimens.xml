@@ -9,4 +9,6 @@
     <dimen name="fab_elevation">10dp</dimen>
     <dimen name="fab_pressed_translationZ">20dp</dimen>
     <dimen name="list_img_dimen">60dp</dimen>
+    <dimen name="exercise_detail_image">100dp</dimen>
+    <dimen name="fragments_padding">10dp</dimen>
 </resources>

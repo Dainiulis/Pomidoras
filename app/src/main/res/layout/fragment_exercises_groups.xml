@@ -2,6 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:padding="@dimen/fragments_padding"
     android:layout_height="match_parent"
     tools:context="com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment">
 
@@ -12,66 +13,5 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true" />
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab_delete"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_marginEnd="@dimen/fab_margin"-->
-        <!--android:layout_marginRight="@dimen/fab_margin"-->
-        <!--android:layout_marginTop="@dimen/fab_margin"-->
-        <!--android:layout_above="@+id/fab_add_favorites"-->
-        <!--android:src="@drawable/delete"-->
-        <!--android:visibility="invisible"-->
-        <!--app:elevation="@dimen/fab_elevation"-->
-        <!--app:pressedTranslationZ="@dimen/fab_pressed_translationZ" />-->
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab_add_favorites"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@+id/fab_add_exercise_group"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_marginEnd="@dimen/fab_margin"-->
-        <!--android:layout_marginRight="@dimen/fab_margin"-->
-        <!--android:layout_marginTop="@dimen/fab_margin"-->
-        <!--android:src="@drawable/ic_star"-->
-        <!--android:visibility="invisible"-->
-        <!--app:elevation="@dimen/fab_elevation"-->
-        <!--app:pressedTranslationZ="@dimen/fab_pressed_translationZ" />-->
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab_add_exercise_group"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_above="@+id/fab_main"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_marginEnd="@dimen/fab_margin"-->
-        <!--android:layout_marginRight="@dimen/fab_margin"-->
-        <!--android:layout_marginTop="@dimen/fab_margin"-->
-        <!--android:src="@drawable/plus"-->
-        <!--android:visibility="invisible"-->
-        <!--app:elevation="@dimen/fab_elevation"-->
-        <!--app:pressedTranslationZ="@dimen/fab_pressed_translationZ" />-->
-
-    <!--<android.support.design.widget.FloatingActionButton-->
-        <!--android:id="@+id/fab_main"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_alignParentEnd="true"-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_marginBottom="@dimen/fab_margin"-->
-        <!--android:layout_marginEnd="@dimen/fab_margin"-->
-        <!--android:layout_marginRight="@dimen/fab_margin"-->
-        <!--android:layout_marginTop="@dimen/fab_margin"-->
-        <!--android:src="@drawable/plus"-->
-        <!--app:elevation="@dimen/fab_elevation"-->
-        <!--app:pressedTranslationZ="@dimen/fab_pressed_translationZ" />-->
-
 
 </RelativeLayout>

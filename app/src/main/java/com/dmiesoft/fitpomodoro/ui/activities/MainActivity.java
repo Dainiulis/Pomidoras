@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity
         ExercisesFragment.ExercisesListFragmentListener,
         AddExerciseGroupDialog.AddExerciseGroupDialogListener, AddExerciseDialog.AddExerciseDialogListener {
 
-    private static final String TAG = "TAGAS";
+    private static final String TAG = "MAct";
 
     /*
      * @Fragments tags
@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity
     private ExercisesDataSource dataSource;
     private List<ExercisesGroup> exercisesGroups;
     private CoordinatorLayout mainLayout;
+    private Menu menu;
 
     private FloatingActionButton mainFab, addFab, addFavFab, deleteFab;
 
@@ -255,6 +256,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
+        boolean isFragVisible = false;
+        if (fragment != null) {
+            isFragVisible = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
+        }
+        if(!isFragVisible) {
+            menu.findItem(R.id.action_edit).setVisible(false);
+        } else {
+            menu.findItem(R.id.action_edit).setVisible(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         int id = item.getItemId();
@@ -274,6 +291,10 @@ public class MainActivity extends AppCompatActivity
 
         return super.onOptionsItemSelected(item);
     }
+
+    /*
+     * Callback methods
+     */
 
     @Override
     public void onExercisesGroupItemClicked(long exercisesGroupId) {
@@ -312,14 +333,6 @@ public class MainActivity extends AppCompatActivity
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_DETAIL_FRAGMENT_TAG, exercise, true));
     }
 
-    @Subscribe
-    public void onDrawerItemClicked(DrawerItemClickedEvent event) {
-        Log.i(TAG, "onDrawerItemClicked: ");
-        if (event.getFragmentTransaction() != null) {
-            event.getFragmentTransaction().commit();
-        }
-    }
-
     @Override
     public void onSaveExerciseClicked(Exercise exercise) {
         Exercise newExercise = dataSource.createExercise(exercise);
@@ -347,6 +360,17 @@ public class MainActivity extends AppCompatActivity
             fragment.updateListView(exercisesGroup);
         }
         exercisesGroups = dataSource.findExerciseGroups(null, null);
+    }
+
+    /*
+     * Subscriptions
+     */
+
+    @Subscribe
+    public void onDrawerItemClicked(DrawerItemClickedEvent event) {
+        if (event.getFragmentTransaction() != null) {
+            event.getFragmentTransaction().commit();
+        }
     }
 
     /*

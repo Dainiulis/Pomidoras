@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
@@ -84,7 +83,6 @@ public class AddExerciseDialog extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: ");
         if (getArguments() != null) {
             exercises = getArguments().getParcelableArrayList(PACKAGE_EXERCISE_ARRAY);
             exerciseGroupId = getArguments().getLong(EXERCISE_GROUP_ID_KEY);
@@ -223,13 +221,13 @@ public class AddExerciseDialog extends DialogFragment {
                 Uri uri = data.getData();
                 FilePathGetter pathGetter = new FilePathGetter(getContext());
                 String path = pathGetter.getPath(uri);
-                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.requiredWidth, BitmapHelper.requiredHeigth);
+                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
                 //bugas ant samsung cyanogenmode
                 if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
                     android.os.Process.killProcess(android.os.Process.myPid());
                 }
-                bitmap = BitmapHelper.getScaledAndCroppedBitmapCircle(bitmap, BitmapHelper.maxSize, BitmapHelper.borderSize);
+                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
                 imageView.setImageBitmap(bitmap);
             }
         }

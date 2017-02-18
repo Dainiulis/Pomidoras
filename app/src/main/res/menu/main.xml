@@ -6,4 +6,9 @@
         android:orderInCategory="100"
         android:title="Log"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_edit"
+        android:orderInCategory="101"
+        android:title="Edit"
+        app:showAsAction="always" />
 </menu>

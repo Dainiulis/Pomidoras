@@ -23,4 +23,6 @@
     <string name="enter_exercise">Enter exercise</string>
     <string name="time">Time</string>
     <string name="reps">Reps</string>
+    <string name="description">Description:</string>
+    <string name="exercise_type">Exercise type</string>
 </resources>
