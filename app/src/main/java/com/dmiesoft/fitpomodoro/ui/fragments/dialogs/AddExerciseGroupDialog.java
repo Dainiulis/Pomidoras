@@ -23,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
@@ -109,8 +110,15 @@ public class AddExerciseGroupDialog extends DialogFragment {
             if (exercisesGroup.getImage() != null) {
                 int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
                 bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercisesGroup.getImage(), false, resourceDimen);
-                if (bitmap != null)
+                if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
+                } else {
+                    TextDrawable drawable = BitmapHelper.getTextDrawable(exercisesGroup.getName());
+                    imageView.setImageDrawable(drawable);
+                }
+            } else {
+                TextDrawable drawable = BitmapHelper.getTextDrawable(exercisesGroup.getName());
+                imageView.setImageDrawable(drawable);
             }
         }
         /***********************************/

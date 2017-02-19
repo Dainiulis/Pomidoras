@@ -1,0 +1,94 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context="com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment">
+
+        <RelativeLayout
+            android:id="@+id/imageLayout"
+            android:elevation="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageExercise"
+                android:layout_centerVertical="true"
+                android:layout_width="@dimen/exercise_detail_image"
+                android:layout_margin="@dimen/fragments_padding"
+                android:layout_height="@dimen/exercise_detail_image"
+                android:src="@android:drawable/alert_light_frame"/>
+
+            <RelativeLayout
+                android:layout_toRightOf="@+id/imageExercise"
+                android:layout_toEndOf="@+id/imageExercise"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/descHeadLayout"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/fragments_padding"
+                android:layout_marginTop="@dimen/fragments_padding"
+                android:layout_height="wrap_content">
+
+
+                <TextView
+                    android:id="@+id/nameExercise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="5dp"
+                    android:text="@string/exercise_group"
+                    android:textColor="@android:color/white"
+                    android:textAlignment="center"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/typeExercise"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/nameExercise"
+                    android:textColor="@android:color/white"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="5dp"
+                    android:text="@string/exercise_type"
+                    android:textSize="15sp" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/fragments_padding">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:text="@string/description"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:textIsSelectable="true"
+                android:id="@+id/descriptionText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/description"
+                android:textSize="18sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

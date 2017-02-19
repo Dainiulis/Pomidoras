@@ -104,7 +104,7 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
         values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
         values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
-        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExercise_group_id());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getexerciseGroupId());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
 
         long newRowId = database.insert(DatabaseContract.ExercisesTable.TABLE_NAME, null, values);
@@ -112,17 +112,29 @@ public class ExercisesDataSource {
         return exercise;
     }
 
-    public List<Exercise> findAllGroupExercises(long groupId) {
+    public void updateExercise(Exercise exercise) {
+        String where = DatabaseContract.ExercisesTable._ID + "=?";
+        String[] whereArgs = {String.valueOf(exercise.getId())};
+
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getexerciseGroupId());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
+
+        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs);
+    }
+
+    public List<Exercise> findExercises(String selection, String[] selectionArgs) {
         String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
-        String where = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
-        String[] whereArgs = {String.valueOf(groupId)};
         List<Exercise> exercises = new ArrayList<>();
 
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesTable.TABLE_NAME,
                 exercises_columns,
-                where,
-                whereArgs,
+                selection,
+                selectionArgs,
                 null,
                 null,
                 orderBy
@@ -135,7 +147,7 @@ public class ExercisesDataSource {
                 exercise.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
                 exercise.setType(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_TYPE)));
                 exercise.setDescription(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION)));
-                exercise.setExercise_group_id(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
+                exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
                 exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
                 exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
                 exercises.add(exercise);

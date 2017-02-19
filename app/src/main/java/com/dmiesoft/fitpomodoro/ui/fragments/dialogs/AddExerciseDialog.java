@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,10 +20,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
@@ -33,6 +34,7 @@ import com.dmiesoft.fitpomodoro.utils.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.EditTextInputFilter;
 import com.dmiesoft.fitpomodoro.utils.FilePathGetter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,11 +42,17 @@ public class AddExerciseDialog extends DialogFragment {
 
     private static final int PICKFILE_RESULT_CODE = 2;
     private static final String PACKAGE_EXERCISE_ARRAY = "com.dmiesoft.fitpomodoro.model.Exercise.Array";
+    private static final String PACKAGE_EXERCISE = "com.dmiesoft.fitpomodoro.model.Exercise";
     private static final String EXERCISE_GROUP_ID_KEY = "EXERCISE_GROUP_ID_KEY";
+    private static final String EDIT_CODE = "EDIT_CODE";
     private static final String TAG = "AddED";
+    public static final int NO_EDIT = 1001;
+    public static final int EDIT_DESCRIPTION = 1002;
+    public static final int EDIT_IMAGE_LAYOUT = 1003;
 
     private Button btnSave, btnCancel;
-    private EditText editText;
+    private EditText editText, editDescription;
+    private LinearLayout imageLayout;
     private RadioButton radioReps, radioTime;
     private RadioGroup radioGroup;
     private ImageView imageView;
@@ -56,16 +64,19 @@ public class AddExerciseDialog extends DialogFragment {
     private AddExerciseDialogListener mListener;
     private String exerciseType = "reps";
     private long exerciseGroupId;
+    private int edit;
 
     public AddExerciseDialog() {
     }
 
-    public static AddExerciseDialog newInstance(List<Exercise> exercises, long exerciseGroupId) {
+    public static AddExerciseDialog newInstance(List<Exercise> exercises, Exercise exercise, long exerciseGroupId, int edit) {
 
         Bundle args = new Bundle();
         AddExerciseDialog fragment = new AddExerciseDialog();
+        args.putParcelable(PACKAGE_EXERCISE, exercise);
         args.putParcelableArrayList(PACKAGE_EXERCISE_ARRAY, (ArrayList<Exercise>) exercises);
         args.putLong(EXERCISE_GROUP_ID_KEY, exerciseGroupId);
+        args.putInt(EDIT_CODE, edit);
         fragment.setArguments(args);
         return fragment;
     }
@@ -86,6 +97,10 @@ public class AddExerciseDialog extends DialogFragment {
         if (getArguments() != null) {
             exercises = getArguments().getParcelableArrayList(PACKAGE_EXERCISE_ARRAY);
             exerciseGroupId = getArguments().getLong(EXERCISE_GROUP_ID_KEY);
+            edit = getArguments().getInt(EDIT_CODE);
+            if (edit == EDIT_DESCRIPTION || edit == EDIT_IMAGE_LAYOUT) {
+                exercise = getArguments().getParcelable(PACKAGE_EXERCISE);
+            }
         }
     }
 
@@ -94,13 +109,47 @@ public class AddExerciseDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.add_exercise_dialog, container, false);
 
-        radioGroup = (RadioGroup) rootView.findViewById(R.id.radioGroup);
-        editText = (EditText) rootView.findViewById(R.id.editExerciseText);
-        imageView = (ImageView) rootView.findViewById(R.id.imageLogo);
-        btnSave = (Button) rootView.findViewById(R.id.btnSave);
-        btnCancel = (Button) rootView.findViewById(R.id.btnCancel);
-        imageButton = (ImageButton) rootView.findViewById(R.id.btnImage);
-        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
+        initViews();
+        if (edit == EDIT_IMAGE_LAYOUT && exercise != null) {
+            initEditImageLayout();
+        } else if (edit == EDIT_DESCRIPTION && exercise != null) {
+            initEditDescription();
+        }
+        initListeners();
+
+        return rootView;
+    }
+
+    private void initEditDescription() {
+        imageLayout.setVisibility(View.GONE);
+        editDescription.setVisibility(View.VISIBLE);
+        editDescription.setText(exercise.getDescription());
+    }
+
+    private void initEditImageLayout() {
+        editText.setText(exercise.getName());
+        exerciseType = exercise.getType();
+        if (exerciseType.equals(getResources().getString(R.string.reps).toLowerCase())) {
+            radioReps.setChecked(true);
+        } else {
+            radioTime.setChecked(true);
+        }
+        if (exercise.getImage() != null) {
+            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+            bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false, resourceDimen);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
+            } else {
+                TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
+                imageView.setImageDrawable(drawable);
+            }
+        } else {
+            TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
+            imageView.setImageDrawable(drawable);
+        }
+    }
+
+    private void initListeners() {
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -126,13 +175,22 @@ public class AddExerciseDialog extends DialogFragment {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (edit == EDIT_DESCRIPTION) {
+                    String description = editDescription.getText().toString();
+                    updateExercise(description);
+                    return;
+                }
                 String name = editText.getText().toString().trim();
                 if (name.equals("")) {
                     Toast.makeText(getActivity(), "Please enter exercise name...", Toast.LENGTH_SHORT).show();
                 } else if (doesExerciseExist(name)) {
                     Toast.makeText(getActivity(), "Exercise " + name + " already exist", Toast.LENGTH_SHORT).show();
+                } else if (edit != NO_EDIT) {
+                    updateExercise(name);
+                    dismiss();
                 } else {
                     saveExercise(name);
+                    dismiss();
                 }
             }
         });
@@ -149,16 +207,47 @@ public class AddExerciseDialog extends DialogFragment {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case R.id.radioReps:
-                        exerciseType = "reps";
+                        exerciseType = getResources().getString(R.string.reps).toLowerCase();
                         break;
                     case R.id.radioTime:
-                        exerciseType = "time";
+                        exerciseType = getResources().getString(R.string.time).toLowerCase();
                         break;
                 }
             }
         });
+    }
 
-        return rootView;
+    private void initViews() {
+        imageLayout = (LinearLayout) rootView.findViewById(R.id.imageLayout);
+        editDescription = (EditText) rootView.findViewById(R.id.editDescription);
+        radioGroup = (RadioGroup) rootView.findViewById(R.id.radioGroup);
+        radioReps = (RadioButton) rootView.findViewById(R.id.radioReps);
+        radioTime = (RadioButton) rootView.findViewById(R.id.radioTime);
+        editText = (EditText) rootView.findViewById(R.id.editExerciseText);
+        imageView = (ImageView) rootView.findViewById(R.id.imageLogo);
+        btnSave = (Button) rootView.findViewById(R.id.btnSave);
+        btnCancel = (Button) rootView.findViewById(R.id.btnCancel);
+        imageButton = (ImageButton) rootView.findViewById(R.id.btnImage);
+        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
+    }
+
+    private void updateExercise(String name) {
+        if (edit == EDIT_DESCRIPTION) {
+            exercise.setDescription(name);
+            mListener.onUpdateExerciseClicked(exercise);
+            return;
+        }
+        if (exercise.getImage() != null) {
+            File oldImage = BitmapHelper.getFileFromImages(exercise.getImage(), getContext());
+            boolean deleted = oldImage.delete();
+        }
+        if (bitmap != null) {
+            exercise.setImage("[" + name + ".png");
+            BitmapHelper.saveImage("[" + name + ".png", bitmap, getContext());
+        }
+        exercise.setName(name);
+        exercise.setType(exerciseType);
+        mListener.onUpdateExerciseClicked(exercise);
     }
 
     private void saveExercise(String name) {
@@ -169,10 +258,8 @@ public class AddExerciseDialog extends DialogFragment {
             BitmapHelper.saveImage("[" + name + ".png", bitmap, getContext());
         }
         exercise.setType(exerciseType);
-        exercise.setExercise_group_id(exerciseGroupId);
+        exercise.setExerciseGroupId(exerciseGroupId);
         mListener.onSaveExerciseClicked(exercise);
-        dismiss();
-
     }
 
     private void startIntentGetContent() {
@@ -187,7 +274,11 @@ public class AddExerciseDialog extends DialogFragment {
         }
         for (Exercise currentExercise : exercises) {
             if (currentExercise.getName().equalsIgnoreCase(name)) {
-                return true;
+                if (edit == EDIT_IMAGE_LAYOUT) {
+                    return !name.equalsIgnoreCase(exercise.getName());
+                } else {
+                    return true;
+                }
             }
         }
         return false;
@@ -212,6 +303,7 @@ public class AddExerciseDialog extends DialogFragment {
 
     public interface AddExerciseDialogListener {
         void onSaveExerciseClicked(Exercise exercise);
+        void onUpdateExerciseClicked(Exercise exercise);
     }
 
     @Override

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -76,6 +77,19 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
         setListAdapter(adapter);
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Exercise exercise = (Exercise) parent.getItemAtPosition(position);
+                mListener.onExerciseLongClicked(exercise);
+                return true;
+            }
+        });
     }
 
     private void initViews(View rootView) {
@@ -158,7 +172,7 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
 
     public interface ExercisesListFragmentListener {
         void onExerciseClicked(Exercise exercise);
-
+        void onExerciseLongClicked(Exercise exercise);
         void onAddExerciseBtnClicked(long exerciseGroupId);
     }
 

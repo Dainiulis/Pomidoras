@@ -7,4 +7,5 @@
     <dimen name="fab_elevation">14dp</dimen>
     <dimen name="fab_pressed_translationZ">28dp</dimen>
     <dimen name="list_img_dimen">100dp</dimen>
+    <dimen name="exercise_detail_image">170dp</dimen>
 </resources>
