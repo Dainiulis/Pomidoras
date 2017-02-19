@@ -9,7 +9,7 @@ public class Exercise implements Parcelable{
     private String name;
     private String type;
     private String description;
-    private long exercise_group_id;
+    private long exerciseGroupId;
     private String image;
     private long date;
 
@@ -20,7 +20,7 @@ public class Exercise implements Parcelable{
         name = in.readString();
         type = in.readString();
         description = in.readString();
-        exercise_group_id = in.readLong();
+        exerciseGroupId = in.readLong();
         image = in.readString();
         date = in.readLong();
     }
@@ -69,12 +69,12 @@ public class Exercise implements Parcelable{
         this.description = description;
     }
 
-    public long getExercise_group_id() {
-        return exercise_group_id;
+    public long getexerciseGroupId() {
+        return exerciseGroupId;
     }
 
-    public void setExercise_group_id(long exercise_group_id) {
-        this.exercise_group_id = exercise_group_id;
+    public void setExerciseGroupId(long exerciseGroupId) {
+        this.exerciseGroupId = exerciseGroupId;
     }
 
     public String getImage() {
@@ -104,7 +104,7 @@ public class Exercise implements Parcelable{
         dest.writeString(name);
         dest.writeString(type);
         dest.writeString(description);
-        dest.writeLong(exercise_group_id);
+        dest.writeLong(exerciseGroupId);
         dest.writeString(image);
         dest.writeLong(date);
     }

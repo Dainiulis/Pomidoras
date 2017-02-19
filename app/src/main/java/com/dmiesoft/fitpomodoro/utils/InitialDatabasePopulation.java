@@ -65,7 +65,7 @@ public class InitialDatabasePopulation {
                 exercise.setType(exercisesData.getJSONObject(j).getString("type"));
                 exercise.setImage(exercisesData.getJSONObject(j).getString("image"));
                 exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
-                exercise.setExercise_group_id(exercisesGroup.getId());
+                exercise.setExerciseGroupId(exercisesGroup.getId());
                 dataSource.createExercise(exercise);
             }
             exercisesGroups.add(exercisesGroup);

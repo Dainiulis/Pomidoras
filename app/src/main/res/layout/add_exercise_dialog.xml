@@ -5,73 +5,81 @@
     android:orientation="vertical"
     android:padding="@dimen/activity_horizontal_margin">
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/imageLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Choose logo: "
-        android:textSize="16sp" />
+        android:layout_marginBottom="10dp"
+        android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose logo: "
+            android:textSize="16sp" />
 
-        <ImageView
-            android:id="@+id/imageLogo"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginRight="20dp" />
-
-        <ImageButton
-            android:id="@+id/btnImage"
-            style="?android:attr/borderlessButtonStyle"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_image" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/imageLogo"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_marginRight="20dp" />
+
+            <ImageButton
+                android:id="@+id/btnImage"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_image" />
+
+        </LinearLayout>
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioReps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:checked="true"
+                android:text="@string/reps" />
+
+            <RadioButton
+                android:id="@+id/radioTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/time" />
+
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/enter_exercise"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/editExerciseText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords|textFilter" />
 
     </LinearLayout>
-
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/radioGroup"
-        android:layout_height="wrap_content">
-
-        <RadioButton
-            android:text="@string/reps"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:checked="true"
-            android:layout_marginEnd="10dp"
-            android:id="@+id/radioReps" />
-
-        <RadioButton
-            android:text="@string/time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/radioTime" />
-
-    </RadioGroup>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/enter_exercise"
-        android:textSize="16sp" />
-
-    <EditText
-        android:id="@+id/editExerciseText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textCapWords|textFilter" />
 
     <LinearLayout
         android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:gravity="end"
         android:orientation="horizontal">
 
@@ -90,5 +98,13 @@
             android:text="@string/save" />
 
     </LinearLayout>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="10"
+        android:hint="@string/enter_description"
+        android:visibility="gone"
+        android:id="@+id/editDescription"/>
 
 </LinearLayout>

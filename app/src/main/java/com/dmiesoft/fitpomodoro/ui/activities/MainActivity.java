@@ -3,6 +3,7 @@ package com.dmiesoft.fitpomodoro.ui.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +34,7 @@ import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseDialog;
@@ -55,7 +57,9 @@ public class MainActivity extends AppCompatActivity
         ExitDialogFragment.ExitListener,
         ExercisesGroupsFragment.ExercisesGroupsListFragmentListener,
         ExercisesFragment.ExercisesListFragmentListener,
-        AddExerciseGroupDialog.AddExerciseGroupDialogListener, AddExerciseDialog.AddExerciseDialogListener {
+        AddExerciseGroupDialog.AddExerciseGroupDialogListener,
+        AddExerciseDialog.AddExerciseDialogListener,
+        ExerciseDetailFragment.ExerciseDetailFragmentListener{
 
     private static final String TAG = "MAct";
 
@@ -92,6 +96,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mainLayout = (CoordinatorLayout) findViewById(R.id.mainLayout);
         initData();
@@ -263,10 +269,12 @@ public class MainActivity extends AppCompatActivity
         if (fragment != null) {
             isFragVisible = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
         }
-        if(!isFragVisible) {
+        if (!isFragVisible) {
             menu.findItem(R.id.action_edit).setVisible(false);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
         } else {
             menu.findItem(R.id.action_edit).setVisible(true);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(((ExerciseDetailFragment) fragment).getColor()));
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -298,7 +306,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onExercisesGroupItemClicked(long exercisesGroupId) {
-        List<Exercise> exercises = dataSource.findAllGroupExercises(exercisesGroupId);
+        String selection = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
+        List<Exercise> exercises = dataSource.findExercises(selection, selectionArgs);
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
     }
 
@@ -310,9 +320,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onAddExerciseBtnClicked(long exerciseGroupId) {
-        List<Exercise> exercises = dataSource.findAllGroupExercises(exerciseGroupId);
-        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exerciseGroupId);
+    public void onAddExerciseBtnClicked(long exercisesGroupId) {
+        List<Exercise> exercises = dataSource.findExercises(null, null);
+        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, null, exercisesGroupId, AddExerciseDialog.NO_EDIT);
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
+    }
+
+    @Override
+    public void onEditExerciseLongClicked(Exercise exercise, boolean description) {
+        openEditExerciseDialog(exercise, description);
+    }
+
+    private void openEditExerciseDialog(Exercise exercise, boolean description) {
+        List<Exercise> exercises = dataSource.findExercises(null, null);
+        int editCode = 0;
+        if (description) {
+            editCode = AddExerciseDialog.EDIT_DESCRIPTION;
+        } else {
+            editCode = AddExerciseDialog.EDIT_IMAGE_LAYOUT;
+        }
+        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getexerciseGroupId(), editCode);
         dialog.setCancelable(false);
         dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
     }
@@ -334,11 +362,30 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void onExerciseLongClicked(Exercise exercise) {
+        openEditExerciseDialog(exercise, false);
+    }
+
+    @Override
     public void onSaveExerciseClicked(Exercise exercise) {
         Exercise newExercise = dataSource.createExercise(exercise);
         ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(newExercise);
+        }
+    }
+
+    @Override
+    public void onUpdateExerciseClicked(Exercise exercise) {
+        dataSource.updateExercise(exercise);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+        if (fragment != null && fragment.isVisible()) {
+            ((ExercisesFragment)fragment).updateListView(exercise);
+        } else {
+            fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
+            if (fragment != null && fragment.isVisible()) {
+                ((ExerciseDetailFragment)fragment).setExercise(exercise);
+            }
         }
     }
 
@@ -381,7 +428,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void requestPermission(String[] permissions, int PERMISSION_REQUEST_CODE) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
         }
     }
@@ -390,12 +437,12 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_REQUEST_R_W_STORAGE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+            } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 Snackbar.make(mainLayout, "Please enable storage permission", Snackbar.LENGTH_INDEFINITE)
                         .setAction("OK", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_R_W_STORAGE);
+                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_R_W_STORAGE);
                             }
                         }).show();
             } else {

@@ -1,9 +1,8 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
 
-import android.content.res.AssetManager;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -12,18 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,9 +30,11 @@ public class ExerciseDetailFragment extends Fragment {
     private Exercise exercise;
     private View view;
     private ImageView imageView;
-    private TextView nameTextView, typeTextView, descriptionTextView;
-    private LinearLayout imageLayout;
+    private TextView nameTextView, typeTextView, descriptionText;
+    private RelativeLayout imageLayout;
     private FloatingActionButton mainFab;
+    private int color;
+    private ExerciseDetailFragmentListener mListener;
 
     public ExerciseDetailFragment() {
         // Required empty public constructor
@@ -50,6 +47,16 @@ public class ExerciseDetailFragment extends Fragment {
         args.putParcelable(PACKAGE_EXERCISES, exercise);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof ExerciseDetailFragmentListener) {
+            mListener = (ExerciseDetailFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement ExerciseDetailFragmentListener");
+        }
     }
 
     @Override
@@ -74,37 +81,69 @@ public class ExerciseDetailFragment extends Fragment {
     private void initializeViews() {
         nameTextView = (TextView) view.findViewById(R.id.nameExercise);
         typeTextView = (TextView) view.findViewById(R.id.typeExercise);
-        descriptionTextView = (TextView) view.findViewById(R.id.descriptionExercise);
+        descriptionText = (TextView) view.findViewById(R.id.descriptionText);
         imageView = (ImageView) view.findViewById(R.id.imageExercise);
-        imageLayout = (LinearLayout) view.findViewById(R.id.imageLayout);
+        imageLayout = (RelativeLayout) view.findViewById(R.id.imageLayout);
 
+        refreshDisplay();
+
+        imageLayout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mListener.onEditExerciseLongClicked(exercise, false);
+                return false;
+            }
+        });
+
+        descriptionText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                mListener.onEditExerciseLongClicked(exercise, true);
+                return false;
+            }
+        });
+
+    }
+
+    /**
+     * Set exercise and refresh display
+     * @param exercise
+     *
+     */
+    public void setExercise(Exercise exercise) {
+        this.exercise = exercise;
+        refreshDisplay();
+    }
+
+    private void refreshDisplay() {
         nameTextView.setText(exercise.getName());
         typeTextView.setText(exercise.getType());
-        descriptionTextView.setText(exercise.getDescription());
 
-        int color = getColor();
+        descriptionText.setText(exercise.getDescription());
+        color = generateColor();
         int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.exercise_detail_image);
+        imageLayout.setBackgroundColor(color);
         if (exercise.getImage() != null) {
             Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
             if (bitmap != null) {
+                bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
                 imageView.setImageBitmap(bitmap);
+                if (imageView.getVisibility() == View.GONE) {
+                    imageView.setVisibility(View.VISIBLE);
+                }
             } else {
-                // perdaryt
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, resourceDimen);
-                imageView.setLayoutParams(params);
-                TextDrawable drawable = TextDrawable.builder().buildRect(exercise.getName(), color);
-                imageView.setImageDrawable(drawable);
+                imageView.setVisibility(View.GONE);
             }
         } else {
-            // perdaryt
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, resourceDimen);
-            imageView.setLayoutParams(params);
-            TextDrawable drawable = TextDrawable.builder().buildRect(exercise.getName(), color);
-            imageView.setImageDrawable(drawable);
+            imageView.setVisibility(View.GONE);
         }
     }
 
-    private int getColor() {
+    public int getColor() {
+        return color;
+    }
+
+    private int generateColor() {
         ColorGenerator generator = ColorGenerator.MATERIAL;
         return generator.getColor(exercise.getName());
     }
@@ -124,23 +163,14 @@ public class ExerciseDetailFragment extends Fragment {
         }
     }
 
-    private Drawable getDrawableFromAssets(String image) {
-        AssetManager assetManager = getContext().getAssets();
-        InputStream stream = null;
-
-        try {
-            stream = assetManager.open(image + ".png");
-            Drawable drawable = Drawable.createFromStream(stream, null);
-            return drawable;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @Override
     public void onDetach() {
         super.onDetach();
         getActivity().invalidateOptionsMenu();
     }
+
+    public interface ExerciseDetailFragmentListener{
+        void onEditExerciseLongClicked(Exercise exercise, boolean description);
+    }
+
 }
