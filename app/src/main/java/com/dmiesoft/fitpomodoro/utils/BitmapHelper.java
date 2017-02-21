@@ -227,13 +227,17 @@ public abstract class BitmapHelper {
     /**
      * Helper for TextDrawable api
      *
-     * @param name
+     * @param name pass null to generate round check mark
      * @return
      */
     public static TextDrawable getTextDrawable(String name) {
-        String firstChar = name.substring(0, 1).toUpperCase();
-        ColorGenerator generator = ColorGenerator.MATERIAL;
-        int color = generator.getColor(name);
+        String firstChar = " ";
+        int color = 0xff616161;
+        if (name != null) {
+            firstChar = name.substring(0, 1).toUpperCase();
+            ColorGenerator generator = ColorGenerator.MATERIAL;
+            color = generator.getColor(name);
+        }
         return TextDrawable.builder().buildRound(firstChar, color);
     }
 

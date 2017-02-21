@@ -96,6 +96,12 @@ public class ExercisesDataSource {
         database.update(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, values, where, whereArgs);
     }
 
+    public void deleteExercisesGroup(long id) {
+        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+        String[] whereArgs = { String.valueOf(id) };
+        database.delete(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, where, whereArgs);
+    }
+
     /*
     Manage database "exercises" table
      */
@@ -104,7 +110,7 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
         values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
         values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
-        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getexerciseGroupId());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
 
         long newRowId = database.insert(DatabaseContract.ExercisesTable.TABLE_NAME, null, values);
@@ -120,7 +126,7 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
         values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
         values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
-        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getexerciseGroupId());
+        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
 
         database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs);
@@ -155,6 +161,12 @@ public class ExercisesDataSource {
         }
         cursor.close();
         return exercises;
+    }
+
+    public void deleteExercise(long id) {
+        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+        String[] whereArgs = { String.valueOf(id) };
+        database.delete(DatabaseContract.ExercisesTable.TABLE_NAME, where, whereArgs);
     }
 
 }

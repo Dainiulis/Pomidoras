@@ -178,6 +178,7 @@ public class AddExerciseDialog extends DialogFragment {
                 if (edit == EDIT_DESCRIPTION) {
                     String description = editDescription.getText().toString();
                     updateExercise(description);
+                    dismiss();
                     return;
                 }
                 String name = editText.getText().toString().trim();

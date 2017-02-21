@@ -4,6 +4,7 @@ package com.dmiesoft.fitpomodoro.events.navigation;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;

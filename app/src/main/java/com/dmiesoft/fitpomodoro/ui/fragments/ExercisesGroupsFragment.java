@@ -18,6 +18,7 @@ import android.widget.ListView;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.ObjectsHelper;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesGroupListAdapter;
 
 import java.util.ArrayList;
@@ -158,12 +159,6 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.i(TAG, "onDetach: Exercise");
-    }
-
-    @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {
@@ -183,6 +178,10 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     }
 
     public void updateListView(ExercisesGroup exercisesGroup) {
+        if (exercisesGroup == null) {
+            adapter.notifyDataSetChanged();
+            return;
+        }
         int index = 0;
         boolean found = false;
         for (ExercisesGroup e : exercisesGroups) {

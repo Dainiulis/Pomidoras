@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -215,7 +214,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
             BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
         }
         exercisesGroup.setName(name);
-        mListener.onUpdateExerciseGroupClicked(exercisesGroup);
+        mListener.onUpdateExercisesGroupClicked(exercisesGroup);
     }
 
     private void saveExercisesGroup(String name) {
@@ -225,7 +224,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
             exercisesGroup.setImage("@" + name + ".png");
             BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
         }
-        mListener.onSaveExerciseGroupClicked(exercisesGroup);
+        mListener.onSaveExercisesGroupClicked(exercisesGroup);
     }
 
     @Override
@@ -246,8 +245,8 @@ public class AddExerciseGroupDialog extends DialogFragment {
     }
 
     public interface AddExerciseGroupDialogListener {
-        void onSaveExerciseGroupClicked(ExercisesGroup exercisesGroup);
-        void onUpdateExerciseGroupClicked(ExercisesGroup exercisesGroup);
+        void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup);
+        void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup);
     }
 
     @Override

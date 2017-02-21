@@ -2,13 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_log"
-        android:orderInCategory="100"
-        android:title="Log"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_edit"
+        android:id="@+id/action_delete"
         android:orderInCategory="101"
-        android:title="Edit"
+        android:title="Delete"
+        android:icon="@drawable/delete"
         app:showAsAction="always" />
 </menu>

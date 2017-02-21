@@ -81,7 +81,6 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:textIsSelectable="true"
                 android:id="@+id/descriptionText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
