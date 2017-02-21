@@ -177,6 +177,10 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
     }
 
     public void updateListView(Exercise exercise) {
+        if (exercise == null) {
+            adapter.notifyDataSetChanged();
+            return;
+        }
         int index = 0;
         boolean found = false;
         for (Exercise e : exercises) {

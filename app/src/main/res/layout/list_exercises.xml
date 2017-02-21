@@ -2,22 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="5dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingBottom="5dp">
 
-    <ImageView
-        android:id="@+id/imageExercise"
-        android:layout_width="@dimen/list_img_dimen"
-        android:layout_height="@dimen/list_img_dimen"
-        android:layout_margin="5dp"
-        android:src="@android:drawable/alert_light_frame"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imageExercise"
+            android:layout_width="@dimen/list_img_dimen"
+            android:layout_height="@dimen/list_img_dimen"
+            android:layout_margin="5dp"
+            android:layout_centerInParent="true"
+            android:src="@android:drawable/alert_light_frame" />
+
+        <ImageView
+            android:id="@+id/imageChecked"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
     <TextView
         android:id="@+id/nameExercise"
-        android:layout_weight="20"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
         android:layout_gravity="center_vertical"
-        android:text="@string/exercise_group"/>
+        android:layout_weight="20"
+        android:text="@string/exercise_group"
+        android:textSize="24sp" />
 
 </LinearLayout>

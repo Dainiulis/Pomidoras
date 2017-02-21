@@ -10,6 +10,7 @@ public class ExercisesGroup implements Parcelable{
     private String name;
     private String image;
     private long date;
+    private boolean isChecked;
 
     public ExercisesGroup(){}
 
@@ -62,6 +63,14 @@ public class ExercisesGroup implements Parcelable{
 
     public void setDate(long date) {
         this.date = date;
+    }
+
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
     }
 
     @Override

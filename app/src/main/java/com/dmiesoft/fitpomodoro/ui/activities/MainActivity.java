@@ -3,10 +3,13 @@ package com.dmiesoft.fitpomodoro.ui.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -27,10 +30,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
+import com.dmiesoft.fitpomodoro.events.DeleteObjects;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
@@ -43,12 +48,14 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.InitialDatabasePopulation;
+import com.dmiesoft.fitpomodoro.utils.ObjectsHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -59,7 +66,7 @@ public class MainActivity extends AppCompatActivity
         ExercisesFragment.ExercisesListFragmentListener,
         AddExerciseGroupDialog.AddExerciseGroupDialogListener,
         AddExerciseDialog.AddExerciseDialogListener,
-        ExerciseDetailFragment.ExerciseDetailFragmentListener{
+        ExerciseDetailFragment.ExerciseDetailFragmentListener {
 
     private static final String TAG = "MAct";
 
@@ -76,6 +83,14 @@ public class MainActivity extends AppCompatActivity
     private static final String ADD_EXERCISE_GROUP_DIALOG = "add_exercise_group_dialog";
     private static final String ADD_EXERCISE_DIALOG = "add_exercise_dialog";
     /*
+     * @Other constants
+     */
+    private static final String EXERCISES_GROUPS = "EXERCISES_GROUPS";
+    private static final String EXERCISES = "EXERCISES";
+    private static final String OBJ_TO_DELETE = "OBJ_TO_DELETE";
+    private static final String WHAT_TO_DELETE = "WHAT_TO_DELETE";
+    private static final String DELETE_BACKGROUND_COLOR = "#bababa";
+    /*
      * @PERMISSIONS CODES
      */
     public static final int PERMISSIONS_REQUEST_R_W_STORAGE = 1;
@@ -85,8 +100,11 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager fragmentManager;
     private ExercisesDataSource dataSource;
     private List<ExercisesGroup> exercisesGroups;
+    private List<Exercise> exercises;
     private CoordinatorLayout mainLayout;
-    private Menu menu;
+
+    private List<Integer> deleteIdList;
+    private String whatToDelete;
 
     private FloatingActionButton mainFab, addFab, addFavFab, deleteFab;
 
@@ -98,6 +116,14 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        deleteIdList = new ArrayList<>();
+        if (savedInstanceState != null) {
+            deleteIdList = savedInstanceState.getIntegerArrayList(OBJ_TO_DELETE);
+            exercisesGroups = savedInstanceState.getParcelableArrayList(EXERCISES_GROUPS);
+            exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
+            whatToDelete = savedInstanceState.getString(WHAT_TO_DELETE);
+        }
 
         mainLayout = (CoordinatorLayout) findViewById(R.id.mainLayout);
         initData();
@@ -152,17 +178,28 @@ public class MainActivity extends AppCompatActivity
     private void initData() {
         dataSource = new ExercisesDataSource(this);
         dataSource.open();
-        exercisesGroups = dataSource.findExerciseGroups(null, null);
-        if (exercisesGroups.size() == 0) {
-            InitialDatabasePopulation idp = new InitialDatabasePopulation(this, dataSource);
-            try {
-                exercisesGroups = idp.readJson();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+        if (exercisesGroups == null) {
+            exercisesGroups = dataSource.findExerciseGroups(null, null);
+            if (exercisesGroups.size() == 0) {
+                InitialDatabasePopulation idp = new InitialDatabasePopulation(this, dataSource);
+                try {
+                    exercisesGroups = idp.readJson();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(EXERCISES_GROUPS, (ArrayList<ExercisesGroup>) exercisesGroups);
+        outState.putParcelableArrayList(EXERCISES, (ArrayList<Exercise>) exercises);
+        outState.putIntegerArrayList(OBJ_TO_DELETE, (ArrayList<Integer>) deleteIdList);
+        outState.putString(WHAT_TO_DELETE, whatToDelete);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -228,7 +265,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         } catch (NullPointerException e) {
-            Log.i(TAG, "Error " + e.getMessage());
         }
     }
 
@@ -238,7 +274,6 @@ public class MainActivity extends AppCompatActivity
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
         dataSource.open();
-        Log.i(TAG, "onResume: MainActivity");
     }
 
     @Override
@@ -270,12 +305,18 @@ public class MainActivity extends AppCompatActivity
             isFragVisible = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
         }
         if (!isFragVisible) {
-            menu.findItem(R.id.action_edit).setVisible(false);
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
         } else {
-            menu.findItem(R.id.action_edit).setVisible(true);
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(((ExerciseDetailFragment) fragment).getColor()));
         }
+
+        if (deleteIdList.size() > 0) {
+            menu.findItem(R.id.action_delete).setVisible(true);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor(DELETE_BACKGROUND_COLOR)));
+        } else {
+            menu.findItem(R.id.action_delete).setVisible(false);
+        }
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -285,15 +326,48 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.action_log:
-                InitialDatabasePopulation logidp = new InitialDatabasePopulation(this, dataSource);
-                try {
-                    logidp.readJson();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            case R.id.action_delete:
+                int currExId;
+                for (int i = 0; deleteIdList.size() > i; i++) {
+                    currExId = deleteIdList.get(i);
+                    if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+                        dataSource.deleteExercisesGroup(exercisesGroups.get(currExId).getId());
+                    } else {
+                        dataSource.deleteExercise(exercises.get(currExId).getId());
+                        Log.i(TAG, "deleting exercise with id: " + currExId);
+                    }
+                        /*
+                         * Logic:
+                         * if currExId (id that is going to be removed) is less than
+                         * the next id, then decrement the next id which is going to be removed
+                         * because after removing exercisesGroup all id's that are higher
+                         * is going to decrease by 1
+                         * else do nothing
+                         *
+                         * after loop remove exercisesGroup
+                         */
+                    for (int j = i + 1; deleteIdList.size() > j; j++) {
+                        int exGrIdToDecrement = deleteIdList.get(j);
+                        if (currExId < exGrIdToDecrement) {
+                            deleteIdList.set(j, exGrIdToDecrement - 1);
+                        }
+                    }
+                    if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+                        exercisesGroups.remove(currExId);
+                    } else {
+                        exercises.remove(currExId);
+                    }
                 }
+                if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+                    ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
+                    fragment.updateListView(null);
+                } else {
+                    ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+                    fragment.updateListView(null);
+                }
+                Toast.makeText(this, "Deleted " + deleteIdList.size() + " items", Toast.LENGTH_SHORT).show();
+                deleteIdList.clear();
+                invalidateOptionsMenu();
                 break;
         }
 
@@ -304,20 +378,11 @@ public class MainActivity extends AppCompatActivity
      * Callback methods
      */
 
-    @Override
-    public void onExercisesGroupItemClicked(long exercisesGroupId) {
-        String selection = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
-        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
-        List<Exercise> exercises = dataSource.findExercises(selection, selectionArgs);
-        EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
-    }
-
-    @Override
-    public void onAddExerciseGroupBtnClicked() {
-        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, null, false);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
-    }
+    /*
+     * -------------------------------
+     * Exercises callbacks
+     * -------------------------------
+     */
 
     @Override
     public void onAddExerciseBtnClicked(long exercisesGroupId) {
@@ -340,20 +405,9 @@ public class MainActivity extends AppCompatActivity
         } else {
             editCode = AddExerciseDialog.EDIT_IMAGE_LAYOUT;
         }
-        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getexerciseGroupId(), editCode);
+        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getExerciseGroupId(), editCode);
         dialog.setCancelable(false);
         dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
-    }
-
-    @Override
-    public void onExercisesGroupItemLongClicked(long exercisesGroupId) {
-        String selection = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
-        List<ExercisesGroup> group = dataSource.findExerciseGroups(selection, selectionArgs);
-        ExercisesGroup exercisesGroup = group.get(0);
-        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, exercisesGroup, true);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
     }
 
     @Override
@@ -380,48 +434,111 @@ public class MainActivity extends AppCompatActivity
         dataSource.updateExercise(exercise);
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null && fragment.isVisible()) {
-            ((ExercisesFragment)fragment).updateListView(exercise);
+            ((ExercisesFragment) fragment).updateListView(exercise);
         } else {
             fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
             if (fragment != null && fragment.isVisible()) {
-                ((ExerciseDetailFragment)fragment).setExercise(exercise);
+                ((ExerciseDetailFragment) fragment).setExercise(exercise);
             }
         }
     }
 
+    //---------------------------------------------------------------------------------------
+
+    /*
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~
+     * ExercisesGroups callbacks
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     @Override
-    public void onSaveExerciseGroupClicked(ExercisesGroup exercisesGroup) {
+    public void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup) {
         ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(newExercisesGroup);
         }
-        exercisesGroups = dataSource.findExerciseGroups(null, null);
+//        exercisesGroups.add(newExercisesGroup);
     }
 
     @Override
-    public void onUpdateExerciseGroupClicked(ExercisesGroup exercisesGroup) {
+    public void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup) {
         dataSource.updateExercisesGroup(exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(exercisesGroup);
         }
-        exercisesGroups = dataSource.findExerciseGroups(null, null);
+//        exercisesGroups = dataSource.findExerciseGroups(null, null);
     }
 
+    @Override
+    public void onExercisesGroupItemClicked(long exercisesGroupId) {
+        String selection = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
+        exercises = dataSource.findExercises(selection, selectionArgs);
+        EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
+    }
+
+    @Override
+    public void onExercisesGroupItemLongClicked(long exercisesGroupId) {
+        String selection = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
+        List<ExercisesGroup> group = dataSource.findExerciseGroups(selection, selectionArgs);
+        ExercisesGroup exercisesGroup = group.get(0);
+        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, exercisesGroup, true);
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
+    }
+
+
+    @Override
+    public void onAddExerciseGroupBtnClicked() {
+        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, null, false);
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     /*
+     * ..........................................................
      * Subscriptions
+     * ..........................................................
      */
 
     @Subscribe
     public void onDrawerItemClicked(DrawerItemClickedEvent event) {
         if (event.getFragmentTransaction() != null) {
+            deleteIdList.clear();
+            whatToDelete = null;
+            invalidateOptionsMenu();
+            if (exercisesGroups != null) {
+                ObjectsHelper.uncheckExercisesGroups(exercisesGroups);
+            }
+            if (exercises != null) {
+                ObjectsHelper.uncheckExercises(exercises);
+            }
             event.getFragmentTransaction().commit();
         }
     }
 
+    @Subscribe
+    public void onDeleteObject(DeleteObjects event) {
+        Integer id = event.getId();
+        whatToDelete = event.getClassName();
+        if (deleteIdList.contains(id)) {
+            deleteIdList.remove(id);
+        } else {
+            deleteIdList.add(id);
+        }
+        invalidateOptionsMenu();
+    }
+
+    //........................................................................................
+
     /*
+     * ***************************************
      * Permission handler
+     * ***************************************
      */
     public boolean hasPermissionGranted(String permission) {
         return ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED;
@@ -460,4 +577,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
+    //**********************************************************************************************
 }
