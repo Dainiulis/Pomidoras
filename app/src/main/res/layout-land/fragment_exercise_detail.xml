@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        tools:context="com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment">
+        tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment">
 
         <RelativeLayout
             android:id="@+id/imageLayout"

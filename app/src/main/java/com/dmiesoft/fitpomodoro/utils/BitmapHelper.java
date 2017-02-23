@@ -26,9 +26,9 @@ import java.io.FileOutputStream;
  */
 public abstract class BitmapHelper {
 
-    public static final int REQUIRED_WIDTH = 600;
-    public static final int REQUIRED_HEIGTH = 600;
-    public static final float MAX_SIZE = 600f;
+    public static final int REQUIRED_WIDTH = 400;
+    public static final int REQUIRED_HEIGTH = 400;
+    public static final float MAX_SIZE = 400f;
     public static final float BORDER_SIZE = 1;
     private static final String TAG = "BH";
 

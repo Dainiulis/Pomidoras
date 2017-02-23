@@ -51,7 +51,6 @@ public class TimerTaskFragment extends Fragment {
         longBreakCounter = 0;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         setTimer();
-        Log.i(TAG, "onCreate: TTF");
     }
 
     @Override
@@ -75,7 +74,6 @@ public class TimerTaskFragment extends Fragment {
         if (timer != null) {
             timer.cancel();
         }
-        Log.i(TAG, "onDestroy: TIMER");
     }
 
     //  **Handle millisecs and timer**
@@ -193,15 +191,12 @@ public class TimerTaskFragment extends Fragment {
         if (event.getCurrentState() == STATE_RUNNING) {
             //butinai reikejo patikrinti sita salyga, kitaip buginosi laikmatis
             if (mCurrentState != STATE_RUNNING) {
-                Log.i(TAG, "onTimerButtonClicked: RUNNING");
                 initTimer();
             }
         } else if (event.getCurrentState() == STATE_PAUSED) {
-            Log.i(TAG, "onTimerButtonClicked: PAUSED");
             timer.cancel();
             mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
-            Log.i(TAG, "onTimerButtonClicked: STOPPED");
             try {
                 timer.cancel();
             } catch (NullPointerException e) {
@@ -213,7 +208,6 @@ public class TimerTaskFragment extends Fragment {
     }
     @Subscribe
     public void onTimerUIUpdateRequest(TimerUpdateRequestEvent event){
-        Log.i(TAG, "onTimerButtonClicked: " + event.isAskingForCurrentState());
         if (event.isAskingForCurrentState()) {
             if (mCurrentState != STATE_RUNNING) {
                 sendTimeEvent.setMillisecs(millisecs);

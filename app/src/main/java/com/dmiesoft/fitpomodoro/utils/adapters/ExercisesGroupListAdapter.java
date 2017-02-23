@@ -64,7 +64,6 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
             }
         });
 
-        Log.i(TAG, "Exercises gorups: " + exercisesGroups);
         return convertView;
     }
 

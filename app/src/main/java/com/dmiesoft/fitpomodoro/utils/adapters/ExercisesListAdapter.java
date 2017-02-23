@@ -48,7 +48,6 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
             holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else {
-            Log.i(TAG, "getting tag:");
             holder = (ViewHolder) convertView.getTag();
         }
 

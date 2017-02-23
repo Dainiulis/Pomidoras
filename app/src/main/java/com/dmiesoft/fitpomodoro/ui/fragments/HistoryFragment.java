@@ -19,8 +19,6 @@ import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
  */
 public class HistoryFragment extends Fragment {
 
-    FloatingActionButton mainFab;
-
     public HistoryFragment() {
         // Required empty public constructor
     }
@@ -34,10 +32,6 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mainFab = ((MainActivity) getActivity()).getMainFab();
-        if(mainFab != null) {
-            mainFab.hide();
-        }
     }
 
     @Override

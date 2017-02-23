@@ -150,12 +150,14 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
             animateFab();
         }
         mainFab.hide();
+        mainFab.setClickable(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mainFab.show();
+        mainFab.setClickable(true);
     }
 
     @Override

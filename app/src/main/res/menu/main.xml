@@ -7,4 +7,9 @@
         android:title="Delete"
         android:icon="@drawable/delete"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_log"
+        android:orderInCategory="100"
+        android:title="Log"
+        app:showAsAction="always" />
 </menu>

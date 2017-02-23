@@ -27,6 +27,7 @@ public class InitialDatabasePopulation {
     private static final String TAG = "IDP";
     private Context context;
     private ExercisesDataSource dataSource;
+    private String[] list;
 
     public InitialDatabasePopulation(Context context, ExercisesDataSource dataSource) {
         this.context = context;
@@ -35,7 +36,7 @@ public class InitialDatabasePopulation {
 
     public List<ExercisesGroup> readJson() throws IOException, JSONException {
 
-        copyAssets();
+        list = context.getAssets().list("");
 
         InputStream stream = context.getResources().openRawResource(R.raw.json_data);
         BufferedInputStream bufferedInputStream = new BufferedInputStream(stream);
@@ -57,23 +58,26 @@ public class InitialDatabasePopulation {
             exercisesGroup.setName(exerciseGroupName);
             exercisesGroup.setImage(exerciseGroupImage);
             exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+            copyAssets(false, "", exerciseGroupImage);
 
             JSONArray exercisesData = allData.getJSONObject(i).getJSONArray("exercises");
             for (int j = 0; j < exercisesData.length(); j++) {
                 Exercise exercise = new Exercise();
                 exercise.setName(exercisesData.getJSONObject(j).getString("name"));
                 exercise.setType(exercisesData.getJSONObject(j).getString("type"));
-                exercise.setImage(exercisesData.getJSONObject(j).getString("image"));
+//                exercise.setImage(exercisesData.getJSONObject(j).getString("image") + ".png");
+                exercise.setImage("@" + exercisesGroup.getId() + "@" + exercise.getName() + ".png");
                 exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
                 exercise.setExerciseGroupId(exercisesGroup.getId());
-                dataSource.createExercise(exercise);
+                exercise = dataSource.createExercise(exercise);
+                copyAssets(true, exercise.getImage(), exerciseGroupImage);
             }
             exercisesGroups.add(exercisesGroup);
         }
         return exercisesGroups;
     }
 
-    private void copyAssets() {
+    private void copyAssets(boolean cpExercise, String exerciseImgName, String imageName) {
         File f = new File(context.getFilesDir(), "images");
         if (!f.exists()) {
             f.mkdir();
@@ -83,24 +87,28 @@ public class InitialDatabasePopulation {
         InputStream stream = null;
         FileOutputStream fous = null;
 
-        String[] list;
-
         try {
-            list = context.getAssets().list("");
             if (list.length > 0) {
-                for (String file : list) {
-                    if (file.contains(".png")) {
-                        fous = new FileOutputStream(f + "/" + file);
-                        stream = assetManager.open(file);
-
-                        copyFile(stream, fous);
-                        String path = BitmapHelper.getFileFromImages(file, context).getAbsolutePath();
-                        Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
-                        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
-//                        bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
-                        BitmapHelper.saveImage(file, bitmap, context);
-                    }
+//                for (String file : list) {
+//                if (file.contains(".png")) {
+                String finalFileName = "";
+                if (cpExercise) {
+                    finalFileName = exerciseImgName;
+                } else {
+                    finalFileName = imageName;
                 }
+                fous = new FileOutputStream(f + "/" + finalFileName);
+                stream = assetManager.open(imageName);
+                copyFile(stream, fous);
+
+
+                String path = BitmapHelper.getFileFromImages(finalFileName, context).getAbsolutePath();
+                Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
+                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+//                        bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
+                BitmapHelper.saveImage(finalFileName, bitmap, context);
+//                }
+//                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -5,6 +5,7 @@ import android.text.Spanned;
 
 public class EditTextInputFilter implements InputFilter {
 
+    public static final String BLOCK_CHARS = ",./;!@$&;";
     private String blockedCharacters;
 
     public EditTextInputFilter(String blockedCharacters){

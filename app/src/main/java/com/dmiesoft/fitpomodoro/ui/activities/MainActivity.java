@@ -3,13 +3,12 @@ package com.dmiesoft.fitpomodoro.ui.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -30,7 +29,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
@@ -47,7 +45,10 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseGroupDialog;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
+import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
+import com.dmiesoft.fitpomodoro.utils.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.InitialDatabasePopulation;
+import com.dmiesoft.fitpomodoro.utils.MultiSelectionHelper;
 import com.dmiesoft.fitpomodoro.utils.ObjectsHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -57,6 +58,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity
         implements
@@ -66,7 +69,8 @@ public class MainActivity extends AppCompatActivity
         ExercisesFragment.ExercisesListFragmentListener,
         AddExerciseGroupDialog.AddExerciseGroupDialogListener,
         AddExerciseDialog.AddExerciseDialogListener,
-        ExerciseDetailFragment.ExerciseDetailFragmentListener {
+        ExerciseDetailFragment.ExerciseDetailFragmentListener,
+        AsyncFirstLoad.AsyncFirstLoadListrener{
 
     private static final String TAG = "MAct";
 
@@ -89,7 +93,8 @@ public class MainActivity extends AppCompatActivity
     private static final String EXERCISES = "EXERCISES";
     private static final String OBJ_TO_DELETE = "OBJ_TO_DELETE";
     private static final String WHAT_TO_DELETE = "WHAT_TO_DELETE";
-    private static final String DELETE_BACKGROUND_COLOR = "#bababa";
+    private static final String DELETE_BACKGROUND_COLOR = "#585859";
+    private static final String TREE_MAP = "TREE_MAP";
     /*
      * @PERMISSIONS CODES
      */
@@ -105,6 +110,9 @@ public class MainActivity extends AppCompatActivity
 
     private List<Integer> deleteIdList;
     private String whatToDelete;
+    private TreeMap<Integer, ?> map;
+    private Snackbar snackbar;
+    private Snackbar.Callback snackbarCallback;
 
     private FloatingActionButton mainFab, addFab, addFavFab, deleteFab;
 
@@ -123,6 +131,7 @@ public class MainActivity extends AppCompatActivity
             exercisesGroups = savedInstanceState.getParcelableArrayList(EXERCISES_GROUPS);
             exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
             whatToDelete = savedInstanceState.getString(WHAT_TO_DELETE);
+            map = (TreeMap<Integer, ?>) savedInstanceState.getSerializable(TREE_MAP);
         }
 
         mainLayout = (CoordinatorLayout) findViewById(R.id.mainLayout);
@@ -181,14 +190,8 @@ public class MainActivity extends AppCompatActivity
         if (exercisesGroups == null) {
             exercisesGroups = dataSource.findExerciseGroups(null, null);
             if (exercisesGroups.size() == 0) {
-                InitialDatabasePopulation idp = new InitialDatabasePopulation(this, dataSource);
-                try {
-                    exercisesGroups = idp.readJson();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                AsyncFirstLoad asyncFirstLoad = new AsyncFirstLoad(this, dataSource);
+                asyncFirstLoad.execute();
             }
         }
     }
@@ -199,6 +202,9 @@ public class MainActivity extends AppCompatActivity
         outState.putParcelableArrayList(EXERCISES, (ArrayList<Exercise>) exercises);
         outState.putIntegerArrayList(OBJ_TO_DELETE, (ArrayList<Integer>) deleteIdList);
         outState.putString(WHAT_TO_DELETE, whatToDelete);
+        if (map != null && map.size() > 0) {
+            outState.putSerializable(TREE_MAP, map);
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -208,6 +214,10 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
+            clearMultiSelection();
+            if (snackbar != null) {
+                snackbar.dismiss();
+            }
             fragmentManager.popBackStack();
         } else if (getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG) == null) {
             EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
@@ -274,12 +284,21 @@ public class MainActivity extends AppCompatActivity
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
         dataSource.open();
+        if (map != null) {
+            snackbarCallback = getSnackbarCallback();
+            snackbar = getSnackbar();
+            snackbar.addCallback(snackbarCallback);
+            snackbar.show();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        if (snackbar != null) {
+            snackbar.removeCallback(snackbarCallback);
+        }
         dataSource.close();
     }
 
@@ -326,52 +345,81 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
+            case R.id.action_log:
+                DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(this);
+                float width = (int) displayWidthHeight.getWidth();
+                float density = getResources().getDisplayMetrics().density;
+                float dp = width / density;
+                Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
+                break;
             case R.id.action_delete:
-                int currExId;
-                for (int i = 0; deleteIdList.size() > i; i++) {
-                    currExId = deleteIdList.get(i);
-                    if (whatToDelete.equals(ExercisesGroup.class.toString())) {
-                        dataSource.deleteExercisesGroup(exercisesGroups.get(currExId).getId());
-                    } else {
-                        dataSource.deleteExercise(exercises.get(currExId).getId());
-                        Log.i(TAG, "deleting exercise with id: " + currExId);
-                    }
-                        /*
-                         * Logic:
-                         * if currExId (id that is going to be removed) is less than
-                         * the next id, then decrement the next id which is going to be removed
-                         * because after removing exercisesGroup all id's that are higher
-                         * is going to decrease by 1
-                         * else do nothing
-                         *
-                         * after loop remove exercisesGroup
-                         */
-                    for (int j = i + 1; deleteIdList.size() > j; j++) {
-                        int exGrIdToDecrement = deleteIdList.get(j);
-                        if (currExId < exGrIdToDecrement) {
-                            deleteIdList.set(j, exGrIdToDecrement - 1);
-                        }
-                    }
-                    if (whatToDelete.equals(ExercisesGroup.class.toString())) {
-                        exercisesGroups.remove(currExId);
-                    } else {
-                        exercises.remove(currExId);
-                    }
-                }
-                if (whatToDelete.equals(ExercisesGroup.class.toString())) {
-                    ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
-                    fragment.updateListView(null);
-                } else {
-                    ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
-                    fragment.updateListView(null);
-                }
-                Toast.makeText(this, "Deleted " + deleteIdList.size() + " items", Toast.LENGTH_SHORT).show();
-                deleteIdList.clear();
-                invalidateOptionsMenu();
+                map = new TreeMap<>();
+                map = MultiSelectionHelper.removeItems(exercisesGroups, exercises, deleteIdList, whatToDelete);
+                snackbar = getSnackbar();
+                snackbarCallback = getSnackbarCallback();
+                snackbar.addCallback(snackbarCallback);
+                snackbar.show();
+                updateListViews();
+                clearMultiSelection();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @NonNull
+    private Snackbar getSnackbar() {
+        Snackbar snackbar = Snackbar.make(mainLayout, "Deleted " + map.size() + " items ", Snackbar.LENGTH_LONG)
+                .setAction("Undo", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        for (Object o : map.entrySet()) {
+                            Map.Entry pair = (Map.Entry) o;
+                            if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+                                exercisesGroups.add((int) pair.getKey(), (ExercisesGroup) pair.getValue());
+                            } else {
+                                exercises.add((int) pair.getKey(), (Exercise) pair.getValue());
+                            }
+                        }
+                        updateListViews();
+                        whatToDelete = null;
+                        map.clear();
+                    }
+                });
+        return snackbar;
+    }
+
+    private Snackbar.Callback getSnackbarCallback() {
+        return new Snackbar.Callback() {
+
+            @Override
+            public void onDismissed(Snackbar transientBottomBar, int event) {
+                super.onDismissed(transientBottomBar, event);
+                if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
+                    MultiSelectionHelper.removeItemsFromDatabase(map, MainActivity.this, dataSource, whatToDelete);
+                    updateListViews();
+                    whatToDelete = null;
+                    map.clear();
+                }
+            }
+        };
+    }
+
+    private void updateListViews() {
+        if (whatToDelete == null) {
+            return;
+        }
+        if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+            ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
+            if (fragment != null) {
+                fragment.updateListView(null);
+            }
+        } else {
+            ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+            if (fragment != null) {
+                fragment.updateListView(null);
+            }
+        }
     }
 
     /*
@@ -508,9 +556,10 @@ public class MainActivity extends AppCompatActivity
     @Subscribe
     public void onDrawerItemClicked(DrawerItemClickedEvent event) {
         if (event.getFragmentTransaction() != null) {
-            deleteIdList.clear();
-            whatToDelete = null;
-            invalidateOptionsMenu();
+            clearMultiSelection();
+            if (snackbar != null) {
+                snackbar.dismiss();
+            }
             if (exercisesGroups != null) {
                 ObjectsHelper.uncheckExercisesGroups(exercisesGroups);
             }
@@ -519,6 +568,11 @@ public class MainActivity extends AppCompatActivity
             }
             event.getFragmentTransaction().commit();
         }
+    }
+
+    private void clearMultiSelection() {
+        deleteIdList.clear();
+        invalidateOptionsMenu();
     }
 
     @Subscribe
@@ -576,6 +630,11 @@ public class MainActivity extends AppCompatActivity
                         }).show();
             }
         }
+    }
+
+    @Override
+    public void onPostFirstLoadExecute(List<ExercisesGroup> exercisesGroups) {
+        this.exercisesGroups = exercisesGroups;
     }
 
     //**********************************************************************************************

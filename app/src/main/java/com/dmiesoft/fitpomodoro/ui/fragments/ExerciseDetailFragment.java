@@ -32,7 +32,6 @@ public class ExerciseDetailFragment extends Fragment {
     private ImageView imageView;
     private TextView nameTextView, typeTextView, descriptionText;
     private RelativeLayout imageLayout;
-    private FloatingActionButton mainFab;
     private int color;
     private ExerciseDetailFragmentListener mListener;
 
@@ -157,10 +156,6 @@ public class ExerciseDetailFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mainFab = ((MainActivity) getActivity()).getMainFab();
-        if(mainFab != null) {
-            mainFab.hide();
-        }
     }
 
     @Override
