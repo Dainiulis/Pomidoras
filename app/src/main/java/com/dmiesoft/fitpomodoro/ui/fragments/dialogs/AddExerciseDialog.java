@@ -229,7 +229,7 @@ public class AddExerciseDialog extends DialogFragment {
         btnSave = (Button) rootView.findViewById(R.id.btnSave);
         btnCancel = (Button) rootView.findViewById(R.id.btnCancel);
         imageButton = (ImageButton) rootView.findViewById(R.id.btnImage);
-        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
+        editText.setFilters(new InputFilter[]{new EditTextInputFilter(EditTextInputFilter.BLOCK_CHARS)});
     }
 
     private void updateExercise(String name) {
@@ -243,8 +243,8 @@ public class AddExerciseDialog extends DialogFragment {
             boolean deleted = oldImage.delete();
         }
         if (bitmap != null) {
-            exercise.setImage("[" + name + ".png");
-            BitmapHelper.saveImage("[" + name + ".png", bitmap, getContext());
+            exercise.setImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png");
+            BitmapHelper.saveImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png", bitmap, getContext());
         }
         exercise.setName(name);
         exercise.setType(exerciseType);
@@ -254,12 +254,12 @@ public class AddExerciseDialog extends DialogFragment {
     private void saveExercise(String name) {
         Exercise exercise = new Exercise();
         exercise.setName(name);
-        if (bitmap != null) {
-            exercise.setImage("[" + name + ".png");
-            BitmapHelper.saveImage("[" + name + ".png", bitmap, getContext());
-        }
-        exercise.setType(exerciseType);
         exercise.setExerciseGroupId(exerciseGroupId);
+        exercise.setType(exerciseType);
+        if (bitmap != null) {
+            exercise.setImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png");
+            BitmapHelper.saveImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png", bitmap, getContext());
+        }
         mListener.onSaveExerciseClicked(exercise);
     }
 
@@ -293,12 +293,13 @@ public class AddExerciseDialog extends DialogFragment {
         float density = getActivity().getResources().getDisplayMetrics().density;
         int dp = (int) (width / density);
         Window window = getDialog().getWindow();
-        assert window != null;
-        window.setGravity(Gravity.CENTER);
-        if (dp < 600) {
-            window.setLayout((9 * width) / 10, ViewGroup.LayoutParams.WRAP_CONTENT);
-        } else {
-            window.setLayout((5 * width) / 10, ViewGroup.LayoutParams.WRAP_CONTENT);
+        if (window != null) {
+            window.setGravity(Gravity.CENTER);
+            if (dp < 600) {
+                window.setLayout((9 * width) / 10, ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                window.setLayout((5 * width) / 10, ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
         }
     }
 

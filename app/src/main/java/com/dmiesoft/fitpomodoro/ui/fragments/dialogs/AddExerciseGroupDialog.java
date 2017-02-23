@@ -122,7 +122,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
         }
         /***********************************/
 
-        editText.setFilters(new InputFilter[]{new EditTextInputFilter(",./;{}[]|!@#$%^&<>?;")});
+        editText.setFilters(new InputFilter[]{new EditTextInputFilter(EditTextInputFilter.BLOCK_CHARS)});
         btnSave = (Button) rootView.findViewById(R.id.btnSave);
         btnCancel = (Button) rootView.findViewById(R.id.btnCancel);
 

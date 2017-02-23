@@ -3,58 +3,58 @@
     "exercise_group" : "Push",
     "image" : "@push-up.png",
     "exercises" : [
-      {"name" : "Push up", "type" : "reps", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Push up hold", "type" : "time", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Kneeling push up", "type" : "reps", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Close push up", "type" : "reps", "image" : "push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Push up", "type" : "reps", "image" : "@1@push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Push up hold", "type" : "time", "image" : "@1@push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Kneeling push up", "type" : "reps", "image" : "@1@push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Close push up", "type" : "reps", "image" : "@1@push-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   },
   {
     "exercise_group" : "Pull",
     "image" : "@pull-up.png",
     "exercises" : [
-      {"name" : "Pull up", "type" : "reps", "image" : "pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Pull up hold", "type" : "time", "image" : "pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Row", "type" : "reps", "image" : "pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Pull up", "type" : "reps", "image" : "@2@pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Pull up hold", "type" : "time", "image" : "@2@pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Row", "type" : "reps", "image" : "@2@pull-up", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   },
   {
     "exercise_group" : "Handstand",
     "image" : "@handstand.png",
     "exercises" : [
-      {"name" : "Headstand", "type" : "time", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Crow hold", "type" : "time", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Pike push up", "type" : "reps", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Handstand push up", "type" : "reps", "image" : "handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Headstand", "type" : "time", "image" : "@3@handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Crow hold", "type" : "time", "image" : "@3@handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Pike push up", "type" : "reps", "image" : "@3@handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Handstand push up", "type" : "reps", "image" : "@3@handstand", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   },
   {
     "exercise_group" : "Core",
     "image" : "@core.png",
     "exercises" : [
-      {"name" : "Plank", "type" : "time", "image" : "core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Push up hold", "type" : "time", "image" : "core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Sit up", "type" : "reps", "image" : "core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Plank", "type" : "time", "image" : "@4@core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Push up hold", "type" : "time", "image" : "@4@core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Sit up", "type" : "reps", "image" : "@4@core", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   },
   {
     "exercise_group" : "Bridge",
     "image" : "@bridge.png",
     "exercises" : [
-      {"name" : "Half bridge", "type" : "reps", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Half bridge hold", "type" : "time", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Table bridge", "type" : "reps", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Table bridge hold", "type" : "time", "image" : "bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Half bridge", "type" : "reps", "image" : "@5@bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Half bridge hold", "type" : "time", "image" : "@5@bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Table bridge", "type" : "reps", "image" : "@5@bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Table bridge hold", "type" : "time", "image" : "@5@bridge", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   },
   {
     "exercise_group" : "Legs",
     "image" : "@squat.png",
     "exercises" : [
-      {"name" : "Squat", "type" : "reps", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Squat hold", "type" : "time", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Lunge", "type" : "reps", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
-      {"name" : "Cossac squat", "type" : "reps", "image" : "squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
+      {"name" : "Squat", "type" : "reps", "image" : "@6@squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Squat hold", "type" : "time", "image" : "@6@squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Lunge", "type" : "reps", "image" : "@6@squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"},
+      {"name" : "Cossac squat", "type" : "reps", "image" : "@6@squat", "description" : "* Get into push up position \n* Contract Chest, arms, back, core and quads \n"}
     ]
   }
 ]

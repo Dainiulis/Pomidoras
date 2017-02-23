@@ -56,7 +56,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i("TAGAS", "onCreate: TIMER");
     }
 
     @Override
@@ -260,7 +259,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
         float width = display.getWidth();
         float height = display.getHeight();
-        Log.i(TAG, "getOrientation: " + width + " " + height);
         int orientation;
         if (width<height) {
             orientation = Configuration.ORIENTATION_PORTRAIT;

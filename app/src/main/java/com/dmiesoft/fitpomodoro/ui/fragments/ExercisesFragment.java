@@ -159,6 +159,7 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
     public void onResume() {
         super.onResume();
         mainFab.show();
+        mainFab.setClickable(true);
     }
 
     @Override
@@ -168,6 +169,7 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
             animateFab();
         }
         mainFab.hide();
+        mainFab.setClickable(false);
     }
 
     public interface ExercisesListFragmentListener {
