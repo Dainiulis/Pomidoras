@@ -1,14 +1,9 @@
 package com.dmiesoft.fitpomodoro.utils.adapters;
 
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,16 +12,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
 import com.dmiesoft.fitpomodoro.model.Exercise;
-import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 public class ExercisesListAdapter extends ArrayAdapter<Exercise> {

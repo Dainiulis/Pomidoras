@@ -22,12 +22,13 @@ public class AsyncFirstLoad extends AsyncTask<Void, Void, Void>{
     private ProgressDialog progressDialog;
     private Activity activity;
     private ExercisesDataSource dataSource;
-    private int oldOrientation;
     private AsyncFirstLoadListrener mListrener;
+    private ProgressDialog pD;
 
-    public AsyncFirstLoad(Activity activity, ExercisesDataSource dataSource) {
+    public AsyncFirstLoad(Activity activity, ExercisesDataSource dataSource, ProgressDialog pD) {
         this.activity = activity;
         this.dataSource = dataSource;
+        this.pD = pD;
     }
 
     @Override
@@ -38,15 +39,17 @@ public class AsyncFirstLoad extends AsyncTask<Void, Void, Void>{
         } else {
             throw new RuntimeException(activity.toString() + " must implement AsyncFirstLoadListrener");
         }
-        progressDialog = new ProgressDialog(activity);
-        progressDialog.setMessage("First time initialization...");
-        progressDialog.show();
-        oldOrientation = activity.getRequestedOrientation();
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        mListrener.onPostFirstLoadExecute(null, pD);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
+        try {
+            //for avoiding database prepopulation
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         InitialDatabasePopulation idp = new InitialDatabasePopulation(activity, dataSource);
         try {
             exercisesGroups = idp.readJson();
@@ -60,13 +63,11 @@ public class AsyncFirstLoad extends AsyncTask<Void, Void, Void>{
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        progressDialog.dismiss();
-        activity.setRequestedOrientation(oldOrientation);
-        mListrener.onPostFirstLoadExecute(exercisesGroups);
+        mListrener.onPostFirstLoadExecute(exercisesGroups, pD);
         super.onPostExecute(aVoid);
     }
 
     public interface AsyncFirstLoadListrener {
-        void onPostFirstLoadExecute(List<ExercisesGroup> exercisesGroups);
+        void onPostFirstLoadExecute(List<ExercisesGroup> exercisesGroups, ProgressDialog pD);
     }
 }

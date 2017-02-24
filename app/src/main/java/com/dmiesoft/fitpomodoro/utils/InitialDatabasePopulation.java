@@ -9,6 +9,7 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
