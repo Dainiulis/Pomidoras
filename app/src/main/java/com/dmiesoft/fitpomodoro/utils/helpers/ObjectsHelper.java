@@ -1,4 +1,4 @@
-package com.dmiesoft.fitpomodoro.utils;
+package com.dmiesoft.fitpomodoro.utils.helpers;
 
 
 import com.dmiesoft.fitpomodoro.model.Exercise;

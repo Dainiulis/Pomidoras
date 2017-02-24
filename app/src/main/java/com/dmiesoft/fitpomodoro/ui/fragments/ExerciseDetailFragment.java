@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +16,7 @@ import android.widget.TextView;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
-import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
-import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 /**
  * A simple {@link Fragment} subclass.

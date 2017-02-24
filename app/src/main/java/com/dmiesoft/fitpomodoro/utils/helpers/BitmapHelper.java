@@ -1,4 +1,4 @@
-package com.dmiesoft.fitpomodoro.utils;
+package com.dmiesoft.fitpomodoro.utils.helpers;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,12 +10,9 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
-import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.model.Exercise;
 
 import java.io.File;
 import java.io.FileNotFoundException;

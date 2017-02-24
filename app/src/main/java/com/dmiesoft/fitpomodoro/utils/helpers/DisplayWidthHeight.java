@@ -1,4 +1,4 @@
-package com.dmiesoft.fitpomodoro.utils;
+package com.dmiesoft.fitpomodoro.utils.helpers;
 
 import android.app.Activity;
 import android.content.Context;

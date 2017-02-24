@@ -29,10 +29,10 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
-import com.dmiesoft.fitpomodoro.utils.BitmapHelper;
-import com.dmiesoft.fitpomodoro.utils.DisplayWidthHeight;
-import com.dmiesoft.fitpomodoro.utils.EditTextInputFilter;
-import com.dmiesoft.fitpomodoro.utils.FilePathGetter;
+import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
+import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
+import com.dmiesoft.fitpomodoro.utils.helpers.FilePathGetter;
 
 import java.io.File;
 import java.util.ArrayList;
