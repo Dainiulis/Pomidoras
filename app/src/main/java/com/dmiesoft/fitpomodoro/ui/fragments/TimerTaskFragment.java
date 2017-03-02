@@ -1,13 +1,19 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.animation.LinearInterpolator;
 
+import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
@@ -25,7 +31,7 @@ public class TimerTaskFragment extends Fragment {
     public static final int TYPE_SHORT_BREAK = 784;
     public static final int TYPE_LONG_BREAK = 736;
 
-    private int mCurrentState, mCurrentType;
+    private int mCurrentState, mCurrentType, mPreviousState;
     private static final String TAG = "TTF";
     private CountDownTimer timer;
     private long millisecs;
@@ -33,6 +39,8 @@ public class TimerTaskFragment extends Fragment {
     private SharedPreferences sharedPref;
     private TimerTypeStateHandlerEvent timerHandlerEvent;
     private TimerSendTimeEvent sendTimeEvent;
+    private Handler handler;
+    private Runnable runnable;
 
     public TimerTaskFragment() {
         // Required empty public constructor
@@ -45,6 +53,7 @@ public class TimerTaskFragment extends Fragment {
         setRetainInstance(true);
 
         timerHandlerEvent = new TimerTypeStateHandlerEvent();
+        mCircleProgressEvent = new CircleProgressEvent();
         sendTimeEvent = new TimerSendTimeEvent();
         setmCurrentState(STATE_STOPPED);
         setmCurrentType(TYPE_WORK);
@@ -117,6 +126,9 @@ public class TimerTaskFragment extends Fragment {
 //  *********************************
 
     private void initTimer() {
+        if (mPreviousState == STATE_RUNNING) {
+            handleCricleLoad(millisecs, 0f, 1f);
+        }
         setmCurrentState(STATE_RUNNING);
         timer = new CountDownTimer(millisecs, 1) {
             @Override
@@ -165,6 +177,7 @@ public class TimerTaskFragment extends Fragment {
                     setmCurrentType(TYPE_WORK);
                 }
                 setTimer();
+                mPreviousState = mCurrentState;
                 if (isContinuous()) {
                     initTimer();
                 } else {
@@ -188,34 +201,104 @@ public class TimerTaskFragment extends Fragment {
 
     @Subscribe
     public void onTimerButtonClicked(TimerTypeStateHandlerEvent event) {
+        if (event.getPublisher() != TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT) {
+            return;
+        }
+        Log.i(TAG, "BUTTON WAS CLICKED : " + event.getCurrentState());
+        mPreviousState = mCurrentState;
         if (event.getCurrentState() == STATE_RUNNING) {
             //butinai reikejo patikrinti sita salyga, kitaip buginosi laikmatis
             if (mCurrentState != STATE_RUNNING) {
-                initTimer();
+                if (mPreviousState == STATE_STOPPED) {
+                    handleCricleLoad(millisecs, 0f, 1f);
+                    initTimer();
+                } else {
+                    handleTimerStates(CIRCLE_RESUME);
+                    initTimer();
+                }
             }
         } else if (event.getCurrentState() == STATE_PAUSED) {
             timer.cancel();
+            handleTimerStates(CIRCLE_PAUSE);
             mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
-            try {
-                timer.cancel();
-            } catch (NullPointerException e) {
-                Log.i(TAG, e.getMessage());
+            if (mTimerAnimator != null) {
+                handleTimerStates(CIRCLE_STOP);
             }
+            timer.cancel();
             setTimer();
             mCurrentState = STATE_STOPPED;
         }
     }
+
     @Subscribe
-    public void onTimerUIUpdateRequest(TimerUpdateRequestEvent event){
+    public void onTimerUIUpdateRequest(TimerUpdateRequestEvent event) {
         if (event.isAskingForCurrentState()) {
             if (mCurrentState != STATE_RUNNING) {
                 sendTimeEvent.setMillisecs(millisecs);
                 EventBus.getDefault().post(sendTimeEvent);
+            }
+            if (mCurrentState == STATE_PAUSED) {
+                mCircleProgressEvent.setCircleProgress(mCircleProgressValue);
+                EventBus.getDefault().post(mCircleProgressEvent);
             }
             timerHandlerEvent.setCurrentState(mCurrentState);
             timerHandlerEvent.setCurrentType(mCurrentType);
             EventBus.getDefault().post(timerHandlerEvent);
         }
     }
+
+    /*
+     * Circle handlers
+     */
+
+    static final int CIRCLE_RESUME = 7235;
+    static final int CIRCLE_STOP = 2864;
+    static final int CIRCLE_PAUSE = 9898;
+    private ValueAnimator mTimerAnimator;
+    private CircleProgressEvent mCircleProgressEvent;
+    private float mCircleProgressValue;
+
+    private void handleCricleLoad(long time, float... values) {
+        mTimerAnimator = ValueAnimator.ofFloat(values);
+        mTimerAnimator.setDuration(time);
+        mTimerAnimator.setInterpolator(new LinearInterpolator());
+        mTimerAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mCircleProgressValue = (float) animation.getAnimatedValue();
+                if (EventBus.getDefault().hasSubscriberForEvent(mCircleProgressEvent.getClass())) {
+                    mCircleProgressEvent.setCircleProgress(mCircleProgressValue);
+                    EventBus.getDefault().post(mCircleProgressEvent);
+                }
+            }
+
+        });
+        mTimerAnimator.start();
+    }
+
+    private void handleTimerStates(int state) {
+        switch (state) {
+            case CIRCLE_STOP:
+                mTimerAnimator.cancel();
+                handleCricleLoad((long) (mCircleProgressValue * 1000), mCircleProgressValue, 0f);
+                break;
+            case CIRCLE_PAUSE:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    mTimerAnimator.pause();
+                } else {
+                    mTimerAnimator.cancel();
+                }
+                break;
+            case CIRCLE_RESUME:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    mTimerAnimator.resume();
+                } else {
+                    handleCricleLoad(millisecs, mCircleProgressValue, 1f);
+                }
+                break;
+        }
+    }
+
+
 }

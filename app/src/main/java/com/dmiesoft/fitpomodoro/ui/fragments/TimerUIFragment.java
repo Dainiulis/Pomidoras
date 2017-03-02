@@ -4,10 +4,12 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,10 +17,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
 
 import org.greenrobot.eventbus.EventBus;
@@ -38,6 +42,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private long millisecs;
     private TextView timerText, timerTypeText;
     private FloatingActionButton btnStartPauseTimer, btnStopTimer;
+    private CustomTimerView customTimerView;
     private ObjectAnimator oA;
     private ObjectAnimator oA1;
     private String propertyName;
@@ -57,7 +62,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mainFab = ((MainActivity) getActivity()).getMainFab();
-        if(mainFab != null) {
+        if (mainFab != null) {
             mainFab.hide();
         }
     }
@@ -67,7 +72,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_timer, container, false);
-        initializeViews(view);
+        initViews(view);
         return view;
     }
 
@@ -75,6 +80,10 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        requestForTimerUpdate();
+    }
+
+    private void requestForTimerUpdate() {
         TimerUpdateRequestEvent timerUpdate = new TimerUpdateRequestEvent();
         timerUpdate.askForCurrentState(true);
         EventBus.getDefault().post(timerUpdate);
@@ -88,9 +97,10 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     private void setTimer() {
         timerText.setText(getTimerString(millisecs));
+        customTimerView.setmText(getTimerString(millisecs));
     }
 
-    private void initializeViews(View view) {
+    private void initViews(View view) {
 
         timerText = (TextView) view.findViewById(R.id.timerText);
         timerTypeText = (TextView) view.findViewById(R.id.timerType);
@@ -104,7 +114,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         // tik bandymams
         timerTypeText.setOnClickListener(this);
 
+        customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
     }
+
+//    public void invalid() {
+//        customTimerView.invalidate();
+//    }
 
     private String getTimerString(long millisUntilFinished) {
         long sec = (millisUntilFinished / 1000) % 60;
@@ -125,7 +140,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
             //bandymams
             case R.id.timerType:
-                getOrientation();
+                Log.i(TAG, "state: " + mCurrentState + " type: " + mCurrentType);
                 break;
         }
     }
@@ -135,6 +150,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         setBtnTypes(BTN_STOP);
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
         timerHandler.setCurrentState(TimerTaskFragment.STATE_STOPPED);
+        timerHandler.setCurrentType(mCurrentType);
+        timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
         EventBus.getDefault().post(timerHandler);
     }
 
@@ -143,19 +160,24 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             setBtnTypes(BTN_START);
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_RUNNING);
+            timerHandler.setCurrentType(mCurrentType);
+            timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
             EventBus.getDefault().post(timerHandler);
+
         } else if (btnStartPauseTimer.getTag().equals(BTN_PAUSE)) {
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_PAUSED);
+            timerHandler.setCurrentType(mCurrentType);
             setBtnTypes(BTN_PAUSE);
+            timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
             EventBus.getDefault().post(timerHandler);
         }
     }
 //  *********************************************
 
-//      Change buttons and timer textview according to btn tag
+    //      Change buttons and timer textview according to btn tag
     private void setBtnTypes(int clickedButtonTag) {
-        if (getOrientation() == Configuration.ORIENTATION_PORTRAIT){
+        if (getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
             propertyName = "translationX";
         } else {
             propertyName = "translationY";
@@ -165,7 +187,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             try {
                 if (oA == null)
                     initObjectAnimators();
-            } catch (NullPointerException ignored) {}
+            } catch (NullPointerException ignored) {
+            }
 
 
             btnStartPauseTimer.setTag(BTN_PAUSE);
@@ -182,7 +205,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
             try {
                 endObjectAnimators();
-            } catch (NullPointerException ignored) {}
+            } catch (NullPointerException ignored) {
+            }
 
             btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_play);
             btnStartPauseTimer.setTag(BTN_START);
@@ -215,7 +239,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onAnimationEnd(Animator animation) {
                 btnStartPauseTimer.setClickable(true);
-                if (mCurrentState == BTN_STOP) {
+                if (mCurrentState == TimerTaskFragment.STATE_STOPPED) {
                     btnStopTimer.setVisibility(View.INVISIBLE);
                     btnStopTimer.setClickable(false);
                 } else {
@@ -255,7 +279,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         float width = display.getWidth();
         float height = display.getHeight();
         int orientation;
-        if (width<height) {
+        if (width < height) {
             orientation = Configuration.ORIENTATION_PORTRAIT;
         } else {
             orientation = Configuration.ORIENTATION_LANDSCAPE;
@@ -272,7 +296,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     @Subscribe
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
         mCurrentState = event.getCurrentState();
-        int currentType = event.getCurrentType();
+        mCurrentType = event.getCurrentType();
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             animLength = NO_DURATION;
             setBtnTypes(BTN_START);
@@ -282,13 +306,18 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             animLength = LONG_DURATION;
             setBtnTypes(BTN_STOP);
         }
-        if (currentType == TimerTaskFragment.TYPE_WORK) {
+        if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
             timerTypeText.setText("Work");
-        } else if (currentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
+        } else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
             timerTypeText.setText("Short break");
-        } else if (currentType == TimerTaskFragment.TYPE_LONG_BREAK) {
+        } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
             timerTypeText.setText("Long break");
         }
+    }
+
+    @Subscribe
+    public void onCircleProgressChanged(CircleProgressEvent event) {
+        customTimerView.drawProgress(event.getCircleProgress());
     }
 
 }

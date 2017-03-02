@@ -8,4 +8,6 @@
     <dimen name="fab_pressed_translationZ">28dp</dimen>
     <dimen name="list_img_dimen">100dp</dimen>
     <dimen name="exercise_detail_image">170dp</dimen>
+    <dimen name="timerSize">400dp</dimen>
+    <dimen name="timerTextSize">70sp</dimen>
 </resources>
