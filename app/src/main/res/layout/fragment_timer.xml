@@ -22,6 +22,14 @@
         android:layout_above="@+id/timerText"
         android:layout_centerHorizontal="true" />
 
+    <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
+        android:id="@+id/customTimer"
+        android:layout_width="@dimen/timerSize"
+        android:layout_height="@dimen/timerSize"
+        app:textSize="@dimen/timerTextSize"
+        app:text="time"
+        app:textColor="@android:color/darker_gray" />
+
     <TextView
         android:text="timerText"
         android:layout_centerHorizontal="true"

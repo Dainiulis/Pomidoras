@@ -40,6 +40,7 @@ import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
@@ -51,6 +52,7 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
+import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
@@ -386,10 +388,12 @@ public class MainActivity extends AppCompatActivity
                 float density = getResources().getDisplayMetrics().density;
                 float dp = width / density;
 //                Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
-                Log.i(TAG, "is multi selection fragment: " + multiSelectionFragment);
-                Log.i(TAG, "async frag: " + asyncFirstLoad);
-                Log.i(TAG, "snackbar: " + snackbar);
-                firstTimeDatabaseInitialize();
+//                firstTimeDatabaseInitialize();
+//                Fragment f = fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG);
+//                if (f != null) {
+//                    ((TimerUIFragment)f).invalid();
+//                }
+
                 break;
             case R.id.action_delete:
                 if (multiSelectionFragment == null) {
@@ -603,11 +607,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void clearMultiSelection() {
-        deleteIdList.clear();
-        invalidateOptionsMenu();
-    }
-
     @Subscribe
     public void onDeleteObject(DeleteObjects event) {
         Integer id = event.getId();
@@ -618,6 +617,15 @@ public class MainActivity extends AppCompatActivity
             deleteIdList.add(id);
         }
         invalidateOptionsMenu();
+    }
+
+    @Subscribe
+    public void onTimerTypeStateChanged(TimerTypeStateHandlerEvent event) {
+        Fragment fragment = fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG);
+        if (fragment == null) {
+            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
+            navigationView.getMenu().getItem(0).setChecked(true);
+        }
     }
 
     //........................................................................................
@@ -666,4 +674,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     //**********************************************************************************************
+
+    /*
+     * Helper functions
+     */
+    private void clearMultiSelection() {
+        deleteIdList.clear();
+        invalidateOptionsMenu();
+    }
 }

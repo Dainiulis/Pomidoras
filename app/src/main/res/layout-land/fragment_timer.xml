@@ -11,6 +11,14 @@
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+    <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
+        android:id="@+id/customTimer"
+        android:layout_width="@dimen/timerSize"
+        android:layout_height="@dimen/timerSize"
+        app:textSize="@dimen/timerTextSize"
+        app:text="time"
+        app:textColor="@android:color/darker_gray" />
+
     <TextView
         android:id="@+id/timerType"
         android:textSize="24sp"
