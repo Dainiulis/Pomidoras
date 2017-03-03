@@ -21,6 +21,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 
 public class CustomTimerView extends View {
 
@@ -30,6 +31,7 @@ public class CustomTimerView extends View {
 
     private static final String TAG = "CTV";
     private static final float THICKNESS_SCALE = .05f;
+    private static final String TIMER_BASE_COLOR = "#dbdbdb";
     private Paint mPomidorasPaint, mEraserPaint, mUnderPaint;
     private TextPaint mTextPaint;
     private int mColor = Color.RED;
@@ -37,7 +39,6 @@ public class CustomTimerView extends View {
     private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
     private String mText;
     private int yTextPos;
-    private int mMillisecs;
     private Bitmap mBitmap;
     private Canvas mCanvas;
     private RectF mCircleOuterBounds, mCircleInnerBounds;
@@ -77,7 +78,7 @@ public class CustomTimerView extends View {
 
         mUnderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mUnderPaint.setStyle(Paint.Style.FILL);
-        mUnderPaint.setColor(Color.parseColor("#dbdbdb"));
+        mUnderPaint.setColor(Color.parseColor(TIMER_BASE_COLOR));
         mUnderPaint.setShadowLayer(12, 2, 2, Color.BLACK);
         setLayerType(LAYER_TYPE_SOFTWARE, mUnderPaint);
 
@@ -116,10 +117,7 @@ public class CustomTimerView extends View {
 
         int xC = (x / 2) - 10;
         int yC = (y / 2) - 10;
-        int radius = yC - 10;
         yTextPos = (int) ((canvas.getHeight() / 2) - ((mTextPaint.descent() + mTextPaint.ascent()) / 2));
-
-//        canvas.drawCircle(xC, yC, radius, mPomidorasPaint);
 
         canvas.drawText(mText, xC, yTextPos, mTextPaint);
 
@@ -199,19 +197,5 @@ public class CustomTimerView extends View {
         invalidate();
         requestLayout();
     }
-
-    public int getmMillisecs() {
-        return mMillisecs;
-    }
-
-    public void setmMillisecs(int mMillisecs) {
-        this.mMillisecs = mMillisecs;
-        invalidate();
-        requestLayout();
-    }
-
-//    public float getCircleProgress() {
-//        return mCircleSweepAngle / 360f;
-//    }
 
 }

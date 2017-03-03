@@ -387,7 +387,7 @@ public class MainActivity extends AppCompatActivity
                 float width = (int) displayWidthHeight.getWidth();
                 float density = getResources().getDisplayMetrics().density;
                 float dp = width / density;
-//                Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
+                Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
 //                firstTimeDatabaseInitialize();
 //                Fragment f = fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG);
 //                if (f != null) {

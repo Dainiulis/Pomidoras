@@ -5,7 +5,6 @@ package com.dmiesoft.fitpomodoro.events.timer_handling;
  */
 
 public class CircleProgressEvent {
-
     float circleProgress;
 
     public CircleProgressEvent() {

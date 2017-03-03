@@ -4,10 +4,6 @@
     android:id="@+id/content_fragment_timer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -19,7 +15,7 @@
         android:padding="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/timerText"
+        android:layout_above="@+id/customTimer"
         android:layout_centerHorizontal="true" />
 
     <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
@@ -28,21 +24,12 @@
         android:layout_height="@dimen/timerSize"
         app:textSize="@dimen/timerTextSize"
         app:text="time"
-        app:textColor="@android:color/darker_gray" />
-
-    <TextView
-        android:text="timerText"
+        app:textColor="@android:color/darker_gray"
         android:layout_centerHorizontal="true"
-        android:id="@+id/timerText"
-        android:textSize="24sp"
-        android:padding="10dp"
-        android:textColor="@android:color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"/>
 
     <RelativeLayout
-        android:layout_below="@+id/timerText"
+        android:layout_below="@+id/customTimer"
         android:padding="10dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/btnLayout"

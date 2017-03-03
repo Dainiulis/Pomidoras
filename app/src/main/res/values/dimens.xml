@@ -12,6 +12,7 @@
     <dimen name="exercise_detail_image">100dp</dimen>
     <dimen name="fragments_padding">10dp</dimen>
     <dimen name="custom_timer_text_size">24sp</dimen>
-    <dimen name="timerSize">150dp</dimen>
+    <dimen name="timerSize">200dp</dimen>
     <dimen name="timerTextSize">30sp</dimen>
+    <dimen name="timer_land_left_margin">30dp</dimen>
 </resources>
