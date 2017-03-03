@@ -96,13 +96,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setTimer() {
-        timerText.setText(getTimerString(millisecs));
         customTimerView.setmText(getTimerString(millisecs));
     }
 
     private void initViews(View view) {
 
-        timerText = (TextView) view.findViewById(R.id.timerText);
         timerTypeText = (TextView) view.findViewById(R.id.timerType);
 
         btnStartPauseTimer = (FloatingActionButton) view.findViewById(R.id.btnStartPauseTimer);
@@ -300,7 +298,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             animLength = NO_DURATION;
             setBtnTypes(BTN_START);
-        } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED) {
+        } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED || mCurrentState == TimerTaskFragment.STATE_FINISHED) {
             setBtnTypes(BTN_PAUSE);
         } else {
             animLength = LONG_DURATION;
