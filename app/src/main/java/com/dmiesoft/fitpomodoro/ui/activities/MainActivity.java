@@ -1,9 +1,7 @@
 package com.dmiesoft.fitpomodoro.ui.activities;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -52,7 +50,6 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
-import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
@@ -62,7 +59,6 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
 public class MainActivity extends AppCompatActivity
@@ -75,14 +71,16 @@ public class MainActivity extends AppCompatActivity
         AddExerciseDialog.AddExerciseDialogListener,
         ExerciseDetailFragment.ExerciseDetailFragmentListener,
         AsyncFirstLoad.AsyncFirstLoadListrener,
-        MultiSelectionFragment.MultiSelectionFragmentListener {
+        MultiSelectionFragment.MultiSelectionFragmentListener,
+        TimerTaskFragment.TimerTaskFragmentListener,
+        TimerUIFragment.TimerUIFragmentListener {
 
     private static final String TAG = "MAct";
 
     /*
      * @Fragments tags
      */
-    public static final String TIMER_FRAGMENT_TAG = "timer_fragment_tag";
+    public static final String TIMER_UI_FRAGMENT_TAG = "timer_fragment_tag";
     public static final String TIMER_TASK_FRAGMENT_TAG = "timer_task_fragment_tag";
     public static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
     public static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
@@ -123,6 +121,8 @@ public class MainActivity extends AppCompatActivity
     private MultiSelectionFragment multiSelectionFragment;
     private TreeMap<Integer, ?> map;
     private SharedPreferences prefs;
+
+    private List<Long> exercisesIds;
 
     private AsyncFirstLoad asyncFirstLoad;
 
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity
             fragmentManager
                     .beginTransaction()
                     .add(timerTaskFragment, TIMER_TASK_FRAGMENT_TAG)
-                    .add(R.id.main_fragment_container, timerUIFragment, TIMER_FRAGMENT_TAG)
+                    .add(R.id.main_fragment_container, timerUIFragment, TIMER_UI_FRAGMENT_TAG)
                     .commit();
         }
 
@@ -231,8 +231,8 @@ public class MainActivity extends AppCompatActivity
                 snackbar.dismiss();
             }
             fragmentManager.popBackStack();
-        } else if (getSupportFragmentManager().findFragmentByTag(TIMER_FRAGMENT_TAG) == null) {
-            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
+        } else if (getSupportFragmentManager().findFragmentByTag(TIMER_UI_FRAGMENT_TAG) == null) {
+            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_UI_FRAGMENT_TAG, false));
             navigationView.getMenu().getItem(0).setChecked(true);
         } else {
             ExitDialogFragment exitDialogFragment = new ExitDialogFragment();
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_timer:
-                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
+                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_UI_FRAGMENT_TAG, false));
                 break;
 
             case R.id.nav_exercise_group:
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity
             for (Fragment fragment : fragments) {
                 if (fragment.isAdded() && !fragment.isHidden()) {
                     switch (fragment.getTag()) {
-                        case TIMER_FRAGMENT_TAG:
+                        case TIMER_UI_FRAGMENT_TAG:
                             navigationView.getMenu().getItem(0).setChecked(true);
                             break;
                         case EXERCISE_GROUP_FRAGMENT_TAG:
@@ -388,11 +388,6 @@ public class MainActivity extends AppCompatActivity
                 float density = getResources().getDisplayMetrics().density;
                 float dp = width / density;
                 Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
-//                firstTimeDatabaseInitialize();
-//                Fragment f = fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG);
-//                if (f != null) {
-//                    ((TimerUIFragment)f).invalid();
-//                }
 
                 break;
             case R.id.action_delete:
@@ -568,7 +563,6 @@ public class MainActivity extends AppCompatActivity
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
             prefs.edit().putBoolean(SettingsActivity.FIRST_TIME_LOAD, false).apply();
             Log.i(TAG, "onPostFirstLoadExecute: async status" + asyncFirstLoad.getStatus());
-//            asyncFirstLoad = null;
         }
     }
 
@@ -577,8 +571,27 @@ public class MainActivity extends AppCompatActivity
         updateListViews();
         if (finalGone) {
             whatToDelete = null;
-//            fragmentManager.beginTransaction().remove(multiSelectionFragment).commit();
-//            multiSelectionFragment = null;
+        }
+    }
+
+    @Override
+    public void onExerciseIdRequested() {
+        TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+        if (fragment != null) {
+            exercisesIds = dataSource.getAllExercisesIds();
+            fragment.setmExercisesIds(exercisesIds);
+        }
+    }
+
+    @Override
+    public void onRandomExerciseRequested(long randExerciseId) {
+        String selection = DatabaseContract.ExercisesTable._ID + "=?";
+        String[] selectionArgs = { String.valueOf(randExerciseId) };
+        Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
+        TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
+        Log.i(TAG, "onRandomExerciseRequested: " + fragment);
+        if (fragment != null) {
+            fragment.setExercise(exercise);
         }
     }
 
@@ -621,9 +634,9 @@ public class MainActivity extends AppCompatActivity
 
     @Subscribe
     public void onTimerTypeStateChanged(TimerTypeStateHandlerEvent event) {
-        Fragment fragment = fragmentManager.findFragmentByTag(TIMER_FRAGMENT_TAG);
+        Fragment fragment = fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment == null) {
-            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_FRAGMENT_TAG, false));
+            EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_UI_FRAGMENT_TAG, false));
             navigationView.getMenu().getItem(0).setChecked(true);
         }
     }
@@ -675,11 +688,12 @@ public class MainActivity extends AppCompatActivity
 
     //**********************************************************************************************
 
-    /*
-     * Helper functions
+    /**
+     * Helper function to clear multi selection and invalidateOptionsMenu
      */
     private void clearMultiSelection() {
         deleteIdList.clear();
         invalidateOptionsMenu();
     }
+
 }

@@ -4,7 +4,6 @@ package com.dmiesoft.fitpomodoro.events.navigation;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
@@ -74,9 +73,9 @@ public class DrawerItemClickedEvent {
 
     private void initFragment(String fragTag) {
         switch (fragTag) {
-            case MainActivity.TIMER_FRAGMENT_TAG:
-                if (isFragmentCreated(MainActivity.TIMER_FRAGMENT_TAG)) {
-                    fragment = fragmentManager.findFragmentByTag(MainActivity.TIMER_FRAGMENT_TAG);
+            case MainActivity.TIMER_UI_FRAGMENT_TAG:
+                if (isFragmentCreated(MainActivity.TIMER_UI_FRAGMENT_TAG)) {
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.TIMER_UI_FRAGMENT_TAG);
                     if (fragment == null) {
                         fragment = new TimerUIFragment();
                     }
@@ -141,7 +140,7 @@ public class DrawerItemClickedEvent {
         if (fragment != null && !fragment.isVisible()) {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             if (fragmentManager.getBackStackEntryCount() > 0 && exercise == null) {
-//                if (fragTag.equals(MainActivity.TIMER_FRAGMENT_TAG)) {
+//                if (fragTag.equals(MainActivity.TIMER_UI_FRAGMENT_TAG)) {
 //                    removeAllFragmentsExceptTimer(fragmentTransaction);
 //                }
                 for (int i = 0; i < fragmentManager.getBackStackEntryCount(); i++) {

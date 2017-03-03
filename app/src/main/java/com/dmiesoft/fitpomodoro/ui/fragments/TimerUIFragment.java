@@ -2,6 +2,7 @@ package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,9 +19,11 @@ import android.widget.TextView;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
+import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
@@ -48,6 +51,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private String propertyName;
     private long animLength;
     private FloatingActionButton mainFab;
+    private TimerUIFragmentListener mListener;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -64,6 +68,16 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         mainFab = ((MainActivity) getActivity()).getMainFab();
         if (mainFab != null) {
             mainFab.hide();
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof TimerUIFragmentListener) {
+            mListener = (TimerUIFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement TimerUIFragmentListener");
         }
     }
 
@@ -114,10 +128,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
         customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
     }
-
-//    public void invalid() {
-//        customTimerView.invalidate();
-//    }
 
     private String getTimerString(long millisUntilFinished) {
         long sec = (millisUntilFinished / 1000) % 60;
@@ -264,6 +274,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     }
 
+    /**
+     * Helper method to calculate pixels from density independent pixels
+     * @param dp density independent pixels
+     * @return result in pixels
+     */
     private float getPixels(float dp) {
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -272,6 +287,10 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         return pixels;
     }
 
+    /**
+     * This method is required for determining fab button placement
+     * @return
+     */
     private int getOrientation() {
         DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
         float width = display.getWidth();
@@ -283,6 +302,10 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             orientation = Configuration.ORIENTATION_LANDSCAPE;
         }
         return orientation;
+    }
+
+    public void setExercise(Exercise exercise) {
+        timerTypeText.setText(exercise.getName());
     }
 
     @Subscribe
@@ -307,7 +330,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
             timerTypeText.setText("Work");
         } else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-            timerTypeText.setText("Short break");
+//            timerTypeText.setText("Short break");
         } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
             timerTypeText.setText("Long break");
         }
@@ -316,6 +339,15 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     @Subscribe
     public void onCircleProgressChanged(CircleProgressEvent event) {
         customTimerView.drawProgress(event.getCircleProgress());
+    }
+
+    @Subscribe
+    public void onRandExerciseIdReceived(ExerciseIdSendEvent event) {
+        mListener.onRandomExerciseRequested(event.getExerciseId());
+    }
+
+    public interface TimerUIFragmentListener {
+        void onRandomExerciseRequested(long randExerciseId);
     }
 
 }

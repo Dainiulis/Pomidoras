@@ -1,27 +1,18 @@
 package com.dmiesoft.fitpomodoro.utils.customViews;
 
-import android.animation.Animator;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
-import android.os.Build;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
-
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 
 public class CustomTimerView extends View {
 
@@ -73,8 +64,6 @@ public class CustomTimerView extends View {
         mPomidorasPaint.setStyle(Paint.Style.FILL);
         mPomidorasPaint.setColor(mColor);
         mPomidorasPaint.setTextSize(mTextSize);
-//        mPomidorasPaint.setShadowLayer(12, 2, 2, Color.BLACK);
-//        setLayerType(LAYER_TYPE_SOFTWARE, mPomidorasPaint);
 
         mUnderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mUnderPaint.setStyle(Paint.Style.FILL);

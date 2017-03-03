@@ -163,6 +163,24 @@ public class ExercisesDataSource {
         return exercises;
     }
 
+    public List<Long> getAllExercisesIds() {
+        String[] exercise_id_columnt_name = {DatabaseContract.ExercisesTable._ID};
+        List<Long> idList = new ArrayList<>();
+        Cursor cursor = database.query(
+                DatabaseContract.ExercisesTable.TABLE_NAME,
+                 exercise_id_columnt_name,
+                null, null, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                long id = cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID));
+                idList.add(id);
+            }
+        }
+
+        return idList;
+    }
+
     public void deleteExercise(long id) {
         String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
         String[] whereArgs = { String.valueOf(id) };
