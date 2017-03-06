@@ -1,15 +1,15 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -28,10 +28,10 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
     private List<Exercise> exercises;
     private ExercisesListAdapter adapter;
     private ExercisesListFragmentListener mListener;
-    private boolean isFabOpen = false;
-    private FloatingActionButton mainFab, addExFab, deleteFab, addFavFab;
-    private Animation fabOpen, fabClose, fabRotateFroward, fabRotateBackward;
+    private FloatingActionButton mainFab;
     private long exerciseGroupId;
+    private Handler handlerFab;
+    private Runnable runnableFab;
 
     public ExercisesFragment() {
     }
@@ -94,45 +94,7 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
 
     private void initViews(View rootView) {
         mainFab = (FloatingActionButton) ((MainActivity) getActivity()).getMainFab();
-        addExFab = (FloatingActionButton) ((MainActivity) getActivity()).getAddFab();
-        addFavFab = (FloatingActionButton) ((MainActivity) getActivity()).getAddFavFab();
-        deleteFab = (FloatingActionButton) ((MainActivity) getActivity()).getDeleteFab();
-        /*
-         * Load animations
-         */
-        fabOpen = AnimationUtils.loadAnimation(getContext().getApplicationContext(), R.anim.fab_open);
-        fabClose = AnimationUtils.loadAnimation(getContext().getApplicationContext(), R.anim.fab_close);
-        fabRotateFroward = AnimationUtils.loadAnimation(getContext().getApplicationContext(), R.anim.fab_rotate_forward);
-        fabRotateBackward = AnimationUtils.loadAnimation(getContext().getApplicationContext(), R.anim.fab_rotate_backward);
-        /*
-         * Set onClickListeners
-         */
         mainFab.setOnClickListener(this);
-        addExFab.setOnClickListener(this);
-        addFavFab.setOnClickListener(this);
-        deleteFab.setOnClickListener(this);
-    }
-
-    private void animateFab() {
-        if (isFabOpen) {
-            mainFab.startAnimation(fabRotateBackward);
-            addExFab.startAnimation(fabClose);
-            addFavFab.startAnimation(fabClose);
-            deleteFab.startAnimation(fabClose);
-            addExFab.setClickable(false);
-            addFavFab.setClickable(false);
-            deleteFab.setClickable(false);
-            isFabOpen = false;
-        } else {
-            mainFab.startAnimation(fabRotateFroward);
-            addExFab.startAnimation(fabOpen);
-            addFavFab.startAnimation(fabOpen);
-            deleteFab.startAnimation(fabOpen);
-            addExFab.setClickable(true);
-            addFavFab.setClickable(true);
-            deleteFab.setClickable(true);
-            isFabOpen = true;
-        }
     }
 
     @Override
@@ -140,9 +102,6 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
         int id = v.getId();
         switch (id) {
             case R.id.fab_main:
-                animateFab();
-                break;
-            case R.id.fab_add:
                 mListener.onAddExerciseBtnClicked(exerciseGroupId);
                 break;
         }
@@ -158,23 +117,42 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
     @Override
     public void onResume() {
         super.onResume();
+        startShowFabHandler();
+    }
+
+    private void startShowFabHandler() {
+        handlerFab = new Handler();
+        runnableFab = new Runnable() {
+            @Override
+            public void run() {
+                showFab();
+            }
+        };
+        handlerFab.postDelayed(runnableFab, 400);
+    }
+
+    private void showFab() {
         mainFab.show();
         mainFab.setClickable(true);
+    }
+
+    private void hideFab() {
+        mainFab.hide();
+        mainFab.setClickable(false);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (isFabOpen) {
-            animateFab();
-        }
-        mainFab.hide();
-        mainFab.setClickable(false);
+        handlerFab.removeCallbacks(runnableFab);
+        hideFab();
     }
 
     public interface ExercisesListFragmentListener {
         void onExerciseClicked(Exercise exercise);
+
         void onExerciseLongClicked(Exercise exercise);
+
         void onAddExerciseBtnClicked(long exerciseGroupId);
     }
 

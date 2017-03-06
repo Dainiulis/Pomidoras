@@ -251,10 +251,12 @@ public class TimerTaskFragment extends Fragment {
      * Send random exercise id through eventbus
      */
     private void sendRandomExerciseId() {
-        if (mExerciseId == -1) {
-            Random randomGenerator = new Random();
-            int index = randomGenerator.nextInt(mExercisesIds.size());
-            mExerciseId = mExercisesIds.get(index);
+        if (mExercisesIds != null) {
+            if (mExerciseId == -1 && mExercisesIds.size() > 0) {
+                Random randomGenerator = new Random();
+                int index = randomGenerator.nextInt(mExercisesIds.size());
+                mExerciseId = mExercisesIds.get(index);
+            }
         }
         EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
     }

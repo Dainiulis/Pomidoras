@@ -12,7 +12,7 @@ import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
-import com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.StatisticsFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 
 import java.util.List;
@@ -102,14 +102,14 @@ public class DrawerItemClickedEvent {
                 }
                 break;
 
-            case MainActivity.HISTORY_FRAGMENT_TAG:
-                if (isFragmentCreated(MainActivity.HISTORY_FRAGMENT_TAG)) {
-                    fragment = fragmentManager.findFragmentByTag(MainActivity.HISTORY_FRAGMENT_TAG);
+            case MainActivity.STATISTICS_FRAGMENT_TAG:
+                if (isFragmentCreated(MainActivity.STATISTICS_FRAGMENT_TAG)) {
+                    fragment = fragmentManager.findFragmentByTag(MainActivity.STATISTICS_FRAGMENT_TAG);
                     if (fragment == null) {
-                        fragment = new HistoryFragment();
+                        fragment = new StatisticsFragment();
                     }
                 } else {
-                    fragment = new HistoryFragment();
+                    fragment = new StatisticsFragment();
                 }
                 break;
             case MainActivity.EXERCISES_FRAGMENT_TAG:

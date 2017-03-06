@@ -1,9 +1,14 @@
 package com.dmiesoft.fitpomodoro.utils.adapters;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +24,14 @@ import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
 
     private static final String TAG = "EGLA";
     private List<ExercisesGroup> exercisesGroups;
+    private List<ViewHolder> viewsToAnimate;
     public static final int HIGHLIGHT_COLOR = Color.parseColor("#ACBABF");
 
     public ExercisesGroupListAdapter(Context context, int resource, List<ExercisesGroup> exercisesGroups) {
@@ -36,6 +43,7 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
+        viewsToAnimate = new ArrayList<>();
         final ViewHolder holder;
 
         if (convertView == null) {
@@ -45,10 +53,13 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        final ExercisesGroup exercisesGroup = exercisesGroups.get(position);
-        holder.textView.setText(exercisesGroup.getName());
+        try {
+            ExercisesGroup exercisesGroup = exercisesGroups.get(position);
+            holder.textView.setText(exercisesGroup.getName());
+            updateCheckedState(holder, exercisesGroup);
+        } catch (IndexOutOfBoundsException ignore) {
+        }
 
-        updateCheckedState(holder, exercisesGroup);
 
         holder.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,6 +72,37 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
         });
 
         return convertView;
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        Log.i(TAG, "notifyDataSetChanged: ");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (viewsToAnimate != null) {
+                if (viewsToAnimate.size() > 0) {
+                    for (final ViewHolder holder : viewsToAnimate) {
+                        holder.view.animate().setDuration(200).alpha(0).translationX(holder.view.getWidth())
+                                .withEndAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyDataSetChanged();
+                                        holder.view.setTranslationX(0);
+                                        holder.view.setAlpha(1);
+                                        holder.view.clearAnimation();
+                                    }
+                                });
+                    }
+                    Log.i(TAG, "clearing list: " + viewsToAnimate.size());
+                    viewsToAnimate.clear();
+                } else {
+                    super.notifyDataSetChanged();
+                }
+            } else {
+                super.notifyDataSetChanged();
+            }
+        } else {
+            super.notifyDataSetChanged();
+        }
     }
 
     private boolean setBitmap(ViewHolder holder, ExercisesGroup exercisesGroup) {
@@ -95,11 +137,15 @@ public class ExercisesGroupListAdapter extends ArrayAdapter<ExercisesGroup> {
 
     private void updateCheckedState(ViewHolder holder, ExercisesGroup exercisesGroup) {
         if (exercisesGroup.isChecked()) {
+            viewsToAnimate.add(holder);
             TextDrawable drawable = BitmapHelper.getTextDrawable(null);
             holder.imageView.setImageDrawable(drawable);
             holder.view.setBackgroundColor(HIGHLIGHT_COLOR);
             holder.checkIcon.setVisibility(View.VISIBLE);
         } else {
+            if (viewsToAnimate.contains(holder)) {
+                viewsToAnimate.remove(holder);
+            }
             if (!setBitmap(holder, exercisesGroup)) {
                 TextDrawable drawable = BitmapHelper.getTextDrawable(exercisesGroup.getName());
                 holder.imageView.setImageDrawable(drawable);

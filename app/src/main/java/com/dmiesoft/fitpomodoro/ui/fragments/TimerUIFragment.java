@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -16,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
@@ -330,7 +330,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
             timerTypeText.setText("Work");
         } else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-//            timerTypeText.setText("Short break");
+
         } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
             timerTypeText.setText("Long break");
         }
@@ -343,7 +343,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     @Subscribe
     public void onRandExerciseIdReceived(ExerciseIdSendEvent event) {
-        mListener.onRandomExerciseRequested(event.getExerciseId());
+        if (event.getExerciseId() != -1) {
+            mListener.onRandomExerciseRequested(event.getExerciseId());
+        } else {
+            Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
+            timerTypeText.setText("Short break");
+        }
     }
 
     public interface TimerUIFragmentListener {
