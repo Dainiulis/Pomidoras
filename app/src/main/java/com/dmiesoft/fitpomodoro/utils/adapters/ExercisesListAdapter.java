@@ -102,6 +102,11 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
         }
     }
 
+    public void clearViewsToAnimate() {
+        if (viewsToAnimate != null)
+            viewsToAnimate.clear();
+    }
+
     @Override
     public void notifyDataSetChanged() {
         Log.i(TAG, "notifyDataSetChanged: ");

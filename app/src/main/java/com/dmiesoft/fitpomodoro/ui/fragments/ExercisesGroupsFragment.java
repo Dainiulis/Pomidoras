@@ -152,8 +152,11 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
         void onExercisesGroupItemLongClicked(long exercisesGroupId);
     }
 
-    public void updateListView(ExercisesGroup exercisesGroup) {
+    public void updateListView(ExercisesGroup exercisesGroup, boolean animate) {
         if (exercisesGroup == null) {
+            if (!animate) {
+                adapter.clearViewsToAnimate();
+            }
             adapter.notifyDataSetChanged();
             return;
         }
