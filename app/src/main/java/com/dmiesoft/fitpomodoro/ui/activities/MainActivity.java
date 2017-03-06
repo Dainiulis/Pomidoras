@@ -113,7 +113,6 @@ public class MainActivity extends AppCompatActivity
     private List<Exercise> exercises;
     private CoordinatorLayout mainLayout;
     private TimerTaskFragment timerTaskFragment;
-
     private List<Integer> deleteIdList;
     private String whatToDelete;
     private Snackbar snackbar;
@@ -121,19 +120,19 @@ public class MainActivity extends AppCompatActivity
     private MultiSelectionFragment multiSelectionFragment;
     private TreeMap<Integer, ?> map;
     private SharedPreferences prefs;
-
+    private ActionBarDrawerToggle toggle;
+    private DrawerLayout drawer;
     private List<Long> exercisesIds;
-
     private AsyncFirstLoad asyncFirstLoad;
-
-
     private FloatingActionButton mainFab;
+    private Toolbar toolbar;
+    private View.OnClickListener navigationClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -170,11 +169,13 @@ public class MainActivity extends AppCompatActivity
                     .commit();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+        Log.i(TAG, "onCreate: ");
+        navigationClickListener = toggle.getToolbarNavigationClickListener();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -211,6 +212,9 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (deleteIdList.size() > 0) {
+            clearMultiSelection();
+            updateListViews(false);
         } else if (fragmentManager.getBackStackEntryCount() > 0) {
             clearMultiSelection();
             if (snackbar != null) {
@@ -352,10 +356,26 @@ public class MainActivity extends AppCompatActivity
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(((ExerciseDetailFragment) fragment).getColor()));
         }
 
+        Log.i(TAG, "onPrepareOptionsMenu: ");
+        
         if (deleteIdList.size() > 0) {
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            toggle.setDrawerIndicatorEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    clearMultiSelection();
+                    updateListViews(false);
+                }
+            });
             menu.findItem(R.id.action_delete).setVisible(true);
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor(DELETE_BACKGROUND_COLOR)));
         } else {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            toggle.setDrawerIndicatorEnabled(true);
+            toggle.setToolbarNavigationClickListener(navigationClickListener);
             menu.findItem(R.id.action_delete).setVisible(false);
         }
 
@@ -393,7 +413,7 @@ public class MainActivity extends AppCompatActivity
                 snackbar.addCallback(snackbarCallback);
 
                 snackbar.show();
-                updateListViews();
+                updateListViews(true);
                 clearMultiSelection();
                 break;
         }
@@ -401,18 +421,18 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateListViews() {
+    private void updateListViews(boolean animate) {
 
         Fragment fragment = fragmentManager.findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         Fragment fragment1 = fragmentManager.findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null) {
             if (fragment.isVisible()) {
-                ((ExercisesGroupsFragment) fragment).updateListView(null);
+                ((ExercisesGroupsFragment) fragment).updateListView(null, animate);
             }
         }
         if (fragment1 != null) {
             if (fragment1.isVisible()) {
-                ((ExercisesFragment) fragment1).updateListView(null);
+                ((ExercisesFragment) fragment1).updateListView(null, animate);
             }
         }
     }
@@ -469,7 +489,7 @@ public class MainActivity extends AppCompatActivity
         Exercise newExercise = dataSource.createExercise(exercise);
         ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null) {
-            fragment.updateListView(newExercise);
+            fragment.updateListView(newExercise, false);
         }
     }
 
@@ -478,7 +498,7 @@ public class MainActivity extends AppCompatActivity
         dataSource.updateExercise(exercise);
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null && fragment.isVisible()) {
-            ((ExercisesFragment) fragment).updateListView(exercise);
+            ((ExercisesFragment) fragment).updateListView(exercise, false);
         } else {
             fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
             if (fragment != null && fragment.isVisible()) {
@@ -499,7 +519,7 @@ public class MainActivity extends AppCompatActivity
         ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
-            fragment.updateListView(newExercisesGroup);
+            fragment.updateListView(newExercisesGroup, false);
         }
 //        exercisesGroups.add(newExercisesGroup);
     }
@@ -509,7 +529,7 @@ public class MainActivity extends AppCompatActivity
         dataSource.updateExercisesGroup(exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
-            fragment.updateListView(exercisesGroup);
+            fragment.updateListView(exercisesGroup, false);
         }
 //        exercisesGroups = dataSource.findExerciseGroups(null, null);
     }
@@ -558,7 +578,7 @@ public class MainActivity extends AppCompatActivity
     public void onSnackbarGone(boolean undo) {
 //        whatToDelete = null;
         if (undo) {
-            updateListViews();
+            updateListViews(false);
         }
     }
 
@@ -574,7 +594,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onRandomExerciseRequested(long randExerciseId) {
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
-        String[] selectionArgs = { String.valueOf(randExerciseId) };
+        String[] selectionArgs = {String.valueOf(randExerciseId)};
         Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         Log.i(TAG, "onRandomExerciseRequested: " + fragment);
@@ -597,12 +617,6 @@ public class MainActivity extends AppCompatActivity
             clearMultiSelection();
             if (snackbar != null) {
                 snackbar.dismiss();
-            }
-            if (exercisesGroups != null) {
-                ObjectsHelper.uncheckExercisesGroups(exercisesGroups);
-            }
-            if (exercises != null) {
-                ObjectsHelper.uncheckExercises(exercises);
             }
             event.getFragmentTransaction().commit();
         }
@@ -682,6 +696,12 @@ public class MainActivity extends AppCompatActivity
     private void clearMultiSelection() {
         deleteIdList.clear();
         invalidateOptionsMenu();
+        if (exercisesGroups != null) {
+            ObjectsHelper.uncheckExercisesGroups(exercisesGroups);
+        }
+        if (exercises != null) {
+            ObjectsHelper.uncheckExercises(exercises);
+        }
     }
 
 }
