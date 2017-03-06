@@ -95,15 +95,19 @@ public class MultiSelectionFragment extends Fragment{
                 super.onDismissed(transientBottomBar, event);
                 if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
                     removeItemsFromDatabase(dataSource, context, map);
-//                    new AsyncRemove(map, dataSource, context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     map.clear();
-                    mListener.onSnackbarGone(true);
+                    mListener.onSnackbarGone(false);
                 }
             }
         };
     }
 
 
+    /** Removes items from database. After this method, the removal is irreversible.
+     * @param dataSource
+     * @param context
+     * @param map
+     */
     private void removeItemsFromDatabase(ExercisesDataSource dataSource, Context context, TreeMap<Integer, ?> map) {
         if (whatToDelete == null) {
             return;
@@ -112,7 +116,10 @@ public class MultiSelectionFragment extends Fragment{
         for (Object o : map.values()) {
             if (whatToDelete.equals(ExercisesGroup.class.toString())) {
                 ExercisesGroup eG = ((ExercisesGroup)o);
-                File file = BitmapHelper.getFileFromImages(eG.getImage(), context);
+                File file = null;
+                if (eG.getImage() != null) {
+                    file = BitmapHelper.getFileFromImages(eG.getImage(), context);
+                }
                 for (int i = 0; i < allImages.length; i++) {
                     String imgWithExerciseId = allImages[i].getName();
                     if (imgWithExerciseId.contains("@" + eG.getId() +"@")){
@@ -135,6 +142,12 @@ public class MultiSelectionFragment extends Fragment{
         }
     }
 
+    /**
+     * Remove items from either exerciseGroup or exercise list and set a map object which contains
+     * the removed exercisesGroup or exercise position in list and the object itself.
+     * @param exercisesGroups
+     * @param exercises
+     */
     public void removeItems(List<ExercisesGroup> exercisesGroups, List<Exercise> exercises) {
         TreeMap<Integer, ExercisesGroup> eGMap = null;
         TreeMap<Integer, Exercise> eMap = null;
@@ -192,27 +205,6 @@ public class MultiSelectionFragment extends Fragment{
     }
 
     public interface MultiSelectionFragmentListener{
-        void onSnackbarGone(boolean finalGone);
+        void onSnackbarGone(boolean undo);
     }
-
-    private class AsyncRemove extends AsyncTask<Void, Void, Void> {
-
-        private TreeMap<Integer, ?> map;
-        private ExercisesDataSource dataSource;
-        private Context context;
-
-        private AsyncRemove(TreeMap<Integer, ?> map, ExercisesDataSource dataSource, Context context) {
-            this.map = map;
-            this.dataSource = dataSource;
-            this.context = context;
-        }
-
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            removeItemsFromDatabase(dataSource, context, map);
-            return null;
-        }
-    }
-
 }

@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity
     public static final String TIMER_UI_FRAGMENT_TAG = "timer_fragment_tag";
     public static final String TIMER_TASK_FRAGMENT_TAG = "timer_task_fragment_tag";
     public static final String EXERCISE_GROUP_FRAGMENT_TAG = "exercise_group_fragment_tag";
-    public static final String HISTORY_FRAGMENT_TAG = "history_fragment_tag";
+    public static final String STATISTICS_FRAGMENT_TAG = "history_fragment_tag";
     public static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
     public static final String EXERCISE_DETAIL_FRAGMENT_TAG = "exercise_detail_fragment_tag";
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity
     private AsyncFirstLoad asyncFirstLoad;
 
 
-    private FloatingActionButton mainFab, addFab, addFavFab, deleteFab;
+    private FloatingActionButton mainFab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,25 +182,11 @@ public class MainActivity extends AppCompatActivity
 
     private void initFabs() {
         mainFab = (FloatingActionButton) findViewById(R.id.fab_main);
-        addFab = (FloatingActionButton) findViewById(R.id.fab_add);
-        addFavFab = (FloatingActionButton) findViewById(R.id.fab_add_favorites);
-        deleteFab = (FloatingActionButton) findViewById(R.id.fab_delete);
     }
 
-    public FloatingActionButton getDeleteFab() {
-        return deleteFab;
-    }
 
     public FloatingActionButton getMainFab() {
         return mainFab;
-    }
-
-    public FloatingActionButton getAddFab() {
-        return addFab;
-    }
-
-    public FloatingActionButton getAddFavFab() {
-        return addFavFab;
     }
 
     private void initData() {
@@ -254,7 +240,7 @@ public class MainActivity extends AppCompatActivity
                 EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_GROUP_FRAGMENT_TAG, exercisesGroups, false, -1));
                 break;
             case R.id.nav_history:
-                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, HISTORY_FRAGMENT_TAG, false));
+                EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, STATISTICS_FRAGMENT_TAG, false));
                 break;
 
             case R.id.nav_settings:
@@ -280,7 +266,7 @@ public class MainActivity extends AppCompatActivity
                         case EXERCISE_GROUP_FRAGMENT_TAG:
                             navigationView.getMenu().getItem(1).setChecked(true);
                             break;
-                        case HISTORY_FRAGMENT_TAG:
+                        case STATISTICS_FRAGMENT_TAG:
                             navigationView.getMenu().getItem(2).setChecked(true);
                             break;
                     }
@@ -388,6 +374,7 @@ public class MainActivity extends AppCompatActivity
                 float density = getResources().getDisplayMetrics().density;
                 float dp = width / density;
                 Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
+                firstTimeDatabaseInitialize();
 
                 break;
             case R.id.action_delete:
@@ -415,6 +402,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateListViews() {
+
         Fragment fragment = fragmentManager.findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         Fragment fragment1 = fragmentManager.findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null) {
@@ -567,10 +555,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSnackbarGone(boolean finalGone) {
-        updateListViews();
-        if (finalGone) {
-            whatToDelete = null;
+    public void onSnackbarGone(boolean undo) {
+//        whatToDelete = null;
+        if (undo) {
+            updateListViews();
         }
     }
 

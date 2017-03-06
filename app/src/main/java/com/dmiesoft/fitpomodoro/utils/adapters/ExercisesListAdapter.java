@@ -3,7 +3,9 @@ package com.dmiesoft.fitpomodoro.utils.adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +21,15 @@ import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
 
     private static final String TAG = "ELA";
     private List<Exercise> exercises;
+    private List<ViewHolder> viewsToAnimate;
+
 
     public ExercisesListAdapter(Context context, int resource, List<Exercise> exercises) {
         super(context, resource, exercises);
@@ -35,6 +40,7 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         final ViewHolder holder;
+        viewsToAnimate = new ArrayList<>();
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_exercises, parent, false);
             holder = new ViewHolder(convertView);
@@ -78,18 +84,52 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
 
     private void updateChechedState(ViewHolder holder, Exercise exercise) {
         if (exercise.isChecked()) {
-
+            viewsToAnimate.add(holder);
             TextDrawable drawable = BitmapHelper.getTextDrawable(null);
             holder.imageView.setImageDrawable(drawable);
             holder.view.setBackgroundColor(ExercisesGroupListAdapter.HIGHLIGHT_COLOR);
             holder.checkIcon.setVisibility(View.VISIBLE);
         } else {
+            if (viewsToAnimate.contains(holder)) {
+                viewsToAnimate.remove(holder);
+            }
             if (!setBitmap(holder, exercise)) {
                 TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
                 holder.imageView.setImageDrawable(drawable);
             }
             holder.view.setBackgroundColor(Color.TRANSPARENT);
             holder.checkIcon.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void notifyDataSetChanged() {
+        Log.i(TAG, "notifyDataSetChanged: ");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if (viewsToAnimate != null) {
+                if (viewsToAnimate.size() > 0) {
+                    for (final ViewHolder holder : viewsToAnimate) {
+                        holder.view.animate().setDuration(200).alpha(0).translationX(holder.view.getWidth())
+                                .withEndAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyDataSetChanged();
+                                        holder.view.setTranslationX(0);
+                                        holder.view.setAlpha(1);
+                                        holder.view.clearAnimation();
+                                    }
+                                });
+                    }
+                    Log.i(TAG, "clearing list: " + viewsToAnimate.size());
+                    viewsToAnimate.clear();
+                } else {
+                    super.notifyDataSetChanged();
+                }
+            } else {
+                super.notifyDataSetChanged();
+            }
+        } else {
+            super.notifyDataSetChanged();
         }
     }
 

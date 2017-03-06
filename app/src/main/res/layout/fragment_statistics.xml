@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/fragments_padding"
-    tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.HistoryFragment">
+    tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.StatisticsFragment">
 
     <TextView
         android:layout_width="wrap_content"
