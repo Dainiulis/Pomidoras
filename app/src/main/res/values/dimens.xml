@@ -15,4 +15,6 @@
     <dimen name="timerSize">200dp</dimen>
     <dimen name="timerTextSize">30sp</dimen>
     <dimen name="timer_land_left_margin">30dp</dimen>
+    <dimen name="menu_del_padd_L_R">12dp</dimen>
+    <dimen name="menu_del_padd_T_B">10dp</dimen>
 </resources>

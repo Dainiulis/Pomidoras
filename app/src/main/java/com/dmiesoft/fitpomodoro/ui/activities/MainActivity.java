@@ -1,13 +1,17 @@
 package com.dmiesoft.fitpomodoro.ui.activities;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -32,6 +36,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.widget.ImageView;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
@@ -99,7 +106,7 @@ public class MainActivity extends AppCompatActivity
     private static final String OBJ_TO_DELETE = "OBJ_TO_DELETE";
     private static final String WHAT_TO_DELETE = "WHAT_TO_DELETE";
     private static final String DELETE_BACKGROUND_COLOR = "#585859";
-    private static final String TREE_MAP = "TREE_MAP";
+    private static final String PREVIOUS_DELETE_ID_SIZE = "PREVIOUS_DELETE_ID_SIZE";
     /*
      * @PERMISSIONS CODES
      */
@@ -127,6 +134,13 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton mainFab;
     private Toolbar toolbar;
     private View.OnClickListener navigationClickListener;
+    private ValueAnimator animToolbarColor;
+    private ValueAnimator burgerAnim;
+    private boolean isDeleteToolbar;
+    private ImageView tempMenuDelBtn;
+    private Menu menu;
+    private ValueAnimator tempBtnAnimatorAppear;
+    private ValueAnimator tempBtnAnimatorDisappear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,7 +151,7 @@ public class MainActivity extends AppCompatActivity
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setTitle("");
 
         deleteIdList = new ArrayList<>();
         if (savedInstanceState != null) {
@@ -145,6 +159,10 @@ public class MainActivity extends AppCompatActivity
             exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
             deleteIdList = savedInstanceState.getIntegerArrayList(OBJ_TO_DELETE);
             whatToDelete = savedInstanceState.getString(WHAT_TO_DELETE);
+            if (deleteIdList.size() == 0)
+                isDeleteToolbar = false;
+            else
+                isDeleteToolbar = true;
         }
         mainLayout = (CoordinatorLayout) findViewById(R.id.mainLayout);
         initData();
@@ -339,29 +357,76 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        this.menu = menu;
         return true;
     }
+
+    /**
+     * This button is used to temporary animate delete menu icon
+     *
+     * Remove if bugs occur
+     */
+    private void initTempMenuButton() {
+        // issiskaiciavau siuos paddingus, tikiuosi geri
+        int pLR = (int) getResources().getDimension(R.dimen.menu_del_padd_L_R);
+        int pTB = (int) getResources().getDimension(R.dimen.menu_del_padd_T_B);
+        tempMenuDelBtn = new ImageView(this);
+        tempMenuDelBtn.setImageResource(R.drawable.delete);
+        tempMenuDelBtn.setPadding(pLR, pTB, pLR, pTB);
+        menu.findItem(R.id.action_delete).setActionView(tempMenuDelBtn);
+        tempBtnAnimatorAppear = ValueAnimator.ofFloat(0, 1);
+        tempBtnAnimatorAppear.setDuration(500);
+        tempBtnAnimatorAppear.setInterpolator(new LinearInterpolator());
+        tempBtnAnimatorAppear.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                tempMenuDelBtn.setAlpha((Float) animation.getAnimatedValue());
+            }
+        });
+        tempBtnAnimatorAppear.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                menu.findItem(R.id.action_delete).setActionView(null);
+            }
+        });
+        tempBtnAnimatorDisappear = ValueAnimator.ofFloat(1, 0);
+        tempBtnAnimatorDisappear.setDuration(500);
+        tempBtnAnimatorDisappear.setInterpolator(new LinearInterpolator());
+        tempBtnAnimatorDisappear.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                tempMenuDelBtn.setAlpha((Float) animation.getAnimatedValue());
+            }
+        });
+        tempBtnAnimatorDisappear.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                menu.findItem(R.id.action_delete).setActionView(null);
+                menu.findItem(R.id.action_delete).setVisible(false);
+            }
+        });
+    }
+
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
 
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
+        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
         boolean isFragVisible = false;
         if (fragment != null) {
             isFragVisible = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
         }
-        if (!isFragVisible) {
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
-        } else {
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(((ExerciseDetailFragment) fragment).getColor()));
+        if (!isFragVisible && deleteIdList.size() == 0) {
+            toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        } else if (isFragVisible) {
+            if (animToolbarColor != null)
+                animToolbarColor.cancel();
+            toolbar.setBackgroundColor(((ExerciseDetailFragment) fragment).getColor());
         }
 
-        Log.i(TAG, "onPrepareOptionsMenu: ");
-        
         if (deleteIdList.size() > 0) {
             drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            toggle.setDrawerIndicatorEnabled(false);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("" + deleteIdList.size());
             toggle.setToolbarNavigationClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -370,16 +435,70 @@ public class MainActivity extends AppCompatActivity
                 }
             });
             menu.findItem(R.id.action_delete).setVisible(true);
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor(DELETE_BACKGROUND_COLOR)));
+            if (!isDeleteToolbar) {
+                initTempMenuButton();
+                tempBtnAnimatorAppear.start();
+                initToolbarAnimation();
+                animToolbarColor.start();
+                burgerAnim.start();
+            } else {
+                toolbar.setBackgroundColor(Color.parseColor(DELETE_BACKGROUND_COLOR));
+                toggle.setDrawerIndicatorEnabled(false);
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+            isDeleteToolbar = true;
         } else {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            if (isDeleteToolbar) {
+                initTempMenuButton();
+                initToolbarAnimation();
+                tempBtnAnimatorDisappear.start();
+                animToolbarColor.reverse();
+                burgerAnim.reverse();
+            } else {
+                menu.findItem(R.id.action_delete).setVisible(false);
+            }
+            isDeleteToolbar = false;
+            getSupportActionBar().setTitle("");
             drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             toggle.setDrawerIndicatorEnabled(true);
             toggle.setToolbarNavigationClickListener(navigationClickListener);
-            menu.findItem(R.id.action_delete).setVisible(false);
+//            menu.findItem(R.id.action_delete).setVisible(false);
         }
 
         return super.onPrepareOptionsMenu(menu);
+    }
+
+
+    private void initToolbarAnimation() {
+        burgerAnim = ValueAnimator.ofFloat(0, 1);
+        burgerAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float slideOffset = (float) animation.getAnimatedValue();
+                toggle.onDrawerSlide(drawer, slideOffset);
+            }
+        });
+        burgerAnim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (isDeleteToolbar) {
+                    toggle.setDrawerIndicatorEnabled(false);
+                    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                }
+                menu.findItem(R.id.action_delete).setActionView(null);
+            }
+        });
+        burgerAnim.setInterpolator(new DecelerateInterpolator());
+        burgerAnim.setDuration(500);
+        animToolbarColor = ObjectAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.colorPrimary), Color.parseColor(DELETE_BACKGROUND_COLOR));
+        animToolbarColor.setDuration(1000);
+        animToolbarColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                toolbar.setBackgroundColor((Integer) animation.getAnimatedValue());
+            }
+        });
     }
 
     @Override
