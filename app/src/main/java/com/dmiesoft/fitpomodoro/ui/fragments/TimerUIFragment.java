@@ -3,7 +3,11 @@ package com.dmiesoft.fitpomodoro.ui.fragments;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -14,9 +18,12 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
@@ -26,10 +33,14 @@ import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
+import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 
 public class TimerUIFragment extends Fragment implements View.OnClickListener {
@@ -40,10 +51,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "TIMER";
     private static final long LONG_DURATION = 500;
     private static final long NO_DURATION = 0;
+    private static final String WORK_IMAGE_NAME = "@_@work.png";
 
     private int mCurrentState, mCurrentType;
     private long millisecs;
-    private TextView timerText, timerTypeText;
+//    private TextView timerTypeText;
     private FloatingActionButton btnStartPauseTimer, btnStopTimer;
     private CustomTimerView customTimerView;
     private ObjectAnimator oA;
@@ -52,6 +64,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     private long animLength;
     private FloatingActionButton mainFab;
     private TimerUIFragmentListener mListener;
+    private ImageView timerTypeImage;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -110,12 +123,13 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 
     private void setTimer() {
-        customTimerView.setmText(getTimerString(millisecs));
+        customTimerView.setmTimerText(getTimerString(millisecs));
     }
 
     private void initViews(View view) {
 
-        timerTypeText = (TextView) view.findViewById(R.id.timerType);
+//        timerTypeText = (TextView) view.findViewById(R.id.timerTypeText);
+        timerTypeImage = (ImageView) view.findViewById(R.id.timerTypeImage);
 
         btnStartPauseTimer = (FloatingActionButton) view.findViewById(R.id.btnStartPauseTimer);
         btnStartPauseTimer.setOnClickListener(this);
@@ -124,7 +138,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         btnStopTimer.setOnClickListener(this);
 
         // tik bandymams
-        timerTypeText.setOnClickListener(this);
+//        timerTypeText.setOnClickListener(this);
 
         customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
     }
@@ -147,7 +161,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
                 break;
 
             //bandymams
-            case R.id.timerType:
+            case R.id.timerTypeImage:
                 Log.i(TAG, "state: " + mCurrentState + " type: " + mCurrentType);
                 break;
         }
@@ -305,7 +319,25 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 
     public void setExercise(Exercise exercise) {
-        timerTypeText.setText(exercise.getName());
+        int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+        Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getActivity(), exercise.getImage(), false, resourceDimen);
+        if (bitmap != null) {
+            timerTypeImage.setImageBitmap(bitmap);
+//            timerTypeText.setText(exercise.getName());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Log.i(TAG, "setExercise: " + bitmap.getAllocationByteCount());
+            }
+        } else {
+            ColorGenerator cG = ColorGenerator.MATERIAL;
+            int color = cG.getColor(exercise.getName());
+            TextDrawable tD = TextDrawable.builder()
+                    .beginConfig()
+                        .fontSize(50)
+                    .endConfig()
+                    .buildRound(exercise.getName(), color);
+            timerTypeImage.setImageDrawable(tD);
+//            timerTypeText.setText(exercise.getName());
+        }
     }
 
     @Subscribe
@@ -328,11 +360,27 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             setBtnTypes(BTN_STOP);
         }
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
-            timerTypeText.setText("Work");
+
+//            timerTypeText.setText("Work");
+            customTimerView.setmTypeText("Work");
+            AssetManager aManager = getActivity().getAssets();
+            InputStream fis = null;
+            try {
+                fis = aManager.open(WORK_IMAGE_NAME);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Bitmap bMap = BitmapFactory.decodeStream(fis);
+            timerTypeImage.setImageBitmap(bMap);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Log.i(TAG, "onTimerTypeStateRequest: " + bMap.getAllocationByteCount());
+            }
+
         } else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
+            customTimerView.setmTypeText("Short break");
 
         } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
-            timerTypeText.setText("Long break");
+            customTimerView.setmTypeText("Long break");
         }
     }
 
@@ -347,7 +395,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             mListener.onRandomExerciseRequested(event.getExerciseId());
         } else {
             Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
-            timerTypeText.setText("Short break");
+//            timerTypeText.setText("Short break");
         }
     }
 

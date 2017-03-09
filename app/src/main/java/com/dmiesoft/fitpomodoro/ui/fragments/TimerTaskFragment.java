@@ -9,6 +9,7 @@ import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
@@ -242,9 +243,7 @@ public class TimerTaskFragment extends Fragment {
      * (Later update to request for favorite exercises)
      */
     private void requestExercisesIds() {
-        if (mExercisesIds == null) {
-            mListener.onExerciseIdRequested();
-        }
+        mListener.onExerciseIdRequested();
     }
 
     /**
@@ -257,6 +256,7 @@ public class TimerTaskFragment extends Fragment {
                 int index = randomGenerator.nextInt(mExercisesIds.size());
                 mExerciseId = mExercisesIds.get(index);
             }
+            Log.i(TAG, "sendRandomExerciseId: " + mExerciseId);
         }
         EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
     }
@@ -347,6 +347,7 @@ public class TimerTaskFragment extends Fragment {
 
     /**
      * Handles timer circle states
+     *
      * @param state the state of timer circle
      */
     private void handleTimerStates(int state) {

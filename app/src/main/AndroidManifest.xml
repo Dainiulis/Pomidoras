@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.dmiesoft.fitpomodoro">
 
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -23,8 +22,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.SettingsActivity">
-
+        <activity android:name=".ui.activities.SettingsActivity" />
+        <activity
+            android:name=".ui.activities.AboutActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/about"
+            android:parentActivityName=".ui.activities.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="andorid.support.PARENT_ACTIVITY"
+                android:value="com.dmiesoft.fitpomodoro.ui.activities.MainActivity" />
         </activity>
     </application>
 

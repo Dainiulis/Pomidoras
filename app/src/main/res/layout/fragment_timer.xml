@@ -4,53 +4,66 @@
     android:id="@+id/content_fragment_timer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-    <TextView
-        android:id="@+id/timerType"
-        android:textSize="24sp"
-        android:text="timerType"
-        android:textColor="@android:color/black"
-        android:padding="10dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/customTimer"
-        android:layout_centerHorizontal="true" />
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment">
 
     <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
         android:id="@+id/customTimer"
         android:layout_width="@dimen/timerSize"
         android:layout_height="@dimen/timerSize"
-        app:textSize="@dimen/timerTextSize"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         app:text="time"
         app:textColor="@android:color/darker_gray"
+        app:textSize="@dimen/timerTextSize" />
+
+    <!--<TextView-->
+        <!--android:id="@+id/timerTypeText"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/customTimer"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:layout_margin="5dp"-->
+        <!--android:text="timerType"-->
+        <!--android:textColor="@android:color/black"-->
+        <!--android:textSize="24sp" />-->
+
+    <ImageView
+        android:id="@+id/timerTypeImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnLayout"
+        android:layout_below="@+id/customTimer"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        android:layout_margin="5dp"/>
 
     <RelativeLayout
-        android:layout_below="@+id/customTimer"
-        android:padding="10dp"
-        android:layout_centerHorizontal="true"
         android:id="@+id/btnLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:padding="5dp">
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/btnStopTimer"
-            app:srcCompat="@android:drawable/alert_light_frame"
-            android:layout_margin="@dimen/fab_margin"
-            android:layout_centerInParent="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_margin="@dimen/fab_margin"
+            app:srcCompat="@android:drawable/alert_light_frame" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/btnStartPauseTimer"
-            app:srcCompat="@android:drawable/ic_media_play"
-            android:layout_margin="@dimen/fab_margin"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:layout_height="wrap_content"/>
+            android:layout_margin="@dimen/fab_margin"
+            app:srcCompat="@android:drawable/ic_media_play" />
 
 
     </RelativeLayout>

@@ -11,7 +11,8 @@
             android:title="@string/exercises"/>
         <item
             android:id="@+id/nav_history"
-            android:title="@string/history"/>
+            android:icon="@drawable/ic_statistics_24dp"
+            android:title="@string/statistics"/>
     </group>
 
     <item android:title="Settings">
@@ -21,6 +22,11 @@
                 android:checkable="false"
                 android:icon="@drawable/ic_settings_black_24dp"
                 android:title="@string/settings" />
+            <item
+                android:id="@+id/nav_about"
+                android:checkable="false"
+                android:title="@string/about"
+                android:icon="@drawable/ic_about_24dp"/>
 
         </menu>
     </item>
