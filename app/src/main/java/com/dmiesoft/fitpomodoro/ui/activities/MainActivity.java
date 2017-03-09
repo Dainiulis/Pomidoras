@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-        Log.i(TAG, "onCreate: ");
         navigationClickListener = toggle.getToolbarNavigationClickListener();
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -268,6 +267,11 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                break;
+
+            case R.id.nav_about:
+                Intent intent1 = new Intent(this, AboutActivity.class);
+                startActivity(intent1);
                 break;
 
         }
@@ -390,7 +394,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
         tempBtnAnimatorDisappear = ValueAnimator.ofFloat(1, 0);
-        tempBtnAnimatorDisappear.setDuration(500);
+        tempBtnAnimatorDisappear.setDuration(300);
         tempBtnAnimatorDisappear.setInterpolator(new LinearInterpolator());
         tempBtnAnimatorDisappear.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -510,9 +514,12 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_log:
                 DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(this);
                 float width = (int) displayWidthHeight.getWidth();
+                float height = displayWidthHeight.getHeight();
                 float density = getResources().getDisplayMetrics().density;
-                float dp = width / density;
-                Log.i(TAG, "width: " + width + " density " + density + " dp " + dp);
+                float dpW = width / density; 
+                float dpH = height / density;
+                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
+                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();
 
                 break;
@@ -689,7 +696,6 @@ public class MainActivity extends AppCompatActivity
             pD.dismiss();
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
             prefs.edit().putBoolean(SettingsActivity.FIRST_TIME_LOAD, false).apply();
-            Log.i(TAG, "onPostFirstLoadExecute: async status" + asyncFirstLoad.getStatus());
         }
     }
 
@@ -716,7 +722,6 @@ public class MainActivity extends AppCompatActivity
         String[] selectionArgs = {String.valueOf(randExerciseId)};
         Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
-        Log.i(TAG, "onRandomExerciseRequested: " + fragment);
         if (fragment != null) {
             fragment.setExercise(exercise);
         }

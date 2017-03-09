@@ -26,4 +26,9 @@
     <string name="description">Description:</string>
     <string name="exercise_type">Exercise type</string>
     <string name="enter_description">Enter description</string>
+    <string name="statistics">Statistics</string>
+    <string name="about">About</string>
+    <string name="legal">Legal</string>
+    <string name="my_app_license_header">FitPomodoro v1.0.0 [ beta ]</string>
+    <string name="my_app_license">© 2017 DMieSoft \n Third-party licenses:</string>
 </resources>

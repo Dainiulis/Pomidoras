@@ -24,11 +24,11 @@ public class CustomTimerView extends View {
     private static final float THICKNESS_SCALE = .05f;
     private static final String TIMER_BASE_COLOR = "#dbdbdb";
     private Paint mPomidorasPaint, mEraserPaint, mUnderPaint;
-    private TextPaint mTextPaint;
+    private TextPaint mTimerTextPaint, mTimerTypeTextPaint;
     private int mColor = Color.RED;
     private int mTextColor = Color.WHITE;
     private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
-    private String mText;
+    private String mTimerText, mTypeText;
     private int yTextPos;
     private Bitmap mBitmap;
     private Canvas mCanvas;
@@ -51,7 +51,7 @@ public class CustomTimerView extends View {
             mColor = typedArray.getColor(R.styleable.CustomTimerView_color, Color.RED);
             mTextSize = typedArray.getDimension(R.styleable.CustomTimerView_textSize, getResources().getDimension(R.dimen.custom_timer_text_size));
             mTextColor = typedArray.getColor(R.styleable.CustomTimerView_textColor, Color.WHITE);
-            mText = typedArray.getString(R.styleable.CustomTimerView_text);
+            mTimerText = typedArray.getString(R.styleable.CustomTimerView_text);
         } finally {
             typedArray.recycle();
         }
@@ -75,14 +75,24 @@ public class CustomTimerView extends View {
         mEraserPaint.setColor(Color.TRANSPARENT);
         mEraserPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-        mTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        mTextPaint.setColor(mTextColor);
+        mTimerTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        mTimerTextPaint.setColor(mTextColor);
         if (mTextSize == 0) {
-            mTextSize = mTextPaint.getTextSize();
+            mTextSize = mTimerTextPaint.getTextSize();
         } else {
-            mTextPaint.setTextSize(mTextSize);
+            mTimerTextPaint.setTextSize(mTextSize);
         }
-        mTextPaint.setTextAlign(Paint.Align.CENTER);
+        mTimerTextPaint.setTextAlign(Paint.Align.CENTER);
+
+        mTimerTypeTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        mTimerTypeTextPaint.setColor(mTextColor);
+        mTimerTypeTextPaint.setFakeBoldText(true);
+        if (mTextSize == 0) {
+            mTextSize = mTimerTypeTextPaint.getTextSize() * 0.6f;
+        } else {
+            mTimerTypeTextPaint.setTextSize(mTextSize * 0.6f);
+        }
+        mTimerTypeTextPaint.setTextAlign(Paint.Align.CENTER);
 
     }
 
@@ -104,11 +114,12 @@ public class CustomTimerView extends View {
 
         canvas.drawBitmap(mBitmap, 0, 0, null);
 
-        int xC = (x / 2) - 10;
-        int yC = (y / 2) - 10;
-        yTextPos = (int) ((canvas.getHeight() / 2) - ((mTextPaint.descent() + mTextPaint.ascent()) / 2));
+        int xC = (x / 2);
+//        int yC = (y / 2) - 10;
+        yTextPos = (int) ((canvas.getHeight() / 2) - ((mTimerTextPaint.descent() + mTimerTextPaint.ascent()) / 2));
 
-        canvas.drawText(mText, xC, yTextPos, mTextPaint);
+        canvas.drawText(mTimerText, xC, yTextPos, mTimerTextPaint);
+        canvas.drawText(mTypeText, xC, yTextPos * 0.6f, mTimerTypeTextPaint);
 
     }
 
@@ -177,12 +188,12 @@ public class CustomTimerView extends View {
 
     }
 
-    public String getmText() {
-        return mText;
+    public void setmTypeText(String mTypeText) {
+        this.mTypeText = mTypeText;
     }
 
-    public void setmText(String mText) {
-        this.mText = mText;
+    public void setmTimerText(String mTimerText) {
+        this.mTimerText = mTimerText;
         invalidate();
         requestLayout();
     }

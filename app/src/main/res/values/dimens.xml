@@ -12,9 +12,12 @@
     <dimen name="exercise_detail_image">100dp</dimen>
     <dimen name="fragments_padding">10dp</dimen>
     <dimen name="custom_timer_text_size">24sp</dimen>
-    <dimen name="timerSize">200dp</dimen>
-    <dimen name="timerTextSize">30sp</dimen>
+    <dimen name="timerSize">150dp</dimen>
+    <dimen name="timerTextSize">25sp</dimen>
     <dimen name="timer_land_left_margin">30dp</dimen>
     <dimen name="menu_del_padd_L_R">12dp</dimen>
     <dimen name="menu_del_padd_T_B">10dp</dimen>
+    <dimen name="header_text_size">25sp</dimen>
+    <dimen name="license_text_size">15sp</dimen>
+    <dimen name="license_margin_bottom">8dp</dimen>
 </resources>
