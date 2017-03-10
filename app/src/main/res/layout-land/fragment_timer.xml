@@ -1,16 +1,19 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_fragment_timer"
     android:layout_width="match_parent"
+    android:orientation="horizontal"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment">
 
     <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
         android:id="@+id/customTimer"
-        android:layout_width="@dimen/timerSize"
-        android:layout_height="@dimen/timerSize"
+        android:layout_gravity="center"
+        android:layout_width="0dp"
+        android:layout_weight="4"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
@@ -38,8 +41,10 @@
         <!--android:textSize="20sp" />-->
 
     <ImageView
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="4"
         android:id="@+id/timerTypeImage"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_centerVertical="true"
@@ -49,8 +54,10 @@
         android:layout_toStartOf="@+id/btnLayout" />
 
     <RelativeLayout
+        android:layout_gravity="center_horizontal"
         android:id="@+id/btnLayout"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="2"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
@@ -80,5 +87,5 @@
 
     </RelativeLayout>
 
-</RelativeLayout>
+</LinearLayout>
 

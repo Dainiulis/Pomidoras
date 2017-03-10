@@ -22,12 +22,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(DatabaseContract.ExercisesGroupsTable.CREATE_TABLE);
         db.execSQL(DatabaseContract.ExercisesTable.CREATE_TABLE);
+        db.execSQL(DatabaseContract.FavoritesTable.CREATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(DatabaseContract.ExercisesGroupsTable.DELETE_TABLE);
         db.execSQL(DatabaseContract.ExercisesTable.DELETE_TABLE);
+        db.execSQL(DatabaseContract.FavoritesTable.DELETE_TABLE);
         onCreate(db);
     }
 }

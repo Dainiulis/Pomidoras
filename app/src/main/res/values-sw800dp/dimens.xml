@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="timerSize">400dp</dimen>
+    <dimen name="timerTextSize">70sp</dimen>
+    <dimen name="timer_land_left_margin">100dp</dimen>
+</resources>

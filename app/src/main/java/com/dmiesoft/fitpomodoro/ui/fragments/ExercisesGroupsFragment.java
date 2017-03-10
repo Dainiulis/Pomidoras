@@ -113,6 +113,13 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
     public void onResume() {
         super.onResume();
         startShowFabHandler();
+        getActivity().invalidateOptionsMenu(); // required because the favorite menu items get buggy
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        getActivity().invalidateOptionsMenu(); // required because the favorite menu items get buggy
     }
 
     private void startShowFabHandler() {

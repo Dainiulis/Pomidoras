@@ -4,7 +4,7 @@ import android.provider.BaseColumns;
 
 public class DatabaseContract {
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "pomidoras.db";
     private static final String TEXT = " TEXT";
     private static final String COMMA_SEP = ",";
@@ -49,6 +49,20 @@ public class DatabaseContract {
                         COLUMN_DATE + " TIMESTAMP NOT NULL DEFAULT current_timestamp" +
                         ");";
 
+        public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
+    }
+
+    public static abstract class FavoritesTable implements BaseColumns {
+        public static final String TABLE_NAME = "favorites";
+        public static final String COLUMN_NAME = "name";
+        public static final String COLUMN_DATE = "date_timestamp";
+
+        public static final String CREATE_TABLE =
+                CREATE_TABLE_STRING + TABLE_NAME + " (" +
+                        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMN_NAME + TEXT + COMMA_SEP +
+                        COLUMN_DATE + " TIMESTAMP NOT NULL DEFAULT current_timestamp" +
+                        ");";
         public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }
 

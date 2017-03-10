@@ -20,4 +20,5 @@
     <dimen name="header_text_size">25sp</dimen>
     <dimen name="license_text_size">15sp</dimen>
     <dimen name="license_margin_bottom">8dp</dimen>
+    <dimen name="dialog_text_view_margins">20dp</dimen>
 </resources>

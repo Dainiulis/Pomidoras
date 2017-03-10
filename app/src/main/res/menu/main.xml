@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.activities.MainActivity"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_delete"
         android:orderInCategory="101"
-        android:title="Delete"
+        android:title="@string/delete"
         android:icon="@drawable/delete"
         app:showAsAction="always" />
     <item
@@ -12,4 +14,16 @@
         android:orderInCategory="100"
         android:title="Log"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_add_fav"
+        android:orderInCategory="101"
+        android:title="Add favorite"
+        android:icon="@android:drawable/ic_menu_add"
+        app:showAsAction="withText|collapseActionView"/>
+    <item
+        android:id="@+id/action_manage_fav"
+        android:orderInCategory="102"
+        android:title="Manage favorites"
+        android:icon="@drawable/ic_star"
+        app:showAsAction="withText|collapseActionView"/>
 </menu>
