@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.model.Favorite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ExercisesDataSource {
             DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION,
             DatabaseContract.ExercisesTable.COLUMN_GROUP_ID,
             DatabaseContract.ExercisesTable.COLUMN_IMAGE,
-            DatabaseContract.ExercisesTable.COLUMN_DATE,
+            DatabaseContract.ExercisesTable.COLUMN_DATE
     };
 
     private static String[] exercises_groups_columns = {
@@ -32,6 +33,12 @@ public class ExercisesDataSource {
             DatabaseContract.ExercisesGroupsTable.COLUMN_NAME,
             DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE,
             DatabaseContract.ExercisesGroupsTable.COLUMN_DATE
+    };
+
+    private static String[] favorites_columns = {
+            DatabaseContract.FavoritesTable._ID,
+            DatabaseContract.FavoritesTable.COLUMN_NAME,
+            DatabaseContract.FavoritesTable.COLUMN_DATE
     };
 
     public ExercisesDataSource (Context context) {
@@ -68,9 +75,7 @@ public class ExercisesDataSource {
                 exercises_groups_columns,
                 selection,
                 selectionArgs,
-                null,
-                null,
-                null
+                null, null, null
         );
 
         if (cursor.getCount() > 0) {
@@ -83,6 +88,7 @@ public class ExercisesDataSource {
                 exercisesGroups.add(exercisesGroup);
             }
         }
+        cursor.close();
         return exercisesGroups;
     }
 
@@ -177,7 +183,7 @@ public class ExercisesDataSource {
                 idList.add(id);
             }
         }
-
+        cursor.close();
         return idList;
     }
 
@@ -185,6 +191,34 @@ public class ExercisesDataSource {
         String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
         String[] whereArgs = { String.valueOf(id) };
         database.delete(DatabaseContract.ExercisesTable.TABLE_NAME, where, whereArgs);
+    }
+
+    // Favorites management
+    public void createFavorite(String name) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.FavoritesTable.COLUMN_NAME, name);
+        database.insert(DatabaseContract.FavoritesTable.TABLE_NAME, null, values);
+    }
+
+    public List<Favorite> getAllFavorites() {
+        List<Favorite> favorites = new ArrayList<>();
+
+        Cursor cursor = database.query(
+                DatabaseContract.FavoritesTable.TABLE_NAME,
+                favorites_columns,
+                null, null, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                Favorite favorite = new Favorite();
+                favorite.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.FavoritesTable._ID)));
+                favorite.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.FavoritesTable.COLUMN_NAME)));
+                favorite.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.FavoritesTable.COLUMN_DATE)));
+                favorites.add(favorite);
+            }
+        }
+        cursor.close();
+        return favorites;
     }
 
 }

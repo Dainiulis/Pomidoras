@@ -55,7 +55,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     private int mCurrentState, mCurrentType;
     private long millisecs;
-//    private TextView timerTypeText;
+    //    private TextView timerTypeText;
     private FloatingActionButton btnStartPauseTimer, btnStopTimer;
     private CustomTimerView customTimerView;
     private ObjectAnimator oA;
@@ -290,6 +290,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     /**
      * Helper method to calculate pixels from density independent pixels
+     *
      * @param dp density independent pixels
      * @return result in pixels
      */
@@ -303,6 +304,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     /**
      * This method is required for determining fab button placement
+     *
      * @return
      */
     private int getOrientation() {
@@ -332,9 +334,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             int color = cG.getColor(exercise.getName());
             TextDrawable tD = TextDrawable.builder()
                     .beginConfig()
-                        .fontSize(50)
+                        .fontSize(20)
                     .endConfig()
-                    .buildRound(exercise.getName(), color);
+                    .buildRoundRect(exercise.getName(), color, 40);
             timerTypeImage.setImageDrawable(tD);
 //            timerTypeText.setText(exercise.getName());
         }
@@ -350,6 +352,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
+        customTimerView.setmTimerType(mCurrentType);
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             animLength = NO_DURATION;
             setBtnTypes(BTN_START);
@@ -362,7 +365,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
 
 //            timerTypeText.setText("Work");
-            customTimerView.setmTypeText("Work");
             AssetManager aManager = getActivity().getAssets();
             InputStream fis = null;
             try {
@@ -376,12 +378,13 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
                 Log.i(TAG, "onTimerTypeStateRequest: " + bMap.getAllocationByteCount());
             }
 
-        } else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-            customTimerView.setmTypeText("Short break");
-
-        } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
-            customTimerView.setmTypeText("Long break");
         }
+//        else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
+//            customTimerView.setmTimerType(mCurrentType);
+//
+//        } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
+//            customTimerView.setmTimerType(mCurrentType);
+//        }
     }
 
     @Subscribe

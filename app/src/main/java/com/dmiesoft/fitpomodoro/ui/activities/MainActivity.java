@@ -7,11 +7,13 @@ import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -30,6 +32,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -38,7 +41,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
@@ -48,6 +53,7 @@ import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
+import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
@@ -57,6 +63,7 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
+import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
@@ -366,9 +373,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
+     * Initializes temporary button and sets it's animation.
+     * Firstly it sets the menu button as ActionView so it is possible to animate it.
+     * The pLR and pTB are paddings of left right and top bottom, which I calculated as dp. So far it looks fine
+     * When the animation ends the actionView is set to null and menu button can be used normally.
      * This button is used to temporary animate delete menu icon
-     *
-     * Remove if bugs occur
+     * <p>
+     * ...Remove if bugs occur
      */
     private void initTempMenuButton() {
         // issiskaiciavau siuos paddingus, tikiuosi geri
@@ -407,6 +418,9 @@ public class MainActivity extends AppCompatActivity
             public void onAnimationEnd(Animator animation) {
                 menu.findItem(R.id.action_delete).setActionView(null);
                 menu.findItem(R.id.action_delete).setVisible(false);
+                if (deleteIdList.size() > 0) {
+                    menu.findItem(R.id.action_delete).setVisible(true);
+                }
             }
         });
     }
@@ -415,19 +429,53 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
 
-        final Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
+        /**
+         * This piece of code checks if any of list fragments with exercises is visible
+         * and sets menu items if action_add_fav and action_manage_fav visible or not accordingly
+         */
+        menu.findItem(R.id.action_add_fav).setVisible(false);
+        menu.findItem(R.id.action_manage_fav).setVisible(false);
+
+        Fragment fragmentExGr = fragmentManager.findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
+        if (fragmentExGr != null) {
+            if (fragmentExGr.isVisible()) {
+                menu.findItem(R.id.action_add_fav).setVisible(true);
+                menu.findItem(R.id.action_manage_fav).setVisible(true);
+            }
+        }
+        Fragment fragmentEx = fragmentManager.findFragmentByTag(EXERCISES_FRAGMENT_TAG);
+        if (fragmentEx != null) {
+            if (fragmentEx.isVisible()) {
+                menu.findItem(R.id.action_add_fav).setVisible(true);
+                menu.findItem(R.id.action_manage_fav).setVisible(true);
+            }
+        }
+
+        /**
+         * This piece of code checks if fragment is ExerciseDetailFragment
+         * and sets the background of the toolbar according to the exercise name
+         */
         boolean isFragVisible = false;
-        if (fragment != null) {
-            isFragVisible = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
+        Fragment fragmentExDetail = fragmentManager.findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
+        if (fragmentExDetail != null) {
+            isFragVisible = fragmentManager.findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG).isVisible();
         }
         if (!isFragVisible && deleteIdList.size() == 0) {
             toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
         } else if (isFragVisible) {
             if (animToolbarColor != null)
                 animToolbarColor.cancel();
-            toolbar.setBackgroundColor(((ExerciseDetailFragment) fragment).getColor());
+            toolbar.setBackgroundColor(((ExerciseDetailFragment) fragmentExDetail).getColor());
         }
 
+        /**
+         * This piece of code is responsible for showing delete toolbar if there are exercises selected
+         * It locks the drawer and also changes onBackPress and homeAsUpEnabled function.
+         * If user tries to go back it clears the delete toolbar and sets it to the default one.
+         *
+         * If there are no exercises selected then the delete toolbar is not shown adn the regular one is visible
+         *
+         */
         if (deleteIdList.size() > 0) {
             drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             getSupportActionBar().setTitle("" + deleteIdList.size());
@@ -474,6 +522,12 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    /**
+     * Initializes toolbar animations to let them use whenever they are required
+     * burgerAnim is for animating drawer button to arrow
+     * <p>
+     * animToolbarColor is for animating toolbar color to transition for smooth experience
+     */
     private void initToolbarAnimation() {
         burgerAnim = ValueAnimator.ofFloat(0, 1);
         burgerAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -516,35 +570,67 @@ public class MainActivity extends AppCompatActivity
                 float width = (int) displayWidthHeight.getWidth();
                 float height = displayWidthHeight.getHeight();
                 float density = getResources().getDisplayMetrics().density;
-                float dpW = width / density; 
+                float dpW = width / density;
                 float dpH = height / density;
                 Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
                 Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();
 
                 break;
+
             case R.id.action_delete:
-                if (multiSelectionFragment == null) {
-                    multiSelectionFragment = new MultiSelectionFragment();
-                    fragmentManager.beginTransaction().add(multiSelectionFragment, MULTI_SELECTION_FRAGMENT).commit();
-                }
-                multiSelectionFragment.setDeleteIdList(deleteIdList);
-                multiSelectionFragment.setWhatToDelete(whatToDelete);
+                manageDeleteAction();
+                break;
 
-                multiSelectionFragment.removeItems(exercisesGroups, exercises);
-                map = multiSelectionFragment.getMap();
+            case R.id.action_add_fav:
+                AlertDialog.Builder favBuilder = AlertDialogHelper.favoritesDialog(this, dataSource);
+                favBuilder.show();
+                AlertDialogHelper.favoritesInput.setLayoutParams(AlertDialogHelper.favoritesParams);
+                break;
 
-                snackbar = multiSelectionFragment.getSnackbar(mainLayout, exercises, exercisesGroups, map);
-                snackbarCallback = multiSelectionFragment.getSnackbarCallback(dataSource, this, map);
-                snackbar.addCallback(snackbarCallback);
-
-                snackbar.show();
-                updateListViews(true);
-                clearMultiSelection();
+            case R.id.action_manage_fav:
+                final List<Favorite> favorites = dataSource.getAllFavorites();
+                AlertDialog.Builder mngFavBuilder = AlertDialogHelper.manageFavoritesDialog(this, favorites);
+                final AlertDialog dialog = mngFavBuilder.create();
+                AlertDialogHelper.manageFavoritesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
+                        startActivity(intent);
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+                AlertDialogHelper.manageFavoritesListView.setLayoutParams(AlertDialogHelper.favoritesParams);
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Manage exercisesGroups or exercises deletion
+     */
+    private void manageDeleteAction() {
+        if (multiSelectionFragment == null) {
+            multiSelectionFragment = new MultiSelectionFragment();
+            fragmentManager.beginTransaction().add(multiSelectionFragment, MULTI_SELECTION_FRAGMENT).commit();
+        }
+        // pass the id of items and the class name of which items to delete
+        multiSelectionFragment.setDeleteIdList(deleteIdList);
+        multiSelectionFragment.setWhatToDelete(whatToDelete);
+
+        multiSelectionFragment.removeItems(exercisesGroups, exercises);
+        map = multiSelectionFragment.getMap();
+
+        snackbar = multiSelectionFragment.getSnackbar(mainLayout, exercises, exercisesGroups, map);
+        snackbarCallback = multiSelectionFragment.getSnackbarCallback(dataSource, this, map);
+        snackbar.addCallback(snackbarCallback);
+
+        snackbar.show();
+        // update adapters of listviews
+        updateListViews(true);
+        clearMultiSelection();
     }
 
     private void updateListViews(boolean animate) {
@@ -562,7 +648,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
-
 
     /*
      * Callback methods

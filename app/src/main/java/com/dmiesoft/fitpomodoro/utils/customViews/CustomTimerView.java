@@ -9,16 +9,40 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
+import android.os.Build;
+import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
+
+import java.util.Random;
 
 public class CustomTimerView extends View {
 
 //    public static final int CIRCLE_RESUME = 7235;
 //    public static final int CIRCLE_STOP = 2864;
 //    public static final int CIRCLE_PAUSE = 9898;
+
+    private static int[] DRAWABLES_WORK = {
+            R.drawable.ic_hard_working_dude,
+            R.drawable.ic_tacka_dude
+    };
+    private static int[] DRAWABLES_SHORT_BREAK = {
+            R.drawable.ic_biceps,
+            R.drawable.ic_stretching_dude,
+            R.drawable.ic_snatch_dude
+    };
+    private static int[] DRAWABLES_LONG_BREAK = {
+            R.drawable.ic_pull_up_dude,
+            R.drawable.ic_weightlifting_dude
+    };
 
     private static final String TAG = "CTV";
     private static final float THICKNESS_SCALE = .05f;
@@ -27,21 +51,25 @@ public class CustomTimerView extends View {
     private TextPaint mTimerTextPaint, mTimerTypeTextPaint;
     private int mColor = Color.RED;
     private int mTextColor = Color.WHITE;
-    private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
-    private String mTimerText, mTypeText;
     private int yTextPos;
-    private Bitmap mBitmap;
+    private int mTimerType;
+    private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
+    private String mTimerText;
+    private Bitmap mBitmap, vectorBitmap;
     private Canvas mCanvas;
     private RectF mCircleOuterBounds, mCircleInnerBounds;
     private float mCircleSweepAngle;
+    private Context context;
 
     public CustomTimerView(Context context) {
         super(context);
+        this.context = context;
         init();
     }
 
     public CustomTimerView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.context = context;
         TypedArray typedArray = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.CustomTimerView,
@@ -84,15 +112,15 @@ public class CustomTimerView extends View {
         }
         mTimerTextPaint.setTextAlign(Paint.Align.CENTER);
 
-        mTimerTypeTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        mTimerTypeTextPaint.setColor(mTextColor);
-        mTimerTypeTextPaint.setFakeBoldText(true);
-        if (mTextSize == 0) {
-            mTextSize = mTimerTypeTextPaint.getTextSize() * 0.6f;
-        } else {
-            mTimerTypeTextPaint.setTextSize(mTextSize * 0.6f);
-        }
-        mTimerTypeTextPaint.setTextAlign(Paint.Align.CENTER);
+//        mTimerTypeTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+//        mTimerTypeTextPaint.setColor(mTextColor);
+//        mTimerTypeTextPaint.setFakeBoldText(true);
+//        if (mTextSize == 0) {
+//            mTextSize = mTimerTypeTextPaint.getTextSize() * 0.6f;
+//        } else {
+//            mTimerTypeTextPaint.setTextSize(mTextSize * 0.6f);
+//        }
+//        mTimerTypeTextPaint.setTextAlign(Paint.Align.CENTER);
 
     }
 
@@ -104,7 +132,6 @@ public class CustomTimerView extends View {
         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
         int x = getWidth();
-        int y = getHeight();
 
         mCanvas.drawArc(mCircleOuterBounds, 0, 360, true, mUnderPaint);
         if (mCircleSweepAngle > 0f) {
@@ -115,12 +142,12 @@ public class CustomTimerView extends View {
         canvas.drawBitmap(mBitmap, 0, 0, null);
 
         int xC = (x / 2);
-//        int yC = (y / 2) - 10;
         yTextPos = (int) ((canvas.getHeight() / 2) - ((mTimerTextPaint.descent() + mTimerTextPaint.ascent()) / 2));
 
         canvas.drawText(mTimerText, xC, yTextPos, mTimerTextPaint);
-        canvas.drawText(mTypeText, xC, yTextPos * 0.6f, mTimerTypeTextPaint);
-
+//        canvas.drawText(mTypeText, xC, yTextPos * 0.6f, mTimerTypeTextPaint);
+        int yBitmapPos = (int) ((yTextPos + (mTimerTextPaint.ascent())) - vectorBitmap.getHeight());
+        canvas.drawBitmap(vectorBitmap, (xC - (vectorBitmap.getWidth() / 2)), yBitmapPos, null);
     }
 
     @Override
@@ -153,12 +180,13 @@ public class CustomTimerView extends View {
         invalidate();
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int desiredWidth = 300;
-        int desiredHeight = 300;
+        int desiredWidth = (int) context.getResources().getDimension(R.dimen.timerSize);
+        int desiredHeight = desiredWidth;
 
         int width;
         int height;
@@ -168,10 +196,11 @@ public class CustomTimerView extends View {
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
+
         if (widthMode == MeasureSpec.EXACTLY) {
             width = widthSize;
         } else if (widthMode == MeasureSpec.AT_MOST) {
-            width = Math.min(desiredWidth, widthSize);
+            width = widthSize;
         } else {
             width = desiredWidth;
         }
@@ -179,23 +208,49 @@ public class CustomTimerView extends View {
         if (heightMode == MeasureSpec.EXACTLY) {
             height = heightSize;
         } else if (heightMode == MeasureSpec.AT_MOST) {
-            height = Math.min(desiredHeight, heightSize);
+            height = heightSize;
         } else {
             height = desiredHeight;
         }
 
-        setMeasuredDimension(width, height);
+        int finalDimen = Math.min(width, height);
+
+        setMeasuredDimension(finalDimen, finalDimen);
 
     }
 
-    public void setmTypeText(String mTypeText) {
-        this.mTypeText = mTypeText;
+    public void setmTimerType(int mTimerType) {
+        Random rand = new Random();
+        if (mTimerType == TimerTaskFragment.TYPE_WORK) {
+            int index = rand.nextInt(DRAWABLES_WORK.length);
+            Log.i(TAG, "work length: " + DRAWABLES_WORK.length);
+            setBitmapFromVectorDrawable(DRAWABLES_WORK[index]);
+        } else if (mTimerType == TimerTaskFragment.TYPE_SHORT_BREAK){
+            Log.i(TAG, "DRAWABLES_SHORT_BREAK length: " + DRAWABLES_SHORT_BREAK.length);
+            int index = rand.nextInt(DRAWABLES_SHORT_BREAK.length);
+            setBitmapFromVectorDrawable(DRAWABLES_SHORT_BREAK[index]);
+        } else {
+            int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
+            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
+        }
+        this.mTimerType = mTimerType;
     }
 
     public void setmTimerText(String mTimerText) {
         this.mTimerText = mTimerText;
         invalidate();
         requestLayout();
+    }
+
+    private void setBitmapFromVectorDrawable(int drawableId) {
+        Drawable drawable = AppCompatDrawableManager.get().getDrawable(context, drawableId);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            drawable = DrawableCompat.wrap(drawable).mutate();
+        }
+        vectorBitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(vectorBitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
     }
 
 }

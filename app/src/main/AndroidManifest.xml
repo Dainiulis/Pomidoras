@@ -34,6 +34,13 @@
                 android:name="andorid.support.PARENT_ACTIVITY"
                 android:value="com.dmiesoft.fitpomodoro.ui.activities.MainActivity" />
         </activity>
+        <activity android:name=".ui.activities.FavoriteActivity"
+            android:parentActivityName=".ui.activities.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="andorid.support.PARENT_ACTIVITY"
+                android:value="com.dmiesoft.fitpomodoro.ui.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -20,12 +20,14 @@ public class LicensesDataProvider {
                         "Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License."
         );
 
-        addLicense("MaterialSeekBarPreference \n [ https://git.io/vyz8H ]",
-                "Lib is licenced under Apache2 licence, so you can do whatever you want with it. I'd highly recommend to push changes back to make it cooler :D"
+        addLicense("MaterialSeekBarPreference \n",
+                "Link: https://git.io/vyz8H\n" +
+                        "Lib is licenced under Apache2 licence, so you can do whatever you want with it. I'd highly recommend to push changes back to make it cooler :D"
         );
 
-        addLicense("TextDrawable \n [https://git.io/vyz86]",
-                "The MIT License (MIT)\n" +
+        addLicense("TextDrawable",
+                "Link: https://git.io/vyz86\n" +
+                        "The MIT License (MIT)\n" +
                         "\n" +
                         "Copyright (c) 2014 Amulya Khare\n" +
                         "\n" +
@@ -47,6 +49,9 @@ public class LicensesDataProvider {
                         "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n" +
                         "SOFTWARE."
         );
+
+        addLicense("Icons from www.flaticon.com",
+                "Thanks for the icons made by Freepik from www.flaticon.com");
 
 //
 //        // Main License

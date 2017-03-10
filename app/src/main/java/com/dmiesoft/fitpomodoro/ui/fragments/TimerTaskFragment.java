@@ -211,7 +211,7 @@ public class TimerTaskFragment extends Fragment {
                     setmCurrentState(STATE_FINISHED);
                 }
                 postCurrentStateAndType();
-                if (mCurrentType == TYPE_SHORT_BREAK) {
+                if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                     sendRandomExerciseId();
                 }
             }
