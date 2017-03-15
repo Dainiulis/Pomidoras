@@ -21,7 +21,7 @@
         android:layout_marginStart="@dimen/timer_land_left_margin"
         app:text="time"
         app:textColor="@android:color/darker_gray"
-        app:textSize="@dimen/timerTextSize" />
+        app:textSize="@dimen/timer_text_size" />
 
     <!--<TextView-->
         <!--android:id="@+id/timerTypeText"-->
