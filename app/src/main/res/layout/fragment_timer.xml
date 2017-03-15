@@ -16,8 +16,9 @@
         android:layout_weight="4"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         app:text="time"
+        app:strokeWidth="@dimen/custom_timer_stroke_width"
         app:textColor="@android:color/darker_gray"
-        app:textSize="@dimen/timerTextSize" />
+        app:textSize="@dimen/timer_text_size" />
 
     <!--<TextView-->
         <!--android:id="@+id/timerTypeText"-->

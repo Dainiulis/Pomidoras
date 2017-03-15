@@ -325,7 +325,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getActivity(), exercise.getImage(), false, resourceDimen);
         if (bitmap != null) {
             timerTypeImage.setImageBitmap(bitmap);
-//            timerTypeText.setText(exercise.getName());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 Log.i(TAG, "setExercise: " + bitmap.getAllocationByteCount());
             }
@@ -338,7 +337,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
                     .endConfig()
                     .buildRoundRect(exercise.getName(), color, 40);
             timerTypeImage.setImageDrawable(tD);
-//            timerTypeText.setText(exercise.getName());
         }
     }
 
@@ -364,7 +362,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         }
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
 
-//            timerTypeText.setText("Work");
             AssetManager aManager = getActivity().getAssets();
             InputStream fis = null;
             try {
@@ -379,12 +376,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             }
 
         }
-//        else if (mCurrentType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-//            customTimerView.setmTimerType(mCurrentType);
-//
-//        } else if (mCurrentType == TimerTaskFragment.TYPE_LONG_BREAK) {
-//            customTimerView.setmTimerType(mCurrentType);
-//        }
     }
 
     @Subscribe
@@ -398,7 +389,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             mListener.onRandomExerciseRequested(event.getExerciseId());
         } else {
             Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
-//            timerTypeText.setText("Short break");
         }
     }
 

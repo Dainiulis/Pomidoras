@@ -325,7 +325,7 @@ public class TimerTaskFragment extends Fragment {
      * @return ValueAnimator, which later can be manipulated
      */
     private ValueAnimator getCircleAnimator(long time, float... values) {
-        ValueAnimator circleAnimator = ValueAnimator.ofFloat(values);
+        final ValueAnimator circleAnimator = ValueAnimator.ofFloat(values);
         circleAnimator.setDuration(time);
         circleAnimator.setInterpolator(new LinearInterpolator());
         circleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
