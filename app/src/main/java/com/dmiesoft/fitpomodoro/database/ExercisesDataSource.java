@@ -5,16 +5,21 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class ExercisesDataSource {
 
+    private static final String TAG = "EDS";
     SQLiteOpenHelper dbHelper;
     SQLiteDatabase database;
 
@@ -41,7 +46,7 @@ public class ExercisesDataSource {
             DatabaseContract.FavoritesTable.COLUMN_DATE
     };
 
-    public ExercisesDataSource (Context context) {
+    public ExercisesDataSource(Context context) {
         dbHelper = new DatabaseHelper(context);
     }
 
@@ -104,7 +109,7 @@ public class ExercisesDataSource {
 
     public void deleteExercisesGroup(long id) {
         String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] whereArgs = { String.valueOf(id) };
+        String[] whereArgs = {String.valueOf(id)};
         database.delete(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, where, whereArgs);
     }
 
@@ -169,13 +174,13 @@ public class ExercisesDataSource {
         return exercises;
     }
 
-    public List<Long> getAllExercisesIds() {
+    public List<Long> getAllExercisesIds(String selection, String[] selectionArgs) {
         String[] exercise_id_columnt_name = {DatabaseContract.ExercisesTable._ID};
         List<Long> idList = new ArrayList<>();
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesTable.TABLE_NAME,
-                 exercise_id_columnt_name,
-                null, null, null, null, null);
+                exercise_id_columnt_name,
+                selection, selectionArgs, null, null, null);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -189,7 +194,7 @@ public class ExercisesDataSource {
 
     public void deleteExercise(long id) {
         String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] whereArgs = { String.valueOf(id) };
+        String[] whereArgs = {String.valueOf(id)};
         database.delete(DatabaseContract.ExercisesTable.TABLE_NAME, where, whereArgs);
     }
 
@@ -219,6 +224,17 @@ public class ExercisesDataSource {
         }
         cursor.close();
         return favorites;
+    }
+
+    public void createFavExIds(HashMap<Long, Long> favExIds) {
+        Log.i(TAG, "createFavExIds: " +favExIds.size());
+        for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
+            values.put(DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID, entry.getValue());
+            long rowID = database.insert(DatabaseContract.FavExIdsTable.TABLE_NAME, null, values);
+            Log.i(TAG, "row: " + rowID);
+        }
     }
 
 }

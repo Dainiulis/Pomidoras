@@ -72,6 +72,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -115,6 +116,11 @@ public class MainActivity extends AppCompatActivity
     private static final String DELETE_BACKGROUND_COLOR = "#585859";
     private static final String PREVIOUS_DELETE_ID_SIZE = "PREVIOUS_DELETE_ID_SIZE";
     /*
+     * Model Packages names
+     */
+    public static final String FAVORITE_PACKAGE_NAME = ".model.Favorite";
+
+    /*
      * @PERMISSIONS CODES
      */
     public static final int PERMISSIONS_REQUEST_R_W_STORAGE = 1;
@@ -144,7 +150,7 @@ public class MainActivity extends AppCompatActivity
     private ValueAnimator animToolbarColor;
     private ValueAnimator burgerAnim;
     private boolean isDeleteToolbar;
-    private ImageView tempMenuDelBtn;
+    private ImageView tempMenuDelBtn, tempMenuFavBtn;
     private Menu menu;
     private ValueAnimator tempBtnAnimatorAppear;
     private ValueAnimator tempBtnAnimatorDisappear;
@@ -385,10 +391,18 @@ public class MainActivity extends AppCompatActivity
         // issiskaiciavau siuos paddingus, tikiuosi geri
         int pLR = (int) getResources().getDimension(R.dimen.menu_del_padd_L_R);
         int pTB = (int) getResources().getDimension(R.dimen.menu_del_padd_T_B);
+
         tempMenuDelBtn = new ImageView(this);
         tempMenuDelBtn.setImageResource(R.drawable.delete);
         tempMenuDelBtn.setPadding(pLR, pTB, pLR, pTB);
+
+        tempMenuFavBtn = new ImageView(this);
+        tempMenuFavBtn.setImageResource(R.drawable.ic_star);
+        tempMenuFavBtn.setPadding(pLR, pTB, pLR, pTB);
+
         menu.findItem(R.id.action_delete).setActionView(tempMenuDelBtn);
+        menu.findItem(R.id.action_add_to_favorite).setActionView(tempMenuFavBtn);
+
         tempBtnAnimatorAppear = ValueAnimator.ofFloat(0, 1);
         tempBtnAnimatorAppear.setDuration(500);
         tempBtnAnimatorAppear.setInterpolator(new LinearInterpolator());
@@ -396,12 +410,14 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 tempMenuDelBtn.setAlpha((Float) animation.getAnimatedValue());
+                tempMenuFavBtn.setAlpha((Float) animation.getAnimatedValue());
             }
         });
         tempBtnAnimatorAppear.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 menu.findItem(R.id.action_delete).setActionView(null);
+                menu.findItem(R.id.action_add_to_favorite).setActionView(null);
             }
         });
         tempBtnAnimatorDisappear = ValueAnimator.ofFloat(1, 0);
@@ -411,6 +427,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 tempMenuDelBtn.setAlpha((Float) animation.getAnimatedValue());
+                tempMenuFavBtn.setAlpha((Float) animation.getAnimatedValue());
             }
         });
         tempBtnAnimatorDisappear.addListener(new AnimatorListenerAdapter() {
@@ -418,8 +435,11 @@ public class MainActivity extends AppCompatActivity
             public void onAnimationEnd(Animator animation) {
                 menu.findItem(R.id.action_delete).setActionView(null);
                 menu.findItem(R.id.action_delete).setVisible(false);
+                menu.findItem(R.id.action_add_to_favorite).setActionView(null);
+                menu.findItem(R.id.action_add_to_favorite).setVisible(false);
                 if (deleteIdList.size() > 0) {
                     menu.findItem(R.id.action_delete).setVisible(true);
+                    menu.findItem(R.id.action_add_to_favorite).setVisible(true);
                 }
             }
         });
@@ -508,6 +528,7 @@ public class MainActivity extends AppCompatActivity
                 burgerAnim.reverse();
             } else {
                 menu.findItem(R.id.action_delete).setVisible(false);
+                menu.findItem(R.id.action_add_to_favorite).setVisible(false);
             }
             isDeleteToolbar = false;
             getSupportActionBar().setTitle("");
@@ -582,6 +603,10 @@ public class MainActivity extends AppCompatActivity
                 manageDeleteAction();
                 break;
 
+            case R.id.action_add_to_favorite:
+                manageFavDialog(1);
+                break;
+
             case R.id.action_add_fav:
                 AlertDialog.Builder favBuilder = AlertDialogHelper.favoritesDialog(this, dataSource);
                 favBuilder.show();
@@ -589,23 +614,56 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.action_manage_fav:
-                final List<Favorite> favorites = dataSource.getAllFavorites();
-                AlertDialog.Builder mngFavBuilder = AlertDialogHelper.manageFavoritesDialog(this, favorites);
-                final AlertDialog dialog = mngFavBuilder.create();
-                AlertDialogHelper.manageFavoritesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
-                        startActivity(intent);
-                        dialog.dismiss();
-                    }
-                });
-                dialog.show();
-                AlertDialogHelper.manageFavoritesListView.setLayoutParams(AlertDialogHelper.favoritesParams);
+                manageFavDialog(0);
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Shows favorites dialog and adds onItemClick listener which works depending on which menu item was pressed
+     *
+     * @param menuItemPressed which menu item was pressed. Enter 0 for navigating to favorites manager.
+     *                        Enter 1 for adding to favorites
+     */
+    private void manageFavDialog(final int menuItemPressed) {
+        final List<Favorite> favorites = dataSource.getAllFavorites();
+        AlertDialog.Builder mngFavBuilder = AlertDialogHelper.manageFavoritesDialog(this, favorites);
+        final AlertDialog dialog = mngFavBuilder.create();
+        AlertDialogHelper.manageFavoritesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (menuItemPressed == 0) {
+                    Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
+                    intent.putExtra(FAVORITE_PACKAGE_NAME, favorites.get(position));
+                    startActivity(intent);
+                } else {
+                    HashMap<Long, Long> favExIdsMap = new HashMap<Long, Long>();
+                    if (whatToDelete.equals(ExercisesGroup.class.toString())) {
+                        List<Long> exercisesIds = new ArrayList<Long>();
+                        for (int i = 0; i < deleteIdList.size(); i++) {
+                            String[] selectionArgs = {String.valueOf(exercisesGroups.get(deleteIdList.get(i)).getId()) };
+                            exercisesIds.addAll(dataSource.getAllExercisesIds(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + "=?", selectionArgs));
+                        }
+                        for (int i = 0; i < exercisesIds.size(); i++) {
+                            favExIdsMap.put(exercisesIds.get(i), favorites.get(position).getId());
+                        }
+                    } else {
+                        for (int i = 0; i < deleteIdList.size(); i++) {
+                            favExIdsMap.put(exercises.get(deleteIdList.get(i)).getId(), favorites.get(position).getId());
+                        }
+                    }
+                    dataSource.createFavExIds(favExIdsMap);
+                    Toast.makeText(MainActivity.this, "Added " + favExIdsMap.size() + " items to " + favorites.get(position).getName() + " favorites", Toast.LENGTH_SHORT).show();
+                    updateListViews(false);
+                    clearMultiSelection();
+                }
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+        AlertDialogHelper.manageFavoritesListView.setLayoutParams(AlertDialogHelper.favoritesParams);
     }
 
     /**
@@ -796,7 +854,7 @@ public class MainActivity extends AppCompatActivity
     public void onExerciseIdRequested() {
         TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
         if (fragment != null) {
-            exercisesIds = dataSource.getAllExercisesIds();
+            exercisesIds = dataSource.getAllExercisesIds(null, null);
             fragment.setmExercisesIds(exercisesIds);
         }
     }
