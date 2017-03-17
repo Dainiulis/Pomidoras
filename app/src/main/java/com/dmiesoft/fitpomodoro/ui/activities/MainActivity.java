@@ -113,8 +113,7 @@ public class MainActivity extends AppCompatActivity
     private static final String EXERCISES = "EXERCISES";
     private static final String OBJ_TO_DELETE = "OBJ_TO_DELETE";
     private static final String WHAT_TO_DELETE = "WHAT_TO_DELETE";
-    private static final String DELETE_BACKGROUND_COLOR = "#585859";
-    private static final String PREVIOUS_DELETE_ID_SIZE = "PREVIOUS_DELETE_ID_SIZE";
+    public static final String DELETE_BACKGROUND_COLOR = "#585859";
     /*
      * Model Packages names
      */
@@ -147,13 +146,10 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton mainFab;
     private Toolbar toolbar;
     private View.OnClickListener navigationClickListener;
-    private ValueAnimator animToolbarColor;
-    private ValueAnimator burgerAnim;
     private boolean isDeleteToolbar;
     private ImageView tempMenuDelBtn, tempMenuFavBtn;
     private Menu menu;
-    private ValueAnimator tempBtnAnimatorAppear;
-    private ValueAnimator tempBtnAnimatorDisappear;
+    private ValueAnimator animToolbarColor, burgerAnim, tempBtnAnimatorAppear, tempBtnAnimatorDisappear;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,10 +168,7 @@ public class MainActivity extends AppCompatActivity
             exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
             deleteIdList = savedInstanceState.getIntegerArrayList(OBJ_TO_DELETE);
             whatToDelete = savedInstanceState.getString(WHAT_TO_DELETE);
-            if (deleteIdList.size() == 0)
-                isDeleteToolbar = false;
-            else
-                isDeleteToolbar = true;
+            isDeleteToolbar = deleteIdList.size() != 0;
         }
         mainLayout = (CoordinatorLayout) findViewById(R.id.mainLayout);
         initData();
@@ -635,6 +628,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (menuItemPressed == 0) {
+                    if (snackbar != null) {
+                        snackbar.dismiss();
+                    }
                     Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
                     intent.putExtra(FAVORITE_PACKAGE_NAME, favorites.get(position));
                     startActivity(intent);
@@ -891,6 +887,7 @@ public class MainActivity extends AppCompatActivity
 
     @Subscribe
     public void onDeleteObject(DeleteObjects event) {
+        Log.i(TAG, "Requesting to delete object");
         Integer id = event.getId();
         whatToDelete = event.getClassName();
         if (deleteIdList.contains(id)) {
