@@ -12,11 +12,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
+import com.dmiesoft.fitpomodoro.events.UnfavoriteObjects;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,11 +32,13 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
     private static final String TAG = "ELA";
     private List<Exercise> exercises;
     private List<ViewHolder> viewsToAnimate;
+    private Context context;
 
 
     public ExercisesListAdapter(Context context, int resource, List<Exercise> exercises) {
         super(context, resource, exercises);
         this.exercises = exercises;
+        this.context = context;
     }
 
     @NonNull
@@ -49,7 +54,7 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        Exercise exercise = exercises.get(position);
+        final Exercise exercise = exercises.get(position);
         holder.textView.setText(exercise.getName());
         updateChechedState(holder, exercise);
 
@@ -59,7 +64,12 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
                 Exercise data = exercises.get(position);
                 data.setChecked(!data.isChecked());
                 updateChechedState(holder, data);
-                EventBus.getDefault().post(new DeleteObjects(position, data.getClass().toString()));
+                if (context instanceof MainActivity) {
+                    Log.i(TAG, "MainActivity" );
+                    EventBus.getDefault().post(new DeleteObjects(position, data.getClass().toString()));
+                } else {
+                    EventBus.getDefault().post(new UnfavoriteObjects(exercise.getId()));
+                }
             }
         });
 
@@ -109,7 +119,6 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
 
     @Override
     public void notifyDataSetChanged() {
-        Log.i(TAG, "notifyDataSetChanged: ");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             if (viewsToAnimate != null) {
                 if (viewsToAnimate.size() > 0) {
