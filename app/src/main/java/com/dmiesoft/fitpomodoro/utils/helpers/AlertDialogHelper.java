@@ -25,31 +25,15 @@ public class AlertDialogHelper {
     public static FrameLayout.LayoutParams favoritesParams;
     public static ListView manageFavoritesListView;
 
-    public static Dialog dialogToGetPermissionForDbGenerate(Context context) {
+    private static AlertDialog.Builder getBasicYesNoDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("You don't have any exercises, would you like to generate some?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Jei prireiks, tai arba padaryt firstTimeDatabaseInitialize() public arba padaryt callback
-//                firstTimeDatabaseInitialize();
-                dialog.dismiss();
-            }
-        });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
-        builder.setNeutralButton("Don't ask", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        return dialog;
+        return builder;
     }
 
     public static AlertDialog.Builder favoritesDialog(final Context context, final ExercisesDataSource dataSource) {
@@ -103,6 +87,13 @@ public class AlertDialogHelper {
         ArrayAdapter<Favorite> adapter = new ArrayAdapter<Favorite>(context, android.R.layout.simple_list_item_1, android.R.id.text1, favorites);
         manageFavoritesListView.setAdapter(adapter);
         builder.setTitle("Favorites");
+        return builder;
+    }
+
+    public static AlertDialog.Builder getRemoveFavoritesDialog (Context context) {
+        AlertDialog.Builder builder = getBasicYesNoDialog(context);
+        builder.setTitle("Unfavorite?");
+        builder.setMessage("Are you sure you want to unfavorite selected items?");
         return builder;
     }
 

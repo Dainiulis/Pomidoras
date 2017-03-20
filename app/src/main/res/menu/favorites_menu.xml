@@ -9,4 +9,9 @@
         android:title="Unfavorite"
         android:icon="@drawable/ic_star_border_24dp"
         app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_remove_fav"
+        android:orderInCategory="101"
+        android:title="Remove favorite"
+        app:showAsAction="never"/>
 </menu>

@@ -65,10 +65,10 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
                 data.setChecked(!data.isChecked());
                 updateChechedState(holder, data);
                 if (context instanceof MainActivity) {
-                    Log.i(TAG, "MainActivity" );
                     EventBus.getDefault().post(new DeleteObjects(position, data.getClass().toString()));
                 } else {
-                    EventBus.getDefault().post(new UnfavoriteObjects(exercise.getId()));
+//                    EventBus.getDefault().post(new UnfavoriteObjects(exercise.getId()));
+                    EventBus.getDefault().post(new UnfavoriteObjects(position));
                 }
             }
         });
