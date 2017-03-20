@@ -270,4 +270,19 @@ public class ExercisesDataSource {
         return exercises;
     }
 
+    public void removeExercisesFromFavorites(List<Exercise> exercises, List<Integer> unfavoriteIdList, long favoriteId) {
+        for (int i = 0; i < unfavoriteIdList.size(); i++) {
+            String where = DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID + "=? AND " +
+                    DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + "=?";
+            String[] whereArgs = { String.valueOf(exercises.get(unfavoriteIdList.get(i)).getId()), String.valueOf(favoriteId)};
+            database.delete(DatabaseContract.FavExIdsTable.TABLE_NAME, where, whereArgs);
+        }
+    }
+
+    public void deleteFavorite(long favoriteId) {
+        String where = DatabaseContract.FavoritesTable._ID + "=?";
+        String[] whereArgs = { String.valueOf(favoriteId) };
+        database.delete(DatabaseContract.FavoritesTable.TABLE_NAME, where, whereArgs);
+    }
+
 }

@@ -887,7 +887,7 @@ public class MainActivity extends AppCompatActivity
 
     @Subscribe
     public void onDeleteObject(DeleteObjects event) {
-        Log.i(TAG, "Requesting to delete object");
+        Log.i(TAG, "Requesting to delete object" + event.getClassName());
         Integer id = event.getId();
         whatToDelete = event.getClassName();
         if (deleteIdList.contains(id)) {
