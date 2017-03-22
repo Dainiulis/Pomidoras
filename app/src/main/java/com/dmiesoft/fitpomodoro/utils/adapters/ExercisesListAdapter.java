@@ -76,17 +76,13 @@ public class ExercisesListAdapter extends ArrayAdapter<Exercise> {
         return convertView;
     }
 
-    private boolean setBitmap (ViewHolder holder, Exercise exercise) {
-        if (exercise.getImage() != null) {
-            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
-            Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
-            if (bitmap != null) {
-                bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
-                holder.imageView.setImageBitmap(bitmap);
-                return true;
-            } else {
-                return false;
-            }
+    private boolean setBitmap(ViewHolder holder, Exercise exercise) {
+        int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+        Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
+        if (bitmap != null) {
+            bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
+            holder.imageView.setImageBitmap(bitmap);
+            return true;
         } else {
             return false;
         }

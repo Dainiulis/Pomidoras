@@ -325,9 +325,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
         Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getActivity(), exercise.getImage(), false, resourceDimen);
         if (bitmap != null) {
             timerTypeImage.setImageBitmap(bitmap);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Log.i(TAG, "setExercise: " + bitmap.getAllocationByteCount());
-            }
         } else {
             ColorGenerator cG = ColorGenerator.MATERIAL;
             int color = cG.getColor(exercise.getName());
@@ -371,9 +368,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             }
             Bitmap bMap = BitmapFactory.decodeStream(fis);
             timerTypeImage.setImageBitmap(bMap);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Log.i(TAG, "onTimerTypeStateRequest: " + bMap.getAllocationByteCount());
-            }
 
         }
     }

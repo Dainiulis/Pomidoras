@@ -34,6 +34,9 @@ public abstract class BitmapHelper {
      * For getting bitmap from files
      */
     public static Bitmap getBitmapFromFiles(Context context, String image, boolean scaled, int resourceDimen) {
+        if (image == null) {
+            return null;
+        }
         File f = getFileFromImages(image, context);
         if (!scaled) {
             return BitmapFactory.decodeFile(f.getAbsolutePath());

@@ -134,15 +134,10 @@ public class AddExerciseDialog extends DialogFragment {
         } else {
             radioTime.setChecked(true);
         }
-        if (exercise.getImage() != null) {
-            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
-            bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false, resourceDimen);
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
-            } else {
-                TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
-                imageView.setImageDrawable(drawable);
-            }
+        int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+        bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false, resourceDimen);
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
         } else {
             TextDrawable drawable = BitmapHelper.getTextDrawable(exercise.getName());
             imageView.setImageDrawable(drawable);
@@ -305,6 +300,7 @@ public class AddExerciseDialog extends DialogFragment {
 
     public interface AddExerciseDialogListener {
         void onSaveExerciseClicked(Exercise exercise);
+
         void onUpdateExerciseClicked(Exercise exercise);
     }
 

@@ -44,6 +44,7 @@
         android:id="@+id/editCategoryText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
         android:inputType="textCapWords|textFilter" />
 
     <LinearLayout
