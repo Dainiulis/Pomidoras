@@ -27,7 +27,7 @@ public class ExerciseDetailFragment extends Fragment {
     private static final String TAG = "EDF";
     private Exercise exercise;
     private View view;
-    private ImageView imageView;
+    private ImageView imageView, iVeditImageNameType, iVeditDescription;
     private TextView nameTextView, typeTextView, descriptionText;
     private RelativeLayout imageLayout;
     private int color;
@@ -76,6 +76,8 @@ public class ExerciseDetailFragment extends Fragment {
     }
 
     private void initializeViews() {
+        iVeditImageNameType = (ImageView) view.findViewById(R.id.edit_image_name_type);
+        iVeditDescription = (ImageView) view.findViewById(R.id.edit_description);
         nameTextView = (TextView) view.findViewById(R.id.nameExercise);
         typeTextView = (TextView) view.findViewById(R.id.typeExercise);
         descriptionText = (TextView) view.findViewById(R.id.descriptionText);
@@ -84,19 +86,17 @@ public class ExerciseDetailFragment extends Fragment {
 
         refreshDisplay();
 
-        imageLayout.setOnLongClickListener(new View.OnLongClickListener() {
+        iVeditImageNameType.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 mListener.onEditExerciseLongClicked(exercise, false);
-                return false;
             }
         });
 
-        descriptionText.setOnLongClickListener(new View.OnLongClickListener() {
+        iVeditDescription.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 mListener.onEditExerciseLongClicked(exercise, true);
-                return false;
             }
         });
 

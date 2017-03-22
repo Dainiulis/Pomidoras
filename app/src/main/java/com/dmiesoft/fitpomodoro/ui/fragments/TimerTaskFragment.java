@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
+import android.widget.ViewAnimator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;

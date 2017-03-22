@@ -106,15 +106,10 @@ public class AddExerciseGroupDialog extends DialogFragment {
          */
         if (edit && exercisesGroup != null) {
             editText.setText(exercisesGroup.getName());
-            if (exercisesGroup.getImage() != null) {
-                int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
-                bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercisesGroup.getImage(), false, resourceDimen);
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
-                } else {
-                    TextDrawable drawable = BitmapHelper.getTextDrawable(exercisesGroup.getName());
-                    imageView.setImageDrawable(drawable);
-                }
+            int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.list_img_dimen);
+            bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercisesGroup.getImage(), false, resourceDimen);
+            if (bitmap != null) {
+                imageView.setImageBitmap(bitmap);
             } else {
                 TextDrawable drawable = BitmapHelper.getTextDrawable(exercisesGroup.getName());
                 imageView.setImageDrawable(drawable);
@@ -185,6 +180,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
 
     /**
      * Checks if Category exists
+     *
      * @param enteredText
      * @return
      */
@@ -246,6 +242,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
 
     public interface AddExerciseGroupDialogListener {
         void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup);
+
         void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup);
     }
 
