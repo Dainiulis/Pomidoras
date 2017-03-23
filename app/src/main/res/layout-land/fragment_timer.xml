@@ -3,89 +3,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_fragment_timer"
     android:layout_width="match_parent"
-    android:orientation="horizontal"
     android:layout_height="match_parent"
+    android:orientation="horizontal"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment">
 
     <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
         android:id="@+id/customTimer"
-        android:layout_gravity="center"
         android:layout_width="0dp"
-        android:layout_weight="4"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
+        android:layout_gravity="center"
         android:layout_marginLeft="@dimen/timer_land_left_margin"
         android:layout_marginStart="@dimen/timer_land_left_margin"
+        android:layout_weight="4"
         app:text="time"
         app:textColor="@android:color/darker_gray"
         app:textSize="@dimen/timer_text_size" />
 
     <!--<TextView-->
-        <!--android:id="@+id/timerTypeText"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_centerVertical="true"-->
-        <!--android:layout_marginLeft="@dimen/timer_land_left_margin"-->
-        <!--android:layout_marginStart="@dimen/timer_land_left_margin"-->
-        <!--android:layout_toLeftOf="@+id/btnLayout"-->
-        <!--android:layout_toStartOf="@+id/btnLayout"-->
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:padding="10dp"-->
-        <!--android:text="timerType"-->
-        <!--android:textAlignment="viewEnd"-->
-        <!--android:gravity="end"-->
-        <!--android:textColor="@android:color/black"-->
-        <!--android:textSize="20sp" />-->
+    <!--android:id="@+id/timerTypeText"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_centerVertical="true"-->
+    <!--android:layout_marginLeft="@dimen/timer_land_left_margin"-->
+    <!--android:layout_marginStart="@dimen/timer_land_left_margin"-->
+    <!--android:layout_toLeftOf="@+id/btnLayout"-->
+    <!--android:layout_toStartOf="@+id/btnLayout"-->
+    <!--android:layout_alignParentTop="true"-->
+    <!--android:padding="10dp"-->
+    <!--android:text="timerType"-->
+    <!--android:textAlignment="viewEnd"-->
+    <!--android:gravity="end"-->
+    <!--android:textColor="@android:color/black"-->
+    <!--android:textSize="20sp" />-->
 
     <ImageView
-        android:layout_gravity="center_horizontal"
-        android:layout_weight="4"
         android:id="@+id/timerTypeImage"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_centerVertical="true"
+        android:layout_gravity="center_horizontal"
         android:layout_toEndOf="@+id/customTimer"
         android:layout_toLeftOf="@+id/btnLayout"
         android:layout_toRightOf="@+id/customTimer"
-        android:layout_toStartOf="@+id/btnLayout" />
-
-    <RelativeLayout
-        android:layout_gravity="center_horizontal"
-        android:id="@+id/btnLayout"
-        android:layout_width="0dp"
-        android:layout_weight="2"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerInParent="true"
-        android:layout_marginEnd="@dimen/timer_land_left_margin"
-        android:layout_marginRight="@dimen/timer_land_left_margin"
-        android:orientation="vertical"
-        android:padding="5dp">
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnStopTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginLeft="@dimen/fab_margin"
-            android:layout_marginStart="@dimen/fab_margin"
-            app:srcCompat="@android:drawable/alert_light_frame" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/btnStartPauseTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_margin="@dimen/fab_margin"
-            app:srcCompat="@android:drawable/ic_media_play" />
-
-
-    </RelativeLayout>
+        android:layout_toStartOf="@+id/btnLayout"
+        android:layout_weight="4"
+        android:padding="10dp" />
 
 </LinearLayout>
 
