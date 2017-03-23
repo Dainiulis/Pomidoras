@@ -1,25 +1,22 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -43,25 +40,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-public class TimerUIFragment extends Fragment implements View.OnClickListener {
+public class TimerUIFragment extends Fragment implements View.OnClickListener, View.OnLongClickListener {
 
     private static final int BTN_START = 1001;
     private static final int BTN_PAUSE = 1002;
     private static final int BTN_STOP = 1003;
     public static final String TAG = "TIMER";
-    private static final long LONG_DURATION = 500;
-    private static final long NO_DURATION = 0;
     private static final String WORK_IMAGE_NAME = "@_@work.png";
 
     private int mCurrentState, mCurrentType;
     private long millisecs;
-    //    private TextView timerTypeText;
-    private FloatingActionButton btnStartPauseTimer, btnStopTimer;
     private CustomTimerView customTimerView;
-    private ObjectAnimator oA;
-    private ObjectAnimator oA1;
-    private String propertyName;
-    private long animLength;
     private FloatingActionButton mainFab;
     private TimerUIFragmentListener mListener;
     private ImageView timerTypeImage;
@@ -128,19 +117,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     private void initViews(View view) {
 
-//        timerTypeText = (TextView) view.findViewById(R.id.timerTypeText);
         timerTypeImage = (ImageView) view.findViewById(R.id.timerTypeImage);
 
-        btnStartPauseTimer = (FloatingActionButton) view.findViewById(R.id.btnStartPauseTimer);
-        btnStartPauseTimer.setOnClickListener(this);
-
-        btnStopTimer = (FloatingActionButton) view.findViewById(R.id.btnStopTimer);
-        btnStopTimer.setOnClickListener(this);
-
-        // tik bandymams
-//        timerTypeText.setOnClickListener(this);
-
         customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
+        customTimerView.setOnClickListener(this);
+        customTimerView.setOnLongClickListener(this);
     }
 
     private String getTimerString(long millisUntilFinished) {
@@ -152,19 +133,36 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btnStartPauseTimer:
+            case R.id.customTimer:
                 handleBtnStartPause();
                 break;
-
-            case R.id.btnStopTimer:
-                handleBtnStop();
-                break;
-
-            //bandymams
-            case R.id.timerTypeImage:
-                Log.i(TAG, "state: " + mCurrentState + " type: " + mCurrentType);
-                break;
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        switch (v.getId()) {
+            case R.id.customTimer:
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Are you sure?");
+                builder.setMessage("Would you like to end session?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        handleBtnStop();
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+                return true;
+        }
+        return false;
     }
 
     //  ***Handle buttons***
@@ -178,7 +176,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     }
 
     private void handleBtnStartPause() {
-        if (btnStartPauseTimer.getTag().equals(BTN_START)) {
+        if (customTimerView.getTag().equals(BTN_START)) {
             setBtnTypes(BTN_START);
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_RUNNING);
@@ -186,7 +184,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
             EventBus.getDefault().post(timerHandler);
 
-        } else if (btnStartPauseTimer.getTag().equals(BTN_PAUSE)) {
+        } else if (customTimerView.getTag().equals(BTN_PAUSE)) {
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_PAUSED);
             timerHandler.setCurrentType(mCurrentType);
@@ -199,93 +197,13 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
 
     //      Change buttons and timer textview according to btn tag
     private void setBtnTypes(int clickedButtonTag) {
-        if (getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
-            propertyName = "translationX";
-        } else {
-            propertyName = "translationY";
-        }
         if (clickedButtonTag == BTN_START) {
-
-            try {
-                if (oA == null)
-                    initObjectAnimators();
-            } catch (NullPointerException ignored) {
-            }
-
-
-            btnStartPauseTimer.setTag(BTN_PAUSE);
-            btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_pause);
-            btnStopTimer.setVisibility(View.VISIBLE);
-            btnStopTimer.setClickable(true);
+            customTimerView.setTag(BTN_PAUSE);
         } else if (clickedButtonTag == BTN_PAUSE) {
-            animLength = NO_DURATION;
-            initObjectAnimators();
-            btnStartPauseTimer.setTag(BTN_START);
-            btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_play);
-            btnStopTimer.setVisibility(View.VISIBLE);
+            customTimerView.setTag(BTN_START);
         } else {
-
-            try {
-                endObjectAnimators();
-            } catch (NullPointerException ignored) {
-            }
-
-            btnStartPauseTimer.setImageResource(android.R.drawable.ic_media_play);
-            btnStartPauseTimer.setTag(BTN_START);
+            customTimerView.setTag(BTN_START);
         }
-    }
-
-    private void endObjectAnimators() {
-        oA.setDuration(LONG_DURATION);
-        oA1.setDuration(LONG_DURATION);
-        oA.end();
-        oA1.end();
-        oA.reverse();
-        oA1.reverse();
-        oA = null;
-        oA1 = null;
-    }
-
-    private void initObjectAnimators() {
-        oA = ObjectAnimator.ofFloat(btnStartPauseTimer, propertyName, 0f, getPixels(-40));
-        oA.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                btnStartPauseTimer.setClickable(false);
-                btnStopTimer.setClickable(false);
-                if (btnStopTimer.getVisibility() == View.INVISIBLE) {
-                    btnStopTimer.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                btnStartPauseTimer.setClickable(true);
-                if (mCurrentState == TimerTaskFragment.STATE_STOPPED) {
-                    btnStopTimer.setVisibility(View.INVISIBLE);
-                    btnStopTimer.setClickable(false);
-                } else {
-                    btnStopTimer.setClickable(true);
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        oA.setDuration(animLength);
-        oA1 = ObjectAnimator.ofFloat(btnStopTimer, propertyName, 0f, getPixels(40));
-        oA1.setDuration(animLength);
-
-        oA.start();
-        oA1.start();
-
     }
 
     /**
@@ -330,7 +248,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
             int color = cG.getColor(exercise.getName());
             TextDrawable tD = TextDrawable.builder()
                     .beginConfig()
-                        .fontSize(20)
+                    .fontSize(20)
                     .endConfig()
                     .buildRoundRect(exercise.getName(), color, 40);
             timerTypeImage.setImageDrawable(tD);
@@ -347,14 +265,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener {
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
-        customTimerView.setmTimerType(mCurrentType);
+        customTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
-            animLength = NO_DURATION;
             setBtnTypes(BTN_START);
         } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED || mCurrentState == TimerTaskFragment.STATE_FINISHED) {
             setBtnTypes(BTN_PAUSE);
         } else {
-            animLength = LONG_DURATION;
             setBtnTypes(BTN_STOP);
         }
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
