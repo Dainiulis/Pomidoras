@@ -53,6 +53,9 @@ public class TimerTaskFragment extends Fragment {
     private ValueAnimator mTimerAnimator;
     private CircleProgressEvent mCircleProgressEvent;
     private float mCircleProgressValue;
+
+    private float mAnimatedVal, mAnimationFraction;
+    private int mNextSecond, mCurrentSecond;
     /////////////////////////////////////////////
 
     private List<Long> mExercisesIds;
@@ -120,6 +123,19 @@ public class TimerTaskFragment extends Fragment {
         }
         sendTimeEvent.setMillisecs(millisecs);
         EventBus.getDefault().post(sendTimeEvent);
+
+        initStartingTimerAnimVars();
+    }
+
+    /**
+     * mAnimatedVal - the animated value, it is variable;
+     * mAnimationFraction - sort of interpolation. Constant value for every timer
+     * mNextSecond - the next decreasing second. It is required for drawing timer. See initTimer()
+     */
+    private void initStartingTimerAnimVars() {
+        mAnimatedVal = 0;
+        mAnimationFraction = (float) 1000 / (float) millisecs;
+        mNextSecond = (int) (millisecs/1000) - 1;
     }
 
     private int getWhenLongBreak() {
@@ -153,13 +169,33 @@ public class TimerTaskFragment extends Fragment {
 
     private void initTimer() {
         if (mPreviousState == STATE_RUNNING || mPreviousState == STATE_FINISHED) {
-            mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
-            mTimerAnimator.start();
+//            mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
+//            mTimerAnimator.start();
         }
+//        if (mPreviousState == STATE_STOPPED) {
+//            mAnimatedVal = 0;
+//            mAnimationFraction = (float) 1000 / (float) millisecs;
+//            mNextSecond = (int) (millisecs/1000) - 1;
+//        }
         setmCurrentState(STATE_RUNNING);
-        timer = new CountDownTimer(millisecs, 1) {
+        timer = new CountDownTimer(millisecs, 300) {
             @Override
             public void onTick(long millisUntilFinished) {
+                /*
+                 * How timer animation works...
+                 *
+                 * It gets mCurrentSecond - the current second as Integer
+                 * then it evaluates if current second is equal to next second
+                 * and only then the value for timer animation drawing is send
+                 * the animated value gets added the animated fraction...
+                 */
+                mCurrentSecond = (int) (millisUntilFinished / 1000);
+                if (mNextSecond == mCurrentSecond) {
+                    mNextSecond = mCurrentSecond - 1;
+                    mAnimatedVal += mAnimationFraction;
+                    sendAnimatedTimerValue();
+                }
+
                 millisecs = millisUntilFinished;
                 if (EventBus.getDefault().hasSubscriberForEvent(sendTimeEvent.getClass())) {
                     sendTimeEvent.setMillisecs(millisecs);
@@ -170,6 +206,9 @@ public class TimerTaskFragment extends Fragment {
             @Override
             public void onFinish() {
                 timer.cancel();
+                //this part is required to clear timer animation
+                mAnimatedVal = 0;
+                sendAnimatedTimerValue();
                 /*
                  *skaiciuoja kada bus ilga pertrauka
                  */
@@ -220,6 +259,16 @@ public class TimerTaskFragment extends Fragment {
         timer.start();
     }
 
+    /**
+     * Sends animated value for timer through EventBus
+     */
+    private void sendAnimatedTimerValue() {
+        if (EventBus.getDefault().hasSubscriberForEvent(mCircleProgressEvent.getClass())) {
+            mCircleProgressEvent.setCircleProgress(mAnimatedVal);
+            EventBus.getDefault().post(mCircleProgressEvent);
+        }
+    }
+
     private void postCurrentStateAndType() {
         timerHandlerEvent.setCurrentState(mCurrentState);
         timerHandlerEvent.setCurrentType(mCurrentType);
@@ -257,7 +306,6 @@ public class TimerTaskFragment extends Fragment {
                 int index = randomGenerator.nextInt(mExercisesIds.size());
                 mExerciseId = mExercisesIds.get(index);
             }
-            Log.i(TAG, "sendRandomExerciseId: " + mExerciseId);
         }
         EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
     }
@@ -273,21 +321,21 @@ public class TimerTaskFragment extends Fragment {
             if (mCurrentState != STATE_RUNNING) {
                 if (mPreviousState == STATE_STOPPED) {
                     requestExercisesIds();
-                    mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
-                    mTimerAnimator.start();
+//                    mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
+//                    mTimerAnimator.start();
                 } else {
-                    handleTimerStates(CIRCLE_RESUME);
+//                    handleTimerStates(CIRCLE_RESUME);
                 }
                 initTimer();
             }
         } else if (event.getCurrentState() == STATE_PAUSED) {
             timer.cancel();
-            handleTimerStates(CIRCLE_PAUSE);
+//            handleTimerStates(CIRCLE_PAUSE);
             mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
             if (mTimerAnimator != null) {
-                handleTimerStates(CIRCLE_STOP);
             }
+            handleTimerStates(CIRCLE_STOP);
             timer.cancel();
             longBreakCounter = 0;
             mExerciseId = -1;
@@ -306,7 +354,7 @@ public class TimerTaskFragment extends Fragment {
                 EventBus.getDefault().post(sendTimeEvent);
             }
             if (mCurrentState == STATE_PAUSED) {
-                mCircleProgressEvent.setCircleProgress(mCircleProgressValue);
+                mCircleProgressEvent.setCircleProgress(mAnimatedVal);
                 EventBus.getDefault().post(mCircleProgressEvent);
             }
             if (mCurrentType == TYPE_SHORT_BREAK) {
@@ -354,8 +402,8 @@ public class TimerTaskFragment extends Fragment {
     private void handleTimerStates(int state) {
         switch (state) {
             case CIRCLE_STOP:
-                mTimerAnimator.cancel();
-                getCircleAnimator((long) (mCircleProgressValue * 1000), mCircleProgressValue, 0f).start();
+//                mTimerAnimator.cancel();
+                getCircleAnimator((long) (mAnimatedVal * 1000), mAnimatedVal, 0f).start();
                 break;
             case CIRCLE_PAUSE:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
