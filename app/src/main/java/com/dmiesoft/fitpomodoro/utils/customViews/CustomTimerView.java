@@ -50,6 +50,8 @@ public class CustomTimerView extends View {
     private TextPaint mTimerTextPaint, mTimerTapHintPaint;
     private int mColor = Color.RED,
             mTextColor = Color.WHITE,
+            mTimerHintTextColor,
+            mTimerHintTextColor2,
             yTextPos,
             mStrokeWidth;
     private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
@@ -115,8 +117,9 @@ public class CustomTimerView extends View {
         mTimerTextPaint.setTextAlign(Paint.Align.CENTER);
 
         float mHintTextSize = mTextSize * 0.6f;
+        mTimerHintTextColor = mTextColor;
         mTimerTapHintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        mTimerTapHintPaint.setColor(mTextColor);
+        mTimerTapHintPaint.setColor(mTimerHintTextColor);
         mTimerTapHintPaint.setTextSize(mHintTextSize);
         mTimerTapHintPaint.setTextAlign(Paint.Align.CENTER);
     }
@@ -142,8 +145,10 @@ public class CustomTimerView extends View {
         canvas.drawText(mTimerText, xC, yTextPos, mTimerTextPaint);
 
         int yHintTextPos = (int) (yTextPos + ((mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent())));
-        int yHintTextPos2 = (int) (yTextPos + 2*(mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent()));
+        int yHintTextPos2 = (int) (yTextPos + 2 * (mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent()));
+        mTimerTapHintPaint.setColor(mTimerHintTextColor);
         canvas.drawText(mTapHintText, xC, yHintTextPos, mTimerTapHintPaint);
+        mTimerTapHintPaint.setColor(mTimerHintTextColor2);
         canvas.drawText(mTapHintText2, xC, yHintTextPos2, mTimerTapHintPaint);
 
         int yBitmapPos = (int) ((yTextPos + (mTimerTextPaint.ascent())) - vectorBitmap.getHeight());
@@ -183,7 +188,6 @@ public class CustomTimerView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.i(TAG, "onTouchEvent: " + event);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             mUnderPaint.setShadowLayer(15, 1.5f, 1.5f, Color.BLACK);
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -244,13 +248,17 @@ public class CustomTimerView extends View {
             int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
             setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
         }
+        mTimerHintTextColor2 = Color.RED;
         if (timerState == TimerTaskFragment.STATE_RUNNING) {
+            mTimerHintTextColor = Color.parseColor("#ff9900");
             mTapHintText = "Tap to pause";
             mTapHintText2 = "Long press to stop";
         } else if (timerState == TimerTaskFragment.STATE_PAUSED) {
+            mTimerHintTextColor = Color.parseColor("#009900");
             mTapHintText = "Tap to start";
             mTapHintText2 = "Long press to stop";
         } else {
+            mTimerHintTextColor = Color.parseColor("#009900");
             mTapHintText = "Tap to start";
             mTapHintText2 = "Long press to stop";
         }

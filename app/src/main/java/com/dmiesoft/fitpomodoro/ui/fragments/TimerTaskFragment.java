@@ -405,6 +405,7 @@ public class TimerTaskFragment extends Fragment {
 //                mTimerAnimator.cancel();
                 getCircleAnimator((long) (mAnimatedVal * 1000), mAnimatedVal, 0f).start();
                 break;
+            //not used
             case CIRCLE_PAUSE:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     mTimerAnimator.pause();
@@ -412,6 +413,7 @@ public class TimerTaskFragment extends Fragment {
                     mTimerAnimator.cancel();
                 }
                 break;
+            //not used
             case CIRCLE_RESUME:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     mTimerAnimator.resume();
