@@ -168,15 +168,6 @@ public class TimerTaskFragment extends Fragment {
 //  *********************************
 
     private void initTimer() {
-        if (mPreviousState == STATE_RUNNING || mPreviousState == STATE_FINISHED) {
-//            mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
-//            mTimerAnimator.start();
-        }
-//        if (mPreviousState == STATE_STOPPED) {
-//            mAnimatedVal = 0;
-//            mAnimationFraction = (float) 1000 / (float) millisecs;
-//            mNextSecond = (int) (millisecs/1000) - 1;
-//        }
         setmCurrentState(STATE_RUNNING);
         timer = new CountDownTimer(millisecs, 300) {
             @Override
@@ -319,12 +310,8 @@ public class TimerTaskFragment extends Fragment {
         if (event.getCurrentState() == STATE_RUNNING) {
             //butinai reikejo patikrinti sita salyga, kitaip buginosi laikmatis
             if (mCurrentState != STATE_RUNNING) {
-                if (mPreviousState == STATE_STOPPED) {
+                if (mPreviousState == STATE_STOPPED || mPreviousState == STATE_FINISHED) {
                     requestExercisesIds();
-//                    mTimerAnimator = getCircleAnimator(millisecs, 0f, 1f);
-//                    mTimerAnimator.start();
-                } else {
-//                    handleTimerStates(CIRCLE_RESUME);
                 }
                 initTimer();
             }
@@ -357,7 +344,7 @@ public class TimerTaskFragment extends Fragment {
                 mCircleProgressEvent.setCircleProgress(mAnimatedVal);
                 EventBus.getDefault().post(mCircleProgressEvent);
             }
-            if (mCurrentType == TYPE_SHORT_BREAK) {
+            if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                 sendRandomExerciseId();
             }
             postCurrentStateAndType();

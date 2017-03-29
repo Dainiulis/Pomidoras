@@ -116,7 +116,7 @@ public class CustomTimerView extends View {
         }
         mTimerTextPaint.setTextAlign(Paint.Align.CENTER);
 
-        float mHintTextSize = mTextSize * 0.6f;
+        float mHintTextSize = mTextSize * 0.5f;
         mTimerHintTextColor = mTextColor;
         mTimerTapHintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTimerTapHintPaint.setColor(mTimerHintTextColor);
@@ -257,10 +257,14 @@ public class CustomTimerView extends View {
             mTimerHintTextColor = Color.parseColor("#009900");
             mTapHintText = "Tap to start";
             mTapHintText2 = "Long press to stop";
-        } else {
+        } else if (timerState == TimerTaskFragment.STATE_FINISHED) {
             mTimerHintTextColor = Color.parseColor("#009900");
             mTapHintText = "Tap to start";
             mTapHintText2 = "Long press to stop";
+        } else {
+            mTimerHintTextColor = Color.parseColor("#009900");
+            mTapHintText = "Tap to start";
+            mTapHintText2 = "";
         }
         invalidate();
     }

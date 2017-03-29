@@ -105,8 +105,7 @@ public class InitialDatabasePopulation {
 
                 String path = BitmapHelper.getFileFromImages(finalFileName, context).getAbsolutePath();
                 Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
-                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
-//                        bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
+//                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
                 BitmapHelper.saveImage(finalFileName, bitmap, context);
 //                }
 //                }

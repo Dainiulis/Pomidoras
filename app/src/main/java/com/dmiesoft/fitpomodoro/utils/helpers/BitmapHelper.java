@@ -1,5 +1,6 @@
 package com.dmiesoft.fitpomodoro.utils.helpers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -24,14 +26,36 @@ import java.io.FileOutputStream;
  */
 public abstract class BitmapHelper {
 
-    public static final int REQUIRED_WIDTH = 400;
-    public static final int REQUIRED_HEIGTH = 400;
-    public static final float MAX_SIZE = 400f;
+    public static int REQUIRED_WIDTH = 600;
+    public static int REQUIRED_HEIGTH = 600;
+    public static float MAX_SIZE = 600f;
     public static final float BORDER_SIZE = 1;
     private static final String TAG = "BH";
 
-    /*
-     * For getting bitmap from files
+    public static float getMaxSize(Activity activity) {
+        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
+        Log.i(TAG, "getMaxSize: " + Math.max(displayWidthHeight.getWidth()/ 2, displayWidthHeight.getHeight() / 2));
+        return Math.max(displayWidthHeight.getWidth() / 2, displayWidthHeight.getHeight() / 2);
+    }
+
+    public static int getRequiredWidth(Activity activity) {
+        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
+        Log.i(TAG, "getRequiredWidth: " + (int) displayWidthHeight.getWidth() / 2);
+        return (int) displayWidthHeight.getWidth() / 2;
+    }
+
+    public static int getRequiredHeight(Activity activity) {
+        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
+        Log.i(TAG, "getRequiredHeight: " + (int) displayWidthHeight.getHeight() / 2);
+        return (int) displayWidthHeight.getHeight() / 2;
+    }
+
+    /**
+     * @param context
+     * @param image - imageName
+     * @param scaled - if true scale to resourceDimen
+     * @param resourceDimen - if scaled is false, it can be set to 0
+     * @return
      */
     public static Bitmap getBitmapFromFiles(Context context, String image, boolean scaled, int resourceDimen) {
         if (image == null) {
@@ -39,7 +63,11 @@ public abstract class BitmapHelper {
         }
         File f = getFileFromImages(image, context);
         if (!scaled) {
-            return BitmapFactory.decodeFile(f.getAbsolutePath());
+            Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
+                Log.i(TAG, "getBitmapFromFiles !scaled: " + bitmap.getAllocationByteCount());
+            }
+            return bitmap;
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
@@ -57,7 +85,8 @@ public abstract class BitmapHelper {
             options.inScaled = true;
             options.inDensity = srcDensity;
             options.inTargetDensity = resourceDimen * options.inSampleSize;
-            return BitmapFactory.decodeFile(f.getAbsolutePath(), options);
+            Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(), options);
+            return bitmap;
         }
     }
 
@@ -73,8 +102,10 @@ public abstract class BitmapHelper {
     public static int calculateInSampleSize(BitmapFactory.Options options, int requiredWidth, int requiredHeight) {
         final int imageHeight = options.outHeight;
         final int imageWidth = options.outWidth;
-        int inSampleWidth = Math.round((float) imageWidth / (float) requiredWidth);
-        int inSampleHeight = Math.round((float) imageHeight / (float) requiredHeight);
+        int inSampleWidth = Math.round((float) imageWidth / (float) Math.min(requiredHeight, requiredWidth));
+        int inSampleHeight = Math.round((float) imageHeight / (float) Math.max(requiredHeight, requiredWidth));
+        Log.i(TAG, "calculateInSampleSize: width " + inSampleWidth + " height " + inSampleHeight);
+        Log.i(TAG, "image: width " + imageWidth + " height " + imageHeight);
         if (inSampleWidth <= inSampleHeight) {
             return inSampleHeight;
         } else {
@@ -91,17 +122,19 @@ public abstract class BitmapHelper {
     public static int[] calculateWidthAndHeighth(float width, float height, float maxSize) {
         float ratio = 0;
         int[] widthHeight;
-        if (width == height) {
-            width = maxSize;
-            height = maxSize;
-        } else if (width > height) {
-            ratio = width / maxSize;
-            width = maxSize;
-            height = height / ratio;
-        } else {
-            ratio = height / maxSize;
-            height = maxSize;
-            width = width / ratio;
+        if (width > maxSize || height > maxSize) {
+            if (width == height) {
+                width = maxSize;
+                height = maxSize;
+            } else if (width > height) {
+                ratio = width / maxSize;
+                width = maxSize;
+                height = height / ratio;
+            } else {
+                ratio = height / maxSize;
+                height = maxSize;
+                width = width / ratio;
+            }
         }
         widthHeight = new int[]{(int) width, (int) height};
         return widthHeight;
@@ -205,11 +238,15 @@ public abstract class BitmapHelper {
         options.inSampleSize = inSampleSize;
         bitmap = BitmapFactory.decodeFile(path, options);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
+            Log.i(TAG, "decodeBitmapFromPath: allocation " + bitmap.getAllocationByteCount());
+        }
+        Log.i(TAG, "decodeBitmapFromPath: reduced size width " + bitmap.getWidth() + " height " + bitmap.getHeight());
         return bitmap;
     }
 
     /**
-     * Scales then crops bitmap to circle and adds border if needed.
+     * Scales then crops bitmap.
      *
      * @param bitmap
      * @param maxSize maximum size of bitmap image. For example if image is 400px width and 200px height,
@@ -217,11 +254,16 @@ public abstract class BitmapHelper {
      * @return scaled bitmap
      */
     public static Bitmap getScaledBitmap(Bitmap bitmap, float maxSize) {
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
+            Log.i(TAG, "getScaledBitmap: before: " + bitmap.getAllocationByteCount());
+        }
         float width = (float) bitmap.getWidth();
         float heigth = (float) bitmap.getHeight();
         int[] widthHeight = BitmapHelper.calculateWidthAndHeighth(width, heigth, maxSize);
         bitmap = Bitmap.createScaledBitmap(bitmap, widthHeight[0], widthHeight[1], false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
+            Log.i(TAG, "getScaledBitmap: after: " + bitmap.getAllocationByteCount());
+        }
         return bitmap;
     }
 
