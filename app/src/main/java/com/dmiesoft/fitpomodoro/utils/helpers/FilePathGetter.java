@@ -34,10 +34,14 @@ public class FilePathGetter {
                     String docId = DocumentsContract.getDocumentId(uri);
                     String[] split = docId.split(":");
                     String type = split[0];
-
                     if ("primary".equalsIgnoreCase(type)) {
-                        return Environment.getExternalStorageState() + "/" + split[1];
+                        return Environment.getExternalStorageDirectory() + "/" + split[1];
                     }
+                    // bug on nougat. there was no primary type, only different type for every phone
+                    // seems to work, even with external card because if it's not primary type then it's user ID
+                    // for example 891A-1CE4 or something similar
+                    String path = "/storage/" + split[0] + "/" + split[1];
+                    return path;
                 } else if (isDownloadsDocument(uri)) {
                     String id = DocumentsContract.getDocumentId(uri);
                     Uri contentUri = ContentUris.withAppendedId(

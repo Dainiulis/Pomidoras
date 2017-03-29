@@ -34,19 +34,16 @@ public abstract class BitmapHelper {
 
     public static float getMaxSize(Activity activity) {
         DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        Log.i(TAG, "getMaxSize: " + Math.max(displayWidthHeight.getWidth()/ 2, displayWidthHeight.getHeight() / 2));
         return Math.max(displayWidthHeight.getWidth() / 2, displayWidthHeight.getHeight() / 2);
     }
 
     public static int getRequiredWidth(Activity activity) {
         DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        Log.i(TAG, "getRequiredWidth: " + (int) displayWidthHeight.getWidth() / 2);
         return (int) displayWidthHeight.getWidth() / 2;
     }
 
     public static int getRequiredHeight(Activity activity) {
         DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        Log.i(TAG, "getRequiredHeight: " + (int) displayWidthHeight.getHeight() / 2);
         return (int) displayWidthHeight.getHeight() / 2;
     }
 
@@ -64,9 +61,6 @@ public abstract class BitmapHelper {
         File f = getFileFromImages(image, context);
         if (!scaled) {
             Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
-                Log.i(TAG, "getBitmapFromFiles !scaled: " + bitmap.getAllocationByteCount());
-            }
             return bitmap;
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -104,8 +98,6 @@ public abstract class BitmapHelper {
         final int imageWidth = options.outWidth;
         int inSampleWidth = Math.round((float) imageWidth / (float) Math.min(requiredHeight, requiredWidth));
         int inSampleHeight = Math.round((float) imageHeight / (float) Math.max(requiredHeight, requiredWidth));
-        Log.i(TAG, "calculateInSampleSize: width " + inSampleWidth + " height " + inSampleHeight);
-        Log.i(TAG, "image: width " + imageWidth + " height " + imageHeight);
         if (inSampleWidth <= inSampleHeight) {
             return inSampleHeight;
         } else {
@@ -238,10 +230,6 @@ public abstract class BitmapHelper {
         options.inSampleSize = inSampleSize;
         bitmap = BitmapFactory.decodeFile(path, options);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
-            Log.i(TAG, "decodeBitmapFromPath: allocation " + bitmap.getAllocationByteCount());
-        }
-        Log.i(TAG, "decodeBitmapFromPath: reduced size width " + bitmap.getWidth() + " height " + bitmap.getHeight());
         return bitmap;
     }
 
@@ -254,16 +242,10 @@ public abstract class BitmapHelper {
      * @return scaled bitmap
      */
     public static Bitmap getScaledBitmap(Bitmap bitmap, float maxSize) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
-            Log.i(TAG, "getScaledBitmap: before: " + bitmap.getAllocationByteCount());
-        }
         float width = (float) bitmap.getWidth();
         float heigth = (float) bitmap.getHeight();
         int[] widthHeight = BitmapHelper.calculateWidthAndHeighth(width, heigth, maxSize);
         bitmap = Bitmap.createScaledBitmap(bitmap, widthHeight[0], widthHeight[1], false);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && bitmap != null) {
-            Log.i(TAG, "getScaledBitmap: after: " + bitmap.getAllocationByteCount());
-        }
         return bitmap;
     }
 
