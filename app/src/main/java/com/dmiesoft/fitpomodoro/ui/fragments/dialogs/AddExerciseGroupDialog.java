@@ -52,7 +52,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
     private Bitmap bitmap;
     private View rootView;
     private boolean edit;
-
+    private String path;
 
     public AddExerciseGroupDialog() {
     }
@@ -252,22 +252,26 @@ public class AddExerciseGroupDialog extends DialogFragment {
             if (requestCode == PICKFILE_RESULT_CODE) {
                 Uri uri = data.getData();
                 FilePathGetter pathGetter = new FilePathGetter(getContext());
-                String path = pathGetter.getPath(uri);
-                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
-                //bugas ant samsung cyanogenmode
-                if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
-                imageView.setImageBitmap(bitmap);
+                path = pathGetter.getPath(uri);
+                getAndSetBitmap();
             }
         }
     }
 
+    private void getAndSetBitmap() {
+        bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
+        //bugas ant samsung cyanogenmode
+        if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
+            android.os.Process.killProcess(android.os.Process.myPid());
+        }
+        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+        imageView.setImageBitmap(bitmap);
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable("BITMAP", bitmap);
+        outState.putString("BITMAP_PATH", path);
         super.onSaveInstanceState(outState);
     }
 
@@ -275,8 +279,8 @@ public class AddExerciseGroupDialog extends DialogFragment {
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            bitmap = savedInstanceState.getParcelable("BITMAP");
-            imageView.setImageBitmap(bitmap);
+            path = savedInstanceState.getString("BITMAP_PATH");
+            getAndSetBitmap();
         }
     }
 

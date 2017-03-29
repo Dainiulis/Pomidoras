@@ -66,6 +66,7 @@ public class AddExerciseDialog extends DialogFragment {
     private String exerciseType = "reps";
     private long exerciseGroupId;
     private int edit;
+    private String path;
 
     public AddExerciseDialog() {
     }
@@ -301,7 +302,6 @@ public class AddExerciseDialog extends DialogFragment {
 
     public interface AddExerciseDialogListener {
         void onSaveExerciseClicked(Exercise exercise);
-
         void onUpdateExerciseClicked(Exercise exercise);
     }
 
@@ -309,26 +309,28 @@ public class AddExerciseDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
             if (requestCode == PICKFILE_RESULT_CODE) {
-                Log.i(TAG, "onActivityResult: *****************************************************************");
                 Uri uri = data.getData();
                 FilePathGetter pathGetter = new FilePathGetter(getContext());
-                String path = pathGetter.getPath(uri);
-                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
-                //bugas ant samsung cyanogenmode
-                if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                }
-                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
-                imageView.setImageBitmap(bitmap);
-                Log.i(TAG, "onActivityResult: *********************************************************************");
+                path = pathGetter.getPath(uri);
+                getAndSetBitmap();
             }
         }
     }
 
+    private void getAndSetBitmap() {
+        bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
+        //bugas ant samsung cyanogenmode
+        if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
+            android.os.Process.killProcess(android.os.Process.myPid());
+        }
+        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
+        imageView.setImageBitmap(bitmap);
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
-//        outState.putParcelable("BITMAP", bitmap);
+        outState.putString("BITMAP", path);
         super.onSaveInstanceState(outState);
     }
 
@@ -336,8 +338,8 @@ public class AddExerciseDialog extends DialogFragment {
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            bitmap = savedInstanceState.getParcelable("BITMAP");
-            imageView.setImageBitmap(bitmap);
+            path = savedInstanceState.getString("BITMAP");
+            getAndSetBitmap();
         }
     }
 }
