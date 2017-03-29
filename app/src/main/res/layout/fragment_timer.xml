@@ -13,31 +13,18 @@
         android:layout_width="wrap_content"
         android:layout_gravity="center"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="3"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         app:text="time"
         app:strokeWidth="@dimen/custom_timer_stroke_width"
         app:textColor="@android:color/darker_gray"
         app:textSize="@dimen/timer_text_size" />
 
-    <!--<TextView-->
-        <!--android:id="@+id/timerTypeText"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_below="@+id/customTimer"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_centerVertical="true"-->
-        <!--android:layout_margin="5dp"-->
-        <!--android:text="timerType"-->
-        <!--android:textColor="@android:color/black"-->
-        <!--android:textSize="24sp" />-->
-
-    <ImageView
-        android:id="@+id/timerTypeImage"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center"
-        android:padding="10dp"
         android:layout_weight="4"
         android:layout_margin="5dp"/>
 

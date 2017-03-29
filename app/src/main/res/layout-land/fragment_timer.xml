@@ -18,30 +18,13 @@
         android:layout_gravity="center"
         android:layout_marginLeft="@dimen/timer_land_left_margin"
         android:layout_marginStart="@dimen/timer_land_left_margin"
-        android:layout_weight="4"
+        android:layout_weight="3"
         app:text="time"
         app:textColor="@android:color/darker_gray"
         app:textSize="@dimen/timer_text_size" />
 
-    <!--<TextView-->
-    <!--android:id="@+id/timerTypeText"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_centerVertical="true"-->
-    <!--android:layout_marginLeft="@dimen/timer_land_left_margin"-->
-    <!--android:layout_marginStart="@dimen/timer_land_left_margin"-->
-    <!--android:layout_toLeftOf="@+id/btnLayout"-->
-    <!--android:layout_toStartOf="@+id/btnLayout"-->
-    <!--android:layout_alignParentTop="true"-->
-    <!--android:padding="10dp"-->
-    <!--android:text="timerType"-->
-    <!--android:textAlignment="viewEnd"-->
-    <!--android:gravity="end"-->
-    <!--android:textColor="@android:color/black"-->
-    <!--android:textSize="20sp" />-->
-
-    <ImageView
-        android:id="@+id/timerTypeImage"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"

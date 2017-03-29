@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -308,24 +309,26 @@ public class AddExerciseDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
             if (requestCode == PICKFILE_RESULT_CODE) {
+                Log.i(TAG, "onActivityResult: *****************************************************************");
                 Uri uri = data.getData();
                 FilePathGetter pathGetter = new FilePathGetter(getContext());
                 String path = pathGetter.getPath(uri);
-                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
+                bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
                 //bugas ant samsung cyanogenmode
                 if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
                     android.os.Process.killProcess(android.os.Process.myPid());
                 }
-                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
                 imageView.setImageBitmap(bitmap);
+                Log.i(TAG, "onActivityResult: *********************************************************************");
             }
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable("BITMAP", bitmap);
+//        outState.putParcelable("BITMAP", bitmap);
         super.onSaveInstanceState(outState);
     }
 
