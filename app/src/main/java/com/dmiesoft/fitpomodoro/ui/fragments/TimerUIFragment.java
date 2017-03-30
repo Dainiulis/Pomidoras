@@ -209,6 +209,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     /**
      * This method is used to animate custom timer position on screen
+     * 
      */
     private void animateCustomTimer() {
         if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
