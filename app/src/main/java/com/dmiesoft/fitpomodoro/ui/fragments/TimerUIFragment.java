@@ -1,32 +1,23 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
@@ -37,14 +28,11 @@ import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.ExerciseInTimerUIFragment;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
-import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
+import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Vector;
 
@@ -64,6 +52,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private TimerUIFragmentListener mListener;
     private ViewPager mViewPager;
     private ExercisePagerAdapter pagerAdapter;
+    private View fakeView;
+    private ObjectAnimator customTimerAnimator;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -127,6 +117,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     private void initViews(View view) {
 
+        fakeView = view.findViewById(R.id.fake_view);
         mViewPager = (ViewPager) view.findViewById(R.id.pager);
 
         customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
@@ -175,7 +166,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         return false;
     }
 
-    //  ***Handle buttons***
+//  *********Handle buttons**********
     private void handleBtnStop() {
         setBtnTypes(BTN_STOP);
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
@@ -217,35 +208,14 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     /**
-     * Helper method to calculate pixels from density independent pixels
-     *
-     * @param dp density independent pixels
-     * @return result in pixels
+     * This method is used to animate custom timer position on screen
      */
-    private float getPixels(float dp) {
-        Display display = getActivity().getWindowManager().getDefaultDisplay();
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        display.getMetrics(outMetrics);
-        float pixels = dp * outMetrics.density;
-        return pixels;
-    }
-
-    /**
-     * This method is required for determining fab button placement
-     *
-     * @return
-     */
-    private int getOrientation() {
-        DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
-        float width = display.getWidth();
-        float height = display.getHeight();
-        int orientation;
-        if (width < height) {
-            orientation = Configuration.ORIENTATION_PORTRAIT;
+    private void animateCustomTimer() {
+        if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
+            Toast.makeText(getActivity(), "PORTRAIT", Toast.LENGTH_SHORT).show();
         } else {
-            orientation = Configuration.ORIENTATION_LANDSCAPE;
+            Toast.makeText(getActivity(), "LANDSCAPE", Toast.LENGTH_SHORT).show();
         }
-        return orientation;
     }
 
     public void setExercise(Exercise exercise) {
@@ -272,8 +242,14 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         } else {
             setBtnTypes(BTN_STOP);
         }
+        animateCustomTimer();
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
             mViewPager.setAdapter(null);
+            fakeView.setVisibility(View.VISIBLE);
+            mViewPager.setVisibility(View.GONE);
+        } else {
+            fakeView.setVisibility(View.GONE);
+            mViewPager.setVisibility(View.VISIBLE);
         }
     }
 

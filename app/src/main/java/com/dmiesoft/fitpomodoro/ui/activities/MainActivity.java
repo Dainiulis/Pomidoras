@@ -7,13 +7,11 @@ import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -64,7 +62,7 @@ import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
+import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
 
@@ -580,9 +578,9 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
-                DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(this);
-                float width = (int) displayWidthHeight.getWidth();
-                float height = displayWidthHeight.getHeight();
+                DisplayHelper displayHelper = new DisplayHelper(this);
+                float width = (int) displayHelper.getWidth();
+                float height = displayHelper.getHeight();
                 float density = getResources().getDisplayMetrics().density;
                 float dpW = width / density;
                 float dpH = height / density;

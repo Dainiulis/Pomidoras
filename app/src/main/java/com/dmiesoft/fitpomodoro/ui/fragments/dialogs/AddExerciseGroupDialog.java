@@ -26,7 +26,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
-import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
+import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
 import com.dmiesoft.fitpomodoro.utils.helpers.FilePathGetter;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
@@ -226,7 +226,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
+        DisplayHelper display = new DisplayHelper(getActivity());
         int width = (int) display.getWidth();
         float density = getActivity().getResources().getDisplayMetrics().density;
         int dp = (int) (width / density);
