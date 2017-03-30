@@ -10,9 +10,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
@@ -33,18 +31,18 @@ public abstract class BitmapHelper {
     private static final String TAG = "BH";
 
     public static float getMaxSize(Activity activity) {
-        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        return Math.max(displayWidthHeight.getWidth() / 2, displayWidthHeight.getHeight() / 2);
+        DisplayHelper displayHelper = new DisplayHelper(activity);
+        return Math.max(displayHelper.getWidth() / 2, displayHelper.getHeight() / 2);
     }
 
     public static int getRequiredWidth(Activity activity) {
-        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        return (int) displayWidthHeight.getWidth() / 2;
+        DisplayHelper displayHelper = new DisplayHelper(activity);
+        return (int) displayHelper.getWidth() / 2;
     }
 
     public static int getRequiredHeight(Activity activity) {
-        DisplayWidthHeight displayWidthHeight = new DisplayWidthHeight(activity);
-        return (int) displayWidthHeight.getHeight() / 2;
+        DisplayHelper displayHelper = new DisplayHelper(activity);
+        return (int) displayHelper.getHeight() / 2;
     }
 
     /**

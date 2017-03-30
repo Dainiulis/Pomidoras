@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,7 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.DisplayWidthHeight;
+import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
 import com.dmiesoft.fitpomodoro.utils.helpers.FilePathGetter;
 
@@ -285,7 +284,7 @@ public class AddExerciseDialog extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        DisplayWidthHeight display = new DisplayWidthHeight(getActivity());
+        DisplayHelper display = new DisplayHelper(getActivity());
         int width = (int) display.getWidth();
         float density = getActivity().getResources().getDisplayMetrics().density;
         int dp = (int) (width / density);
