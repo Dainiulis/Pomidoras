@@ -584,6 +584,7 @@ public class MainActivity extends AppCompatActivity
                 float density = getResources().getDisplayMetrics().density;
                 float dpW = width / density;
                 float dpH = height / density;
+                Log.i(TAG, "135 dp to px: " + DisplayHelper.getPixels(this, -135));
                 Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
                 Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();

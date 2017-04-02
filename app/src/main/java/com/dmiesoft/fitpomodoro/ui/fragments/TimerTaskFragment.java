@@ -28,13 +28,13 @@ import java.util.Random;
 
 public class TimerTaskFragment extends Fragment {
 
-    public static final int STATE_STOPPED = 141;
-    public static final int STATE_RUNNING = 493;
-    public static final int STATE_PAUSED = 94;
-    public static final int STATE_FINISHED = 99;
-    public static final int TYPE_WORK = 203;
-    public static final int TYPE_SHORT_BREAK = 784;
-    public static final int TYPE_LONG_BREAK = 736;
+    public static final int STATE_STOPPED = 90;
+    public static final int STATE_RUNNING = 91;
+    public static final int STATE_PAUSED = 92;
+    public static final int STATE_FINISHED = 93;
+    public static final int TYPE_WORK = 200;
+    public static final int TYPE_SHORT_BREAK = 201;
+    public static final int TYPE_LONG_BREAK = 202;
 
     private int mCurrentState, mCurrentType, mPreviousState;
     private static final String TAG = "TTF";
