@@ -1,5 +1,6 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +17,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -46,14 +49,17 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private static final String WORK_IMAGE_NAME = "@_@work.png";
 
     private int mCurrentState, mCurrentType;
-    private long millisecs;
-    private CustomTimerView customTimerView;
-    private FloatingActionButton mainFab;
+    private long mMillisecs;
+    private CustomTimerView mCustomTimerView;
+    private FloatingActionButton mMainFab;
     private TimerUIFragmentListener mListener;
     private ViewPager mViewPager;
-    private ExercisePagerAdapter pagerAdapter;
-    private View fakeView;
-    private ObjectAnimator customTimerAnimator;
+    private ExercisePagerAdapter mPagerAdapter;
+    private View mFakeView;
+    private ObjectAnimator mCustomTimerAnimator;
+    private String mPropertyName;
+    private boolean mShouldAnimate;
+    private LinearLayout container;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -62,14 +68,15 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mShouldAnimate = false;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mainFab = ((MainActivity) getActivity()).getMainFab();
-        if (mainFab != null) {
-            mainFab.hide();
+        mMainFab = ((MainActivity) getActivity()).getMainFab();
+        if (mMainFab != null) {
+            mMainFab.hide();
         }
     }
 
@@ -112,17 +119,18 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void setTimer() {
-        customTimerView.setmTimerText(getTimerString(millisecs));
+        mCustomTimerView.setmTimerText(getTimerString(mMillisecs));
     }
 
     private void initViews(View view) {
 
-        fakeView = view.findViewById(R.id.fake_view);
+        container = (LinearLayout) view.findViewById(R.id.content_fragment_timer);
+        mFakeView = view.findViewById(R.id.fake_view);
         mViewPager = (ViewPager) view.findViewById(R.id.pager);
 
-        customTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
-        customTimerView.setOnClickListener(this);
-        customTimerView.setOnLongClickListener(this);
+        mCustomTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
+        mCustomTimerView.setOnClickListener(this);
+        mCustomTimerView.setOnLongClickListener(this);
     }
 
     private String getTimerString(long millisUntilFinished) {
@@ -166,8 +174,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         return false;
     }
 
-//  *********Handle buttons**********
+    //  *********Handle buttons**********
     private void handleBtnStop() {
+        if (mCurrentType != TimerTaskFragment.TYPE_WORK) {
+            mShouldAnimate = true;
+        }
         setBtnTypes(BTN_STOP);
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
         timerHandler.setCurrentState(TimerTaskFragment.STATE_STOPPED);
@@ -177,7 +188,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void handleBtnStartPause() {
-        if (customTimerView.getTag().equals(BTN_START)) {
+        if (mCustomTimerView.getTag().equals(BTN_START)) {
             setBtnTypes(BTN_START);
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_RUNNING);
@@ -185,7 +196,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
             EventBus.getDefault().post(timerHandler);
 
-        } else if (customTimerView.getTag().equals(BTN_PAUSE)) {
+        } else if (mCustomTimerView.getTag().equals(BTN_PAUSE)) {
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_PAUSED);
             timerHandler.setCurrentType(mCurrentType);
@@ -199,35 +210,72 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     //      Change buttons and timer textview according to btn tag
     private void setBtnTypes(int clickedButtonTag) {
         if (clickedButtonTag == BTN_START) {
-            customTimerView.setTag(BTN_PAUSE);
+            mCustomTimerView.setTag(BTN_PAUSE);
         } else if (clickedButtonTag == BTN_PAUSE) {
-            customTimerView.setTag(BTN_START);
+            mCustomTimerView.setTag(BTN_START);
         } else {
-            customTimerView.setTag(BTN_START);
+            mCustomTimerView.setTag(BTN_START);
         }
     }
 
     /**
      * This method is used to animate custom timer position on screen
-     * 
      */
-    private void animateCustomTimer() {
+    private void animateCustomTimer(final boolean hideViewPager, float... values) {
         if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
-            Toast.makeText(getActivity(), "PORTRAIT", Toast.LENGTH_SHORT).show();
+            mPropertyName = "translationY";
         } else {
-            Toast.makeText(getActivity(), "LANDSCAPE", Toast.LENGTH_SHORT).show();
+            mPropertyName = "translationX";
         }
+        mCustomTimerAnimator = ObjectAnimator.ofFloat(mCustomTimerView, mPropertyName, values);
+        mCustomTimerAnimator.setInterpolator(new DecelerateInterpolator());
+        mCustomTimerAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mCustomTimerAnimator.setDuration(0);
+                mCustomTimerAnimator.setFloatValues((float) mCustomTimerAnimator.getAnimatedValue(), 0);
+                mCustomTimerAnimator.start();
+                if (hideViewPager) {
+                    mViewPager.setVisibility(View.GONE);
+                    mFakeView.setVisibility(View.VISIBLE);
+                } else {
+                    mFakeView.setVisibility(View.GONE);
+                    mViewPager.setVisibility(View.VISIBLE);
+                }
+                mShouldAnimate = false;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        mCustomTimerAnimator.setDuration(1000);
+        mCustomTimerAnimator.start();
+
     }
 
     public void setExercise(Exercise exercise) {
-        Log.i(TAG, "setExercise: " + exercise.getName());
-        pagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise);
-        mViewPager.setAdapter(pagerAdapter);
+        mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise);
+        mViewPager.setAdapter(mPagerAdapter);
     }
 
     @Subscribe
     public void onTimerChange(TimerSendTimeEvent event) {
-        millisecs = event.getMillisecs();
+        mMillisecs = event.getMillisecs();
+        if (mMillisecs < 1000) {
+            mShouldAnimate = true;
+        }
         setTimer();
     }
 
@@ -235,7 +283,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
-        customTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
+        mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);
         } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED || mCurrentState == TimerTaskFragment.STATE_FINISHED) {
@@ -243,20 +291,43 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         } else {
             setBtnTypes(BTN_STOP);
         }
-        animateCustomTimer();
+
+        manageCustomTimerAnimation();
+    }
+
+    private void manageCustomTimerAnimation() {
         if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
             mViewPager.setAdapter(null);
-            fakeView.setVisibility(View.VISIBLE);
+            mFakeView.setVisibility(View.VISIBLE);
             mViewPager.setVisibility(View.GONE);
+            if (mShouldAnimate) {
+                float animationDistance = getAnimationDistance();
+                animateCustomTimer(true, -animationDistance, 0f);
+            }
         } else {
-            fakeView.setVisibility(View.GONE);
-            mViewPager.setVisibility(View.VISIBLE);
+            if (mShouldAnimate) {
+                float animationDistance = getAnimationDistance();
+                animateCustomTimer(false, 0f, -animationDistance);
+            } else {
+                mFakeView.setVisibility(View.GONE);
+                mViewPager.setVisibility(View.VISIBLE);
+            }
         }
+    }
+
+    private float getAnimationDistance() {
+        float animationDistance = 0;
+        if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
+            animationDistance = (float) (container.getHeight() / 2 - mCustomTimerView.getHeight() / 2 - container.getHeight() * 0.08);
+        } else {
+            animationDistance = (float) (container.getWidth() / 2 - mCustomTimerView.getWidth() / 2 - container.getWidth() * 0.08);
+        }
+        return animationDistance;
     }
 
     @Subscribe
     public void onCircleProgressChanged(CircleProgressEvent event) {
-        customTimerView.drawProgress(event.getCircleProgress());
+        mCustomTimerView.drawProgress(event.getCircleProgress());
     }
 
     @Subscribe
