@@ -169,7 +169,11 @@ public class CustomTimerView extends View {
 
     private void updateBounds() {
         float thickness = getWidth() * THICKNESS_SCALE;
-        mCircleOuterBounds = new RectF(0 + thickness, 0 + thickness, getWidth() - thickness, getHeight() - thickness);
+        mCircleOuterBounds = new RectF(
+                getPaddingLeft() + thickness,
+                getPaddingTop() + thickness,
+                getWidth() - thickness - getPaddingRight(),
+                getHeight() - thickness -  getPaddingBottom());
 
         //nebereikia nes naudoju fill o ne
 //        mCircleInnerBounds = new RectF(

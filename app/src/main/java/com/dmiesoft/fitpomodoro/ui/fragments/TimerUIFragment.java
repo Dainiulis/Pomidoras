@@ -318,9 +318,19 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private float getAnimationDistance() {
         float animationDistance = 0;
         if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
-            animationDistance = (float) (container.getHeight() / 2 - mCustomTimerView.getHeight() / 2 - container.getHeight() * 0.08);
+            if (mCurrentType != TimerTaskFragment.TYPE_WORK) {
+                animationDistance = mCustomTimerView.getTop();
+            } else {
+                // found sweet spot by dividing by 4
+                // it works because the timer is not in exact middle position of the layout
+                animationDistance = container.getHeight() / 4;
+            }
         } else {
-            animationDistance = (float) (container.getWidth() / 2 - mCustomTimerView.getWidth() / 2 - container.getWidth() * 0.08);
+            if (mCurrentType != TimerTaskFragment.TYPE_WORK) {
+                animationDistance = mCustomTimerView.getLeft();
+            } else {
+                animationDistance = container.getWidth() / 4;
+            }
         }
         return animationDistance;
     }
