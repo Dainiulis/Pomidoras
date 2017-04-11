@@ -323,6 +323,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
         if (prefs.getBoolean(SettingsActivity.FIRST_TIME_LOAD, true)) {
+            prefs.edit().putLong(TimerUIFragment.SELECTED_FAVORITE, -1).apply();
             firstTimeDatabaseInitialize();
         }
     }
@@ -638,8 +639,8 @@ public class MainActivity extends AppCompatActivity
                     if (whatToDelete.equals(ExercisesGroup.class.toString())) {
                         List<Long> exercisesIds = new ArrayList<Long>();
                         for (int i = 0; i < deleteIdList.size(); i++) {
-                            String[] selectionArgs = {String.valueOf(exercisesGroups.get(deleteIdList.get(i)).getId()) };
-                            exercisesIds.addAll(dataSource.getAllExercisesIds(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + "=?", selectionArgs));
+                            String[] selectionArgs = {String.valueOf(exercisesGroups.get(deleteIdList.get(i)).getId())};
+                            exercisesIds.addAll(dataSource.getExercisesIds(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + "=?", selectionArgs, -1));
                         }
                         for (int i = 0; i < exercisesIds.size(); i++) {
                             favExIdsMap.put(exercisesIds.get(i), favorites.get(position).getId());
@@ -846,10 +847,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onExerciseIdRequested() {
+    public void onExercisesIdsRequested() {
         TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+        long favoriteId = prefs.getLong(TimerUIFragment.SELECTED_FAVORITE, -1);
+        Log.i(TAG, "onExercisesIdsRequested: " + favoriteId);
         if (fragment != null) {
-            exercisesIds = dataSource.getAllExercisesIds(null, null);
+            exercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
             fragment.setmExercisesIds(exercisesIds);
         }
     }
@@ -862,6 +865,15 @@ public class MainActivity extends AppCompatActivity
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.setExercise(exercise);
+        }
+    }
+
+    @Override
+    public void onFavoritesListRequested() {
+        List<Favorite> favorites = dataSource.getAllFavorites();
+        TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
+        if (fragment != null) {
+            fragment.setFavorites(favorites);
         }
     }
 

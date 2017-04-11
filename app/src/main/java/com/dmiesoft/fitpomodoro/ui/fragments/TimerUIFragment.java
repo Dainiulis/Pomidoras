@@ -2,25 +2,33 @@ package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.util.Property;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -30,6 +38,7 @@ import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.ExerciseInTimerUIFragment;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
@@ -48,7 +57,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private static final int BTN_PAUSE = 1002;
     private static final int BTN_STOP = 1003;
     public static final String TAG = "TIMER";
-    private static final String WORK_IMAGE_NAME = "@_@work.png";
+    public static final String SELECTED_FAVORITE = "selected_favorite";
 
     private int mCurrentState, mCurrentType;
     private long mMillisecs;
@@ -62,6 +71,10 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private Property<View, Float> mPropertyName;
     private boolean mShouldAnimate;
     private LinearLayout container;
+    private List<Favorite> favorites;
+    private ArrayAdapter<Favorite> mSpinnerAdapter;
+    private SharedPreferences sharedPrefs;
+    private Favorite favorite;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -71,6 +84,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mShouldAnimate = false;
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
     }
 
     @Override
@@ -96,9 +110,46 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        mListener.onFavoritesListRequested();
+        setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.fragment_timer, container, false);
         initViews(view);
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.timer_menu, menu);
+
+        MenuItem item = menu.findItem(R.id.fav_spinner);
+        Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
+        long selectedId = sharedPrefs.getLong(SELECTED_FAVORITE, -1);
+        int selectionPosition = 0;
+        mSpinnerAdapter = new ArrayAdapter<Favorite>(getActivity(),
+                R.layout.favorite_spinner_layout, favorites);
+        spinner.setAdapter(mSpinnerAdapter);
+
+        for (Favorite fav : favorites) {
+            if (selectedId == fav.getId()) {
+                selectionPosition = mSpinnerAdapter.getPosition(fav);
+            }
+        }
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                long favId = ((Favorite) parent.getItemAtPosition(position)).getId();
+                sharedPrefs.edit().putLong(SELECTED_FAVORITE, favId).apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+        spinner.setSelection(selectionPosition);
+
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -401,8 +452,18 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         }
     }
 
+    public void setFavorites(List<Favorite> favorites) {
+        this.favorites = favorites;
+        Favorite all = new Favorite();
+        all.setId(-1);
+        all.setName("All");
+        favorites.add(0, all);
+//        favorites.addAll(favorites);
+    }
+
     public interface TimerUIFragmentListener {
         void onRandomExerciseRequested(long randExerciseId);
+        void onFavoritesListRequested();
     }
 
     private class ExercisePagerAdapter extends FragmentStatePagerAdapter {
