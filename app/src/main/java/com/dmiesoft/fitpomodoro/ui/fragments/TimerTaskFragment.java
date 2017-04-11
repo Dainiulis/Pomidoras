@@ -9,15 +9,14 @@ import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.animation.LinearInterpolator;
-import android.widget.ViewAnimator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
+import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 
 import org.greenrobot.eventbus.EventBus;
@@ -45,6 +44,7 @@ public class TimerTaskFragment extends Fragment {
     private TimerTypeStateHandlerEvent timerHandlerEvent;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
+    private Favorite favorite;
 
     ////////// Circle variables /////////////////
     static final int CIRCLE_RESUME = 7235;
@@ -284,7 +284,7 @@ public class TimerTaskFragment extends Fragment {
      * (Later update to request for favorite exercises)
      */
     private void requestExercisesIds() {
-        mListener.onExerciseIdRequested();
+        mListener.onExercisesIdsRequested();
     }
 
     /**
@@ -413,6 +413,6 @@ public class TimerTaskFragment extends Fragment {
     }
 
     public interface TimerTaskFragmentListener {
-        void onExerciseIdRequested();
+        void onExercisesIdsRequested();
     }
 }

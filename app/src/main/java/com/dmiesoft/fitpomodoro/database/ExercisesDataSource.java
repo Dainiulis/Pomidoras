@@ -176,13 +176,31 @@ public class ExercisesDataSource {
         return exercises;
     }
 
-    public List<Long> getAllExercisesIds(String selection, String[] selectionArgs) {
-        String[] exercise_id_columnt_name = {DatabaseContract.ExercisesTable._ID};
+    /**
+     * @param selection
+     * @param selectionArgs
+     * @param favoriteId    pass -1 if not looking from favorites
+     * @return
+     */
+    public List<Long> getExercisesIds(String selection, String[] selectionArgs, long favoriteId) {
+        String[] exercise_id_column_name = {DatabaseContract.ExercisesTable._ID};
         List<Long> idList = new ArrayList<>();
-        Cursor cursor = database.query(
-                DatabaseContract.ExercisesTable.TABLE_NAME,
-                exercise_id_columnt_name,
-                selection, selectionArgs, null, null, null);
+        Cursor cursor;
+        if (favoriteId == -1) {
+            cursor = database.query(
+                    DatabaseContract.ExercisesTable.TABLE_NAME,
+                    exercise_id_column_name,
+                    selection, selectionArgs, null, null, null);
+        } else {
+            cursor = database.rawQuery(
+                    "SELECT " + DatabaseContract.ExercisesTable._ID +
+                            " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+                            " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
+                            " ON " + DatabaseContract.ExercisesTable._ID + " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
+                            " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = " + String.valueOf(favoriteId),
+                    null
+            );
+        }
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -231,7 +249,7 @@ public class ExercisesDataSource {
     }
 
     public void createFavExIds(HashMap<Long, Long> favExIds) {
-        Log.i(TAG, "createFavExIds: " +favExIds.size());
+        Log.i(TAG, "createFavExIds: " + favExIds.size());
         for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
             ContentValues values = new ContentValues();
             values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
@@ -274,14 +292,14 @@ public class ExercisesDataSource {
         for (int i = 0; i < unfavoriteIdList.size(); i++) {
             String where = DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID + "=? AND " +
                     DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + "=?";
-            String[] whereArgs = { String.valueOf(exercises.get(unfavoriteIdList.get(i)).getId()), String.valueOf(favoriteId)};
+            String[] whereArgs = {String.valueOf(exercises.get(unfavoriteIdList.get(i)).getId()), String.valueOf(favoriteId)};
             database.delete(DatabaseContract.FavExIdsTable.TABLE_NAME, where, whereArgs);
         }
     }
 
     public void deleteFavorite(long favoriteId) {
         String where = DatabaseContract.FavoritesTable._ID + "=?";
-        String[] whereArgs = { String.valueOf(favoriteId) };
+        String[] whereArgs = {String.valueOf(favoriteId)};
         database.delete(DatabaseContract.FavoritesTable.TABLE_NAME, where, whereArgs);
     }
 
