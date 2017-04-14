@@ -3,6 +3,7 @@ package com.dmiesoft.fitpomodoro.ui.fragments.dialogs;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -10,7 +11,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
 import com.dmiesoft.fitpomodoro.utils.helpers.FilePathGetter;
@@ -33,7 +37,9 @@ import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class AddExerciseGroupDialog extends DialogFragment {
 
@@ -205,21 +211,22 @@ public class AddExerciseGroupDialog extends DialogFragment {
             File oldImage = BitmapHelper.getFileFromImages(exercisesGroup.getImage(), getContext());
             boolean deleted = oldImage.delete();
         }
-        if (bitmap != null) {
-            exercisesGroup.setImage("@" + name + ".png");
-            BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
-        }
+        saveImage(name);
         exercisesGroup.setName(name);
         mListener.onUpdateExercisesGroupClicked(exercisesGroup);
     }
 
-    private void saveExercisesGroup(String name) {
-        ExercisesGroup exercisesGroup = new ExercisesGroup();
-        exercisesGroup.setName(name);
+    private void saveImage(String name) {
         if (bitmap != null) {
             exercisesGroup.setImage("@" + name + ".png");
             BitmapHelper.saveImage("@" + name + ".png", bitmap, getContext());
         }
+    }
+
+    private void saveExercisesGroup(String name) {
+        exercisesGroup = new ExercisesGroup();
+        exercisesGroup.setName(name);
+        saveImage(name);
         mListener.onSaveExercisesGroupClicked(exercisesGroup);
     }
 
@@ -262,10 +269,13 @@ public class AddExerciseGroupDialog extends DialogFragment {
         bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
         //bugas ant samsung cyanogenmode
         if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
-            android.os.Process.killProcess(android.os.Process.myPid());
+            AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
         }
-        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+        try {
+            bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
+        } catch (NullPointerException e) {
+            Log.i(TAG, "getAndSetBitmap: " + e.getMessage());
+        }
         imageView.setImageBitmap(bitmap);
     }
 

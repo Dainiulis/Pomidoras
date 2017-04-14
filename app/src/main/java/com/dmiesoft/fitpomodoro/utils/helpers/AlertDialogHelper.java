@@ -95,4 +95,19 @@ public class AlertDialogHelper {
         return builder;
     }
 
+    public static void showErrorDialogWhenNotLoadingImg(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Error");
+        builder.setMessage("There was permissions bug. Please clear app from memory by pressing recent apps button, " +
+                "start again and it should work or try it by pressing Clear button. " +
+                "Sorry for the inconvenience.");
+        builder.setPositiveButton("Clear", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+        });
+        builder.show();
+    }
+
 }

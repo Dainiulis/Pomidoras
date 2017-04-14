@@ -112,7 +112,7 @@ public class MultiSelectionFragment extends Fragment{
         if (whatToDelete == null) {
             return;
         }
-        File[] allImages = new File(context.getFilesDir(), "images").listFiles();
+        File[] allImages = new File(context.getExternalFilesDir(null), "images").listFiles();
         for (Object o : map.values()) {
             if (whatToDelete.equals(ExercisesGroup.class.toString())) {
                 ExercisesGroup eG = ((ExercisesGroup)o);

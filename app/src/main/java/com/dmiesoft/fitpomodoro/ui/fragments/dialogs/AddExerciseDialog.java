@@ -29,6 +29,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
@@ -238,24 +239,25 @@ public class AddExerciseDialog extends DialogFragment {
             File oldImage = BitmapHelper.getFileFromImages(exercise.getImage(), getContext());
             boolean deleted = oldImage.delete();
         }
-        if (bitmap != null) {
-            exercise.setImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png");
-            BitmapHelper.saveImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png", bitmap, getContext());
-        }
+        saveImage(name);
         exercise.setName(name);
         exercise.setType(exerciseType);
         mListener.onUpdateExerciseClicked(exercise);
     }
 
-    private void saveExercise(String name) {
-        Exercise exercise = new Exercise();
-        exercise.setName(name);
-        exercise.setExerciseGroupId(exerciseGroupId);
-        exercise.setType(exerciseType);
+    private void saveImage(String name) {
         if (bitmap != null) {
             exercise.setImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png");
             BitmapHelper.saveImage("@" + exercise.getExerciseGroupId() + "@" + name + ".png", bitmap, getContext());
         }
+    }
+
+    private void saveExercise(String name) {
+        exercise = new Exercise();
+        exercise.setName(name);
+        exercise.setExerciseGroupId(exerciseGroupId);
+        exercise.setType(exerciseType);
+        saveImage(name);
         mListener.onSaveExerciseClicked(exercise);
     }
 
@@ -320,8 +322,7 @@ public class AddExerciseDialog extends DialogFragment {
         bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
         //bugas ant samsung cyanogenmode
         if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Toast.makeText(getActivity(), "Could not load image please try again...", Toast.LENGTH_SHORT).show();
-            android.os.Process.killProcess(android.os.Process.myPid());
+            AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
         }
         bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
         imageView.setImageBitmap(bitmap);

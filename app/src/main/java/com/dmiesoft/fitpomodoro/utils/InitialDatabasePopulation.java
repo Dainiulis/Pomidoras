@@ -4,6 +4,7 @@ package com.dmiesoft.fitpomodoro.utils;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
@@ -79,7 +80,7 @@ public class InitialDatabasePopulation {
     }
 
     private void copyAssets(boolean cpExercise, String exerciseImgName, String imageName) {
-        File f = new File(context.getFilesDir(), "images");
+        File f = new File(context.getExternalFilesDir(null), "images");
         if (!f.exists()) {
             f.mkdir();
         }
@@ -104,6 +105,7 @@ public class InitialDatabasePopulation {
 
 
                 String path = BitmapHelper.getFileFromImages(finalFileName, context).getAbsolutePath();
+                Log.i(TAG, "copyAssets: " + path);
                 Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
 //                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
                 BitmapHelper.saveImage(finalFileName, bitmap, context);

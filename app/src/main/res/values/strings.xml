@@ -32,4 +32,5 @@
     <string name="my_app_license_header">FitPomodoro v1.0.0 [ beta ]</string>
     <string name="my_app_license">© 2017 DMieSoft \n Third-party licenses:</string>
     <string name="delete">Delete</string>
+    <string name="could_not_load_img">There was an error. Please clear app from memory and start again.</string>
 </resources>
