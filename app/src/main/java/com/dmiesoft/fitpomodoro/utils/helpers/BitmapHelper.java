@@ -18,6 +18,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.UUID;
 
 /**
  * This abstraact class helps to perform certain operations with bitmap files
@@ -193,6 +194,10 @@ public abstract class BitmapHelper {
         }
     }
 
+    public static String getUniqueNameForImage(String name) {
+        return UUID.nameUUIDFromBytes(name.getBytes()).toString();
+    }
+
     /**
      * Get file from images directory
      *
@@ -202,7 +207,8 @@ public abstract class BitmapHelper {
      */
     @NonNull
     public static File getFileFromImages(String fileName, Context context) {
-        File internalFolder = new File(context.getFilesDir(), "images");
+//        File internalFolder = new File(context.getFilesDir(), "images");
+        File internalFolder = new File(context.getExternalFilesDir(null), "images");
         if (!internalFolder.exists()) {
             internalFolder.mkdir();
         }

@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -588,6 +589,10 @@ public class MainActivity extends AppCompatActivity
                 Log.i(TAG, "135 dp to px: " + DisplayHelper.getPixels(this, -135));
                 Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
                 Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
+                Log.i(TAG, "external cahche: " + getExternalCacheDir());
+                Log.i(TAG, "external files dir: " + getExternalFilesDir(null));
+                Log.i(TAG, "external state: " + Environment.getExternalStorageState());
+                Log.i(TAG, "external media dir: " + Environment.getExternalStorageDirectory());
                 firstTimeDatabaseInitialize();
 
                 break;
