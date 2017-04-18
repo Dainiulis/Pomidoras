@@ -7,6 +7,7 @@ public class TimerTypeStateHandlerEvent {
 
     private int currentState;
     private int currentType;
+    private boolean shouldAnimate;
     private int publisher;
 
     public TimerTypeStateHandlerEvent() {}
@@ -33,5 +34,13 @@ public class TimerTypeStateHandlerEvent {
 
     public void setPublisher(int publisher) {
         this.publisher = publisher;
+    }
+
+    public boolean isShouldAnimate() {
+        return shouldAnimate;
+    }
+
+    public void setShouldAnimate(boolean shouldAnimate) {
+        this.shouldAnimate = shouldAnimate;
     }
 }
