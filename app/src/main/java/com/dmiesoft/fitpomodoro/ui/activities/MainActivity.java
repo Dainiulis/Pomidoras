@@ -867,6 +867,7 @@ public class MainActivity extends AppCompatActivity
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
         Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
+        Log.i(TAG, randExerciseId + " onRandomExerciseRequested: " + exercise.getId() + " " + exercise.getName());
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.setExercise(exercise);

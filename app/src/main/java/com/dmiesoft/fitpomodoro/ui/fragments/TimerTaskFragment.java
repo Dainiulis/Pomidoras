@@ -9,6 +9,8 @@ import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
@@ -135,7 +137,7 @@ public class TimerTaskFragment extends Fragment {
     private void initStartingTimerAnimVars() {
         mAnimatedVal = 0;
         mAnimationFraction = (float) 1000 / (float) millisecs;
-        mNextSecond = (int) (millisecs/1000) - 1;
+        mNextSecond = (int) (millisecs / 1000) - 1;
     }
 
     private int getWhenLongBreak() {
@@ -232,7 +234,9 @@ public class TimerTaskFragment extends Fragment {
                  */
                 if (previousType == TYPE_SHORT_BREAK || previousType == TYPE_LONG_BREAK) {
                     setmCurrentType(TYPE_WORK);
-                    mExerciseId = -1;
+                    if (isContinuous()) {
+                        mExerciseId = -1;
+                    }
                 }
                 setTimer();
                 mPreviousState = mCurrentState;
@@ -298,6 +302,7 @@ public class TimerTaskFragment extends Fragment {
                 mExerciseId = mExercisesIds.get(index);
             }
         }
+        Log.i(TAG, "sendRandomExerciseId: " + mExerciseId);
         EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
     }
 
@@ -305,6 +310,9 @@ public class TimerTaskFragment extends Fragment {
     public void onTimerButtonClicked(TimerTypeStateHandlerEvent event) {
         if (event.getPublisher() != TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT) {
             return;
+        }
+        if (event.getCurrentType() == TYPE_WORK) {
+            mExerciseId = -1;
         }
         mPreviousState = mCurrentState;
         if (event.getCurrentState() == STATE_RUNNING) {
@@ -320,8 +328,8 @@ public class TimerTaskFragment extends Fragment {
 //            handleTimerStates(CIRCLE_PAUSE);
             mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
-            if (mTimerAnimator != null) {
-            }
+//            if (mTimerAnimator != null) {
+//            }
             handleTimerStates(CIRCLE_STOP);
             timer.cancel();
             longBreakCounter = 0;
@@ -344,9 +352,7 @@ public class TimerTaskFragment extends Fragment {
                 mCircleProgressEvent.setCircleProgress(mAnimatedVal);
                 EventBus.getDefault().post(mCircleProgressEvent);
             }
-            if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
-                sendRandomExerciseId();
-            }
+            sendRandomExerciseId();
             postCurrentStateAndType();
         }
     }

@@ -267,7 +267,7 @@ public class ExercisesDataSource {
                         " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
                         " ON " + DatabaseContract.ExercisesTable._ID + " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
                         " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = " + String.valueOf(favoriteId) +
-                        " ORDER BY " + DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC",
+                        " ORDER BY " + DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC",
                 null
         );
 
