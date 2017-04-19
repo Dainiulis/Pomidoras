@@ -119,6 +119,7 @@ public class AddExerciseDialog extends DialogFragment {
         }
         initListeners();
 
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return rootView;
     }
 
@@ -303,6 +304,7 @@ public class AddExerciseDialog extends DialogFragment {
 
     public interface AddExerciseDialogListener {
         void onSaveExerciseClicked(Exercise exercise);
+
         void onUpdateExerciseClicked(Exercise exercise);
     }
 
@@ -339,7 +341,9 @@ public class AddExerciseDialog extends DialogFragment {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
             path = savedInstanceState.getString("BITMAP");
-            getAndSetBitmap();
+            if (path != null) {
+                getAndSetBitmap();
+            }
         }
     }
 }

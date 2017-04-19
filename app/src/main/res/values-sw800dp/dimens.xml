@@ -4,4 +4,5 @@
     <dimen name="timer_text_size">70sp</dimen>
     <dimen name="timer_land_left_margin">100dp</dimen>
     <dimen name="custom_timer_stroke_width">20dp</dimen>
+    <dimen name="number_count_and_text_size_in_nested_fragment">45sp</dimen>
 </resources>

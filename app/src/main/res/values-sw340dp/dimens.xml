@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="number_count_and_text_size_in_nested_fragment">30sp</dimen>
+</resources>

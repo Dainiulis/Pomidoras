@@ -4,11 +4,50 @@
     android:layout_height="match_parent"
     tools:context="com.dmiesoft.fitpomodoro.ui.fragments.nested.ExerciseInTimerUIFragment">
 
-    <TextView
-        android:id="@+id/exerciseDetails"
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/suggestionLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/exerciseName"
+            android:text="Zdare"
+            android:textSize="@dimen/number_count_and_text_size_in_nested_fragment"
+            android:layout_gravity="center"
+            android:layout_marginBottom="10dp"/>
+
+        <LinearLayout
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_remove"
+                android:id="@+id/substBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_margin="10dp"
+                android:id="@+id/repsTime"
+                android:text="22"
+                android:textSize="@dimen/number_count_and_text_size_in_nested_fragment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ImageButton
+                android:background="?attr/selectableItemBackground"
+                android:src="@drawable/ic_add"
+                android:id="@+id/addBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <ImageView
         android:layout_width="match_parent"
