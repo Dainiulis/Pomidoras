@@ -22,4 +22,5 @@
     <dimen name="timer_size">150dp</dimen>
     <dimen name="timer_text_size">25sp</dimen>
     <dimen name="custom_timer_stroke_width">10dp</dimen>
+    <dimen name="number_count_and_text_size_in_nested_fragment">22sp</dimen>
 </resources>

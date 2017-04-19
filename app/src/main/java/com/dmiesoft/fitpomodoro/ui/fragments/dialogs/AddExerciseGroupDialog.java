@@ -174,7 +174,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
                 dismiss();
             }
         });
-
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return rootView;
     }
 
@@ -290,7 +290,9 @@ public class AddExerciseGroupDialog extends DialogFragment {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
             path = savedInstanceState.getString("BITMAP_PATH");
-            getAndSetBitmap();
+            if (path != null) {
+                getAndSetBitmap();
+            }
         }
     }
 

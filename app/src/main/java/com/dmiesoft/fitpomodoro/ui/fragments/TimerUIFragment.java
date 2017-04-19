@@ -211,24 +211,26 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public boolean onLongClick(View v) {
         switch (v.getId()) {
             case R.id.customTimer:
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Are you sure?");
-                builder.setMessage("Would you like to end session?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        handleBtnStop();
-                        dialog.dismiss();
-                    }
-                });
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.show();
-                return true;
+                if (mCurrentState != TimerTaskFragment.STATE_STOPPED) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle("Are you sure?");
+                    builder.setMessage("Would you like to end session?");
+                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            handleBtnStop();
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
+                    return true;
+                }
         }
         return false;
     }
@@ -292,11 +294,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         mCustomTimerAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                mCustomTimerView.setClickable(false);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                mCustomTimerView.setClickable(true);
                 // next 3 lines are used to reset the position of timer
                 mCustomTimerAnimator.setDuration(0);
                 mCustomTimerAnimator.setFloatValues((float) mCustomTimerAnimator.getAnimatedValue(), 0);
@@ -369,9 +372,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                 }
             } else if (mCurrentState == TimerTaskFragment.STATE_STOPPED && mViewPager.getVisibility() == View.VISIBLE) {
                 animateViewPager(true, 1f, 0f);
-            } else if (mCurrentState == TimerTaskFragment.STATE_FINISHED) {
-//                Log.i(TAG, "manageViewsAnimation: ");
-//                manageFVandVPVisibility();
             }
         }
     }
@@ -450,7 +450,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     @Subscribe
     public void onTimerChange(TimerSendTimeEvent event) {
         mMillisecs = event.getMillisecs();
-        if (mMillisecs < 1000) {
+        if (mMillisecs < 500) {
+            Log.i(TAG, "onTimerChange: " + mMillisecs);
             mShouldAnimate = true;
         }
         setTimer();
@@ -480,7 +481,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     @Subscribe
     public void onRandExerciseIdReceived(ExerciseIdSendEvent event) {
         if (event.getExerciseId() != -1) {
-            Log.i(TAG, "onRandExerciseIdReceived: " + event.getExerciseId());
             mListener.onRandomExerciseRequested(event.getExerciseId());
         } else {
             Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
@@ -508,7 +508,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
         public ExercisePagerAdapter(FragmentManager fm, Exercise exercise) {
             super(fm);
-            Log.i(TAG, "ExercisePagerAdapter: " + exercise.getName() + exercise.getId());
             fragments = new Vector<>();
             fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, true));
             fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, false));
