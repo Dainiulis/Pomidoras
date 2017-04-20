@@ -3,6 +3,7 @@ package com.dmiesoft.fitpomodoro.ui.fragments.nested;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -67,6 +68,7 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         exerciseNameTV = (TextView) view.findViewById(R.id.exerciseName);
 
         repsTimeTV = (TextView) view.findViewById(R.id.repsTime);
+        repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
         subsBtn = (ImageButton) view.findViewById(R.id.substBtn);
         subsBtn.setOnClickListener(this);
         addBtn = (ImageButton) view.findViewById(R.id.addBtn);
@@ -99,22 +101,21 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.substBtn:
-                int val = getIntValue();
+                int val = getIntValue(repsTimeTV.getText().toString());
                 if (val > 0) {
                     val--;
                 }
                 repsTimeTV.setText(String.valueOf(val));
                 break;
             case R.id.addBtn:
-                int val2 = getIntValue();
+                int val2 = getIntValue(repsTimeTV.getText().toString());
                 val2++;
                 repsTimeTV.setText(String.valueOf(val2));
                 break;
         }
     }
 
-    private int getIntValue() {
-        String stringVal = repsTimeTV.getText().toString();
+    private int getIntValue(String stringVal) {
         if (stringVal.equals("")) {
             stringVal = "0";
         }
