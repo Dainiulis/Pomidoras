@@ -64,13 +64,13 @@
             </RelativeLayout>
 
             <ImageButton
+                android:background="?attr/selectableItemBackground"
                 android:id="@+id/edit_image_name_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
-                android:background="@null"
                 android:padding="10dp"
                 android:src="@drawable/ic_edit_24dp" />
 
@@ -81,7 +81,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/fragments_padding">
+            android:paddingStart="@dimen/fragments_padding"
+            android:paddingLeft="@dimen/fragments_padding"
+            android:paddingTop="@dimen/fragments_padding"
+            android:paddingBottom="@dimen/fragments_padding">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -100,7 +103,8 @@
                 <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@null"
+                    android:padding="@dimen/fragments_padding"
+                    android:background="?attr/selectableItemBackground"
                     android:id="@+id/edit_description"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
@@ -43,7 +44,7 @@ public class TimerTaskFragment extends Fragment {
     private long millisecs, mExerciseId;
     private int longBreakCounter;
     private SharedPreferences sharedPref;
-    private TimerTypeStateHandlerEvent timerHandlerEvent;
+//    private TimerTypeStateHandlerEvent timerHandlerEvent;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
     private Favorite favorite;
@@ -72,7 +73,7 @@ public class TimerTaskFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        timerHandlerEvent = new TimerTypeStateHandlerEvent();
+//        timerHandlerEvent = new TimerTypeStateHandlerEvent();
         mCircleProgressEvent = new CircleProgressEvent();
         sendTimeEvent = new TimerSendTimeEvent();
         setmCurrentState(STATE_STOPPED);
@@ -171,7 +172,7 @@ public class TimerTaskFragment extends Fragment {
 
     private void initTimer() {
         setmCurrentState(STATE_RUNNING);
-        timer = new CountDownTimer(millisecs, 300) {
+        timer = new CountDownTimer(millisecs, 500) {
             @Override
             public void onTick(long millisUntilFinished) {
                 /*
@@ -240,12 +241,16 @@ public class TimerTaskFragment extends Fragment {
                 }
                 setTimer();
                 mPreviousState = mCurrentState;
-                if (isContinuous()) {
+                boolean sessionFinished = false;
+                if (isContinuous() && previousType != TYPE_LONG_BREAK) {
                     initTimer();
+                } else if (previousType == TYPE_LONG_BREAK) {
+                    setmCurrentState(STATE_STOPPED);
+                    sessionFinished = true;
                 } else {
                     setmCurrentState(STATE_FINISHED);
                 }
-                postCurrentStateAndType();
+                postCurrentStateAndType(true, sessionFinished);
                 if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                     sendRandomExerciseId();
                 }
@@ -264,7 +269,10 @@ public class TimerTaskFragment extends Fragment {
         }
     }
 
-    private void postCurrentStateAndType() {
+    private void postCurrentStateAndType(boolean shouldAnimate, boolean sessionFinished) {
+        TimerTypeStateHandlerEvent timerHandlerEvent = new TimerTypeStateHandlerEvent();
+        timerHandlerEvent.setSessionFinished(sessionFinished);
+        timerHandlerEvent.setShouldAnimate(shouldAnimate);
         timerHandlerEvent.setCurrentState(mCurrentState);
         timerHandlerEvent.setCurrentType(mCurrentType);
         EventBus.getDefault().post(timerHandlerEvent);
@@ -302,7 +310,6 @@ public class TimerTaskFragment extends Fragment {
                 mExerciseId = mExercisesIds.get(index);
             }
         }
-        Log.i(TAG, "sendRandomExerciseId: " + mExerciseId);
         EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
     }
 
@@ -336,7 +343,7 @@ public class TimerTaskFragment extends Fragment {
             mExerciseId = -1;
             mCurrentType = TYPE_WORK;
             mCurrentState = STATE_STOPPED;
-            postCurrentStateAndType();
+            postCurrentStateAndType(true, false);
             setTimer();
         }
     }
@@ -353,7 +360,7 @@ public class TimerTaskFragment extends Fragment {
                 EventBus.getDefault().post(mCircleProgressEvent);
             }
             sendRandomExerciseId();
-            postCurrentStateAndType();
+            postCurrentStateAndType(false, false);
         }
     }
 

@@ -4,11 +4,13 @@ package com.dmiesoft.fitpomodoro.ui.fragments.nested;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,6 +20,8 @@ import android.widget.Toast;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
+
+import java.util.Locale;
 
 public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickListener {
 
@@ -29,8 +33,10 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
     private LinearLayout suggestionLayout;
     private TextView exerciseNameTV, repsTimeTV;
     private ImageButton subsBtn, addBtn;
+    private Button doneBtn;
     private ImageView imageView;
     private View view;
+    private TextToSpeech textToSpeech;
 
     public ExerciseInTimerUIFragment() {
         // Required empty public constructor
@@ -53,6 +59,7 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
             exercise = getArguments().getParcelable(EXERCISE_MODEL);
             isImage = getArguments().getBoolean(IS_IMAGE);
         }
+
     }
 
     @Override
@@ -68,11 +75,9 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         exerciseNameTV = (TextView) view.findViewById(R.id.exerciseName);
 
         repsTimeTV = (TextView) view.findViewById(R.id.repsTime);
-        repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
         subsBtn = (ImageButton) view.findViewById(R.id.substBtn);
-        subsBtn.setOnClickListener(this);
         addBtn = (ImageButton) view.findViewById(R.id.addBtn);
-        addBtn.setOnClickListener(this);
+        doneBtn = (Button) view.findViewById(R.id.doneBtn);
 
         imageView = (ImageView) view.findViewById(R.id.exerciseImage);
         if (isImage) {
@@ -84,10 +89,28 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         }
     }
 
+    /**
+     * If fragment is for saving what user have done during suggested exercise
+     */
     private void loadExerciseSuggestion() {
+//        textToSpeech = new TextToSpeech(getContext(), new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int status) {
+//                if (status != TextToSpeech.ERROR) {
+//                    textToSpeech.setLanguage(Locale.US);
+//                }
+//            }
+//        });
         exerciseNameTV.setText(exercise.getName());
+        repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
+        subsBtn.setOnClickListener(this);
+        addBtn.setOnClickListener(this);
+        doneBtn.setOnClickListener(this);
     }
 
+    /**
+     * For loading fragment image
+     */
     private void loadImage() {
         Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), false, 0);
         if (bitmap != null) {
@@ -111,6 +134,8 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
                 int val2 = getIntValue(repsTimeTV.getText().toString());
                 val2++;
                 repsTimeTV.setText(String.valueOf(val2));
+                break;
+            case R.id.doneBtn:
                 break;
         }
     }
