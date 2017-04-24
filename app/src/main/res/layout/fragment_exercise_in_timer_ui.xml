@@ -5,6 +5,7 @@
     tools:context="com.dmiesoft.fitpomodoro.ui.fragments.nested.ExerciseInTimerUIFragment">
 
     <LinearLayout
+        android:gravity="center"
         android:orientation="vertical"
         android:id="@+id/suggestionLayout"
         android:layout_width="match_parent"
@@ -47,6 +48,7 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/doneBtn"
             android:padding="10dp"
             style="?android:attr/borderlessButtonStyle"
             android:background="?attr/selectableItemBackground"

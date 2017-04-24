@@ -173,7 +173,7 @@ public class CustomTimerView extends View {
                 getPaddingLeft() + thickness,
                 getPaddingTop() + thickness,
                 getWidth() - thickness - getPaddingRight(),
-                getHeight() - thickness -  getPaddingBottom());
+                getHeight() - thickness - getPaddingBottom());
 
         //nebereikia nes naudoju fill o ne
 //        mCircleInnerBounds = new RectF(
@@ -243,14 +243,19 @@ public class CustomTimerView extends View {
     public void setmTimerStateAndType(int timerState, int timerType) {
         Random rand = new Random();
         if (timerType == TimerTaskFragment.TYPE_WORK) {
-            int index = rand.nextInt(DRAWABLES_WORK.length);
-            setBitmapFromVectorDrawable(DRAWABLES_WORK[index]);
+//            int index = rand.nextInt(DRAWABLES_WORK.length);
+//            setBitmapFromVectorDrawable(DRAWABLES_WORK[index]);
+            setBitmapFromVectorDrawable(R.drawable.ic_hard_working_dude);
         } else if (timerType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-            int index = rand.nextInt(DRAWABLES_SHORT_BREAK.length);
-            setBitmapFromVectorDrawable(DRAWABLES_SHORT_BREAK[index]);
+//            int index = rand.nextInt(DRAWABLES_SHORT_BREAK.length);
+//            setBitmapFromVectorDrawable(DRAWABLES_SHORT_BREAK[index]);
+            setBitmapFromVectorDrawable(R.drawable.ic_stretching_dude);
+
         } else {
-            int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
-            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
+//            int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
+//            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
+            setBitmapFromVectorDrawable(R.drawable.ic_pull_up_dude);
+
         }
         mTimerHintTextColor2 = Color.RED;
         if (timerState == TimerTaskFragment.STATE_RUNNING) {

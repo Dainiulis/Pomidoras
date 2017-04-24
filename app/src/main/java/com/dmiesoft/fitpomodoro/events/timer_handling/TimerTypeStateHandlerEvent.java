@@ -7,7 +7,7 @@ public class TimerTypeStateHandlerEvent {
 
     private int currentState;
     private int currentType;
-    private boolean shouldAnimate;
+    private boolean shouldAnimate, sessionFinished;
     private int publisher;
 
     public TimerTypeStateHandlerEvent() {}
@@ -42,5 +42,13 @@ public class TimerTypeStateHandlerEvent {
 
     public void setShouldAnimate(boolean shouldAnimate) {
         this.shouldAnimate = shouldAnimate;
+    }
+
+    public boolean isSessionFinished() {
+        return sessionFinished;
+    }
+
+    public void setSessionFinished(boolean sessionFinished) {
+        this.sessionFinished = sessionFinished;
     }
 }

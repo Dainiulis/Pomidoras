@@ -1,7 +1,9 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -25,6 +27,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AnticipateOvershootInterpolator;
+import android.view.animation.BounceInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -212,23 +216,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         switch (v.getId()) {
             case R.id.customTimer:
                 if (mCurrentState != TimerTaskFragment.STATE_STOPPED) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("Are you sure?");
-                    builder.setMessage("Would you like to end session?");
-                    builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            handleBtnStop();
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
+                    initAlertDialog("Are you sure?", "Would you like to end session?", BTN_STOP);
                     return true;
                 }
         }
@@ -248,11 +236,15 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     private void handleBtnStartPause() {
         if (mCustomTimerView.getTag().equals(BTN_START)) {
+            TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             if (mCurrentState == TimerTaskFragment.STATE_FINISHED) {
-                mShouldAnimate = true;
+//                mShouldAnimate = true;
+                timerHandler.setShouldAnimate(true);
+            } else {
+//                mShouldAnimate = false;
+                timerHandler.setShouldAnimate(false);
             }
             setBtnTypes(BTN_START);
-            TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
             timerHandler.setCurrentState(TimerTaskFragment.STATE_RUNNING);
             timerHandler.setCurrentType(mCurrentType);
             timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
@@ -289,8 +281,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             mViewPager.setVisibility(View.GONE);
             mFakeView.setVisibility(View.VISIBLE);
         }
+        int duration = 1000;
+        extraTimerAnimation(duration);
         mCustomTimerAnimator = ObjectAnimator.ofFloat(mCustomTimerView, mPropertyName, values);
-        mCustomTimerAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        mCustomTimerAnimator.setDuration(duration);
+        mCustomTimerAnimator.setInterpolator(new AnticipateOvershootInterpolator());
         mCustomTimerAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -324,8 +319,31 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
             }
         });
-        mCustomTimerAnimator.setDuration(500);
         mCustomTimerAnimator.start();
+    }
+
+    private void extraTimerAnimation(int duration) {
+        // Little extra animation, not necessary
+        // maybe remove later
+        mCustomTimerView.animate()
+                .setDuration(duration / 2)
+                .alpha(.2f)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mCustomTimerView.animate()
+                                .setDuration(animation.getDuration())
+                                .alpha(1f)
+                                // required because listener is continuing to run
+                                // idk why
+                                .setListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        animation.removeAllListeners();
+                                    }
+                                });
+                    }
+                });
     }
 
     private void animateViewPager(final boolean hideViewPager, float... values) {
@@ -450,10 +468,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     @Subscribe
     public void onTimerChange(TimerSendTimeEvent event) {
         mMillisecs = event.getMillisecs();
-        if (mMillisecs < 500) {
-            Log.i(TAG, "onTimerChange: " + mMillisecs);
-            mShouldAnimate = true;
-        }
+//        if (mMillisecs < 500) {
+//            mShouldAnimate = true;
+//        }
         setTimer();
     }
 
@@ -461,6 +478,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public void onTimerTypeStateRequest(TimerTypeStateHandlerEvent event) {
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
+        mShouldAnimate = event.isShouldAnimate();
         mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);
@@ -468,9 +486,42 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             setBtnTypes(BTN_PAUSE);
         } else {
             setBtnTypes(BTN_STOP);
+            if (event.isSessionFinished()) {
+                initAlertDialog("Session ended", "Would you like to start new session?", BTN_START);
+            }
         }
 
         manageViewsAnimation();
+    }
+
+    /**
+     * @param title
+     * @param message
+     * @param buttonHandler pass BTN_START for suggesting to start new session or BTN_STOP for stopping without suggestion
+     */
+    private void initAlertDialog(String title, String message, final int buttonHandler) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (buttonHandler == BTN_START) {
+//                    setBtnTypes(BTN_START);
+                    handleBtnStartPause();
+                } else {
+                    handleBtnStop();
+                }
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
     }
 
     @Subscribe
@@ -498,7 +549,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     public interface TimerUIFragmentListener {
         void onRandomExerciseRequested(long randExerciseId);
-
         void onFavoritesListRequested();
     }
 
@@ -509,8 +559,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         public ExercisePagerAdapter(FragmentManager fm, Exercise exercise) {
             super(fm);
             fragments = new Vector<>();
-            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, true));
             fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, false));
+            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, true));
         }
 
         @Override
