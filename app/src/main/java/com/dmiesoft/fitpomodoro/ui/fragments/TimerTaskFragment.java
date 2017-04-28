@@ -62,6 +62,7 @@ public class TimerTaskFragment extends Fragment {
     /////////////////////////////////////////////
 
     private List<Long> mExercisesIds;
+    private boolean misSessionFinished;
 
     public TimerTaskFragment() {
         // Required empty public constructor
@@ -241,16 +242,16 @@ public class TimerTaskFragment extends Fragment {
                 }
                 setTimer();
                 mPreviousState = mCurrentState;
-                boolean sessionFinished = false;
+                misSessionFinished = false;
                 if (isContinuous() && previousType != TYPE_LONG_BREAK) {
                     initTimer();
                 } else if (previousType == TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_STOPPED);
-                    sessionFinished = true;
+                    misSessionFinished = true;
                 } else {
                     setmCurrentState(STATE_FINISHED);
                 }
-                postCurrentStateAndType(true, sessionFinished);
+                postCurrentStateAndType(true, misSessionFinished);
                 if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                     sendRandomExerciseId();
                 }
@@ -323,6 +324,7 @@ public class TimerTaskFragment extends Fragment {
         }
         mPreviousState = mCurrentState;
         if (event.getCurrentState() == STATE_RUNNING) {
+            misSessionFinished = false;
             //butinai reikejo patikrinti sita salyga, kitaip buginosi laikmatis
             if (mCurrentState != STATE_RUNNING) {
                 if (mPreviousState == STATE_STOPPED || mPreviousState == STATE_FINISHED) {
@@ -337,13 +339,17 @@ public class TimerTaskFragment extends Fragment {
         } else if (event.getCurrentState() == STATE_STOPPED) {
 //            if (mTimerAnimator != null) {
 //            }
+            if (!event.isSessionFinished()) {
+                misSessionFinished = false;
+            }
+            boolean shouldAnimate = event.isShouldAnimate();
             handleTimerStates(CIRCLE_STOP);
             timer.cancel();
             longBreakCounter = 0;
             mExerciseId = -1;
             mCurrentType = TYPE_WORK;
             mCurrentState = STATE_STOPPED;
-            postCurrentStateAndType(true, false);
+            postCurrentStateAndType(shouldAnimate, misSessionFinished);
             setTimer();
         }
     }
@@ -360,7 +366,7 @@ public class TimerTaskFragment extends Fragment {
                 EventBus.getDefault().post(mCircleProgressEvent);
             }
             sendRandomExerciseId();
-            postCurrentStateAndType(false, false);
+            postCurrentStateAndType(false, misSessionFinished);
         }
     }
 

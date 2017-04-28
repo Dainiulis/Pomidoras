@@ -29,33 +29,35 @@ public class CustomTimerView extends View {
 //    public static final int CIRCLE_STOP = 2864;
 //    public static final int CIRCLE_PAUSE = 9898;
 
-    private static int[] DRAWABLES_WORK = {
-            R.drawable.ic_hard_working_dude,
-            R.drawable.ic_tacka_dude
-    };
-    private static int[] DRAWABLES_SHORT_BREAK = {
-            R.drawable.ic_biceps,
-            R.drawable.ic_stretching_dude,
-            R.drawable.ic_snatch_dude
-    };
-    private static int[] DRAWABLES_LONG_BREAK = {
-            R.drawable.ic_pull_up_dude,
-            R.drawable.ic_weightlifting_dude
-    };
+//    private static int[] DRAWABLES_WORK = {
+//            R.drawable.ic_hard_working_dude,
+//            R.drawable.ic_tacka_dude
+//    };
+//    private static int[] DRAWABLES_SHORT_BREAK = {
+//            R.drawable.ic_biceps,
+//            R.drawable.ic_stretching_dude,
+//            R.drawable.ic_snatch_dude
+//    };
+//    private static int[] DRAWABLES_LONG_BREAK = {
+//            R.drawable.ic_pull_up_dude,
+//            R.drawable.ic_weightlifting_dude
+//    };
 
     private static final String TAG = "CTV";
     private static final float THICKNESS_SCALE = .05f;
     private static final String TIMER_BASE_COLOR = "#dbdbdb";
     private Paint mPomidorasPaint, mEraserPaint, mUnderPaint;
-    private TextPaint mTimerTextPaint, mTimerTapHintPaint;
+    private TextPaint mTimerTextPaint, mTimerTapHintPaint, mTimerTypeTextPaint;
     private int mColor = Color.RED,
             mTextColor = Color.WHITE,
             mTimerHintTextColor,
             mTimerHintTextColor2,
             yTextPos,
-            mStrokeWidth;
+            mStrokeWidth,
+            yHintTextPos, yHintTextPos2, yTimerTypeTextPos,
+            xC;
     private float mTextSize = getResources().getDimension(R.dimen.custom_timer_text_size);
-    private String mTimerText, mTapHintText, mTapHintText2;
+    private String mTimerText, mTapHintText, mTapHintText2, mTimerTypeText;
     private Bitmap mBitmap, vectorBitmap;
     private Canvas mCanvas;
     private RectF mCircleOuterBounds; //, mCircleInnerBounds;
@@ -116,12 +118,19 @@ public class CustomTimerView extends View {
         }
         mTimerTextPaint.setTextAlign(Paint.Align.CENTER);
 
+        mTimerTypeTextPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        float timerTypeTextSize = mTextSize * 0.7f;
+        mTimerTypeTextPaint.setColor(mTextColor);
+        mTimerTypeTextPaint.setTextSize(timerTypeTextSize);
+        mTimerTypeTextPaint.setTextAlign(Paint.Align.CENTER);
+
         float mHintTextSize = mTextSize * 0.5f;
         mTimerHintTextColor = mTextColor;
         mTimerTapHintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         mTimerTapHintPaint.setColor(mTimerHintTextColor);
         mTimerTapHintPaint.setTextSize(mHintTextSize);
         mTimerTapHintPaint.setTextAlign(Paint.Align.CENTER);
+
     }
 
     @Override
@@ -131,7 +140,6 @@ public class CustomTimerView extends View {
         //kodel????
         mCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
 
-        int x = getWidth();
 
         mCanvas.drawArc(mCircleOuterBounds, 0, 360, false, mUnderPaint);
         if (mCircleSweepAngle > 0f) {
@@ -140,19 +148,16 @@ public class CustomTimerView extends View {
 //        mCanvas.drawOval(mCircleInnerBounds, mEraserPaint);
         canvas.drawBitmap(mBitmap, 0, 0, null);
 
-        int xC = (x / 2);
-        yTextPos = (int) ((canvas.getHeight() / 2) - ((mTimerTextPaint.descent() + mTimerTextPaint.ascent()) / 2));
         canvas.drawText(mTimerText, xC, yTextPos, mTimerTextPaint);
 
-        int yHintTextPos = (int) (yTextPos + ((mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent())));
-        int yHintTextPos2 = (int) (yTextPos + 2 * (mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent()));
+        canvas.drawText(mTimerTypeText, xC, yTimerTypeTextPos, mTimerTypeTextPaint);
         mTimerTapHintPaint.setColor(mTimerHintTextColor);
         canvas.drawText(mTapHintText, xC, yHintTextPos, mTimerTapHintPaint);
         mTimerTapHintPaint.setColor(mTimerHintTextColor2);
         canvas.drawText(mTapHintText2, xC, yHintTextPos2, mTimerTapHintPaint);
 
-        int yBitmapPos = (int) ((yTextPos + (mTimerTextPaint.ascent())) - vectorBitmap.getHeight());
-        canvas.drawBitmap(vectorBitmap, (xC - (vectorBitmap.getWidth() / 2)), yBitmapPos, null);
+//        int yBitmapPos = (int) ((yTextPos + (mTimerTextPaint.ascent())) - vectorBitmap.getHeight());
+//        canvas.drawBitmap(vectorBitmap, (xC - (vectorBitmap.getWidth() / 2)), yBitmapPos, null);
     }
 
     @Override
@@ -174,6 +179,15 @@ public class CustomTimerView extends View {
                 getPaddingTop() + thickness,
                 getWidth() - thickness - getPaddingRight(),
                 getHeight() - thickness - getPaddingBottom());
+
+        int x = getWidth();
+        xC = (x / 2);
+
+        yTextPos = (int) ((mCanvas.getHeight() / 2) - ((mTimerTextPaint.descent() + mTimerTextPaint.ascent()) / 2));
+        yHintTextPos = (int) (yTextPos + ((mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent())));
+        yHintTextPos2 = (int) (yTextPos + 2 * (mTimerTapHintPaint.descent() - mTimerTapHintPaint.ascent()));
+        //        yTimerTypeTextPos = (int) (yTextPos - 2 * ( mTimerTypeTextPaint.descent() - mTimerTypeTextPaint.ascent()));
+        yTimerTypeTextPos = (int) (getHeight() / 2 - 2 * (getPaddingTop() + thickness)) ;
 
         //nebereikia nes naudoju fill o ne
 //        mCircleInnerBounds = new RectF(
@@ -241,20 +255,23 @@ public class CustomTimerView extends View {
     }
 
     public void setmTimerStateAndType(int timerState, int timerType) {
-        Random rand = new Random();
+//        Random rand = new Random();
         if (timerType == TimerTaskFragment.TYPE_WORK) {
+            setmTimerTypeText("Work");
 //            int index = rand.nextInt(DRAWABLES_WORK.length);
 //            setBitmapFromVectorDrawable(DRAWABLES_WORK[index]);
-            setBitmapFromVectorDrawable(R.drawable.ic_hard_working_dude);
+//            setBitmapFromVectorDrawable(R.drawable.ic_hard_working_dude);
         } else if (timerType == TimerTaskFragment.TYPE_SHORT_BREAK) {
+            setmTimerTypeText("Short break");
 //            int index = rand.nextInt(DRAWABLES_SHORT_BREAK.length);
 //            setBitmapFromVectorDrawable(DRAWABLES_SHORT_BREAK[index]);
-            setBitmapFromVectorDrawable(R.drawable.ic_stretching_dude);
+//            setBitmapFromVectorDrawable(R.drawable.ic_stretching_dude);
 
         } else {
+            setmTimerTypeText("Long break");
 //            int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
 //            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
-            setBitmapFromVectorDrawable(R.drawable.ic_pull_up_dude);
+//            setBitmapFromVectorDrawable(R.drawable.ic_pull_up_dude);
 
         }
         mTimerHintTextColor2 = Color.RED;
@@ -276,6 +293,10 @@ public class CustomTimerView extends View {
             mTapHintText2 = "";
         }
         invalidate();
+    }
+
+    private void setmTimerTypeText(String type) {
+        this.mTimerTypeText = type;
     }
 
     public void setmTimerText(String mTimerText) {
