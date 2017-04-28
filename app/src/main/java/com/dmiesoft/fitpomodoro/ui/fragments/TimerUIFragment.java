@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -80,6 +81,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private ArrayAdapter<Favorite> mSpinnerAdapter;
     private SharedPreferences sharedPrefs;
     private Favorite favorite;
+    private boolean misSessionFinished;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -230,6 +232,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
         timerHandler.setCurrentState(TimerTaskFragment.STATE_STOPPED);
         timerHandler.setCurrentType(mCurrentType);
+        timerHandler.setShouldAnimate(mShouldAnimate);
         timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
         EventBus.getDefault().post(timerHandler);
     }
@@ -237,11 +240,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private void handleBtnStartPause() {
         if (mCustomTimerView.getTag().equals(BTN_START)) {
             TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
-            if (mCurrentState == TimerTaskFragment.STATE_FINISHED) {
-//                mShouldAnimate = true;
+            if (mCurrentState == TimerTaskFragment.STATE_FINISHED || mViewPager.getVisibility() == View.VISIBLE) {
                 timerHandler.setShouldAnimate(true);
             } else {
-//                mShouldAnimate = false;
                 timerHandler.setShouldAnimate(false);
             }
             setBtnTypes(BTN_START);
@@ -414,29 +415,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         }
     }
 
-//    private void manageViewsAnimation() {
-//        if (mCurrentType == TimerTaskFragment.TYPE_WORK) {
-//            if (mShouldAnimate) {
-//                animateViewPager(true, 1f, 0f);
-//            } else {
-//                mFakeView.setVisibility(View.VISIBLE);
-//                mViewPager.setAdapter(null);
-//                mViewPager.setVisibility(View.GONE);
-//            }
-//        } else {
-//            if (mShouldAnimate) {
-//                if (mViewPager.getVisibility() == View.VISIBLE) {
-//                    animateViewPager(true, 1f, 0f);
-//                } else {
-//                    animateCustomTimer(false, 0f, -getAnimationDistance(.25f));
-//                }
-//            } else {
-//                mFakeView.setVisibility(View.GONE);
-//                mViewPager.setVisibility(View.VISIBLE);
-//            }
-//        }
-//    }
-
     /**
      * @param multiplier the number from which to multiply container size to calculate animation distance
      *                   currently 0.25 is sweet spot for customTimerView
@@ -480,18 +458,22 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         mCurrentType = event.getCurrentType();
         mShouldAnimate = event.isShouldAnimate();
         mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
+        misSessionFinished = event.isSessionFinished();
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);
         } else if (mCurrentState == TimerTaskFragment.STATE_PAUSED || mCurrentState == TimerTaskFragment.STATE_FINISHED) {
             setBtnTypes(BTN_PAUSE);
         } else {
             setBtnTypes(BTN_STOP);
-            if (event.isSessionFinished()) {
-                initAlertDialog("Session ended", "Would you like to start new session?", BTN_START);
+            if (misSessionFinished) {
+                initAlertDialog("Session ended", "Did you finish your exercise?", BTN_START);
             }
         }
-
-        manageViewsAnimation();
+        if (!misSessionFinished) {
+            manageViewsAnimation();
+        } else {
+            mFakeView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -507,8 +489,15 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (buttonHandler == BTN_START) {
-//                    setBtnTypes(BTN_START);
-                    handleBtnStartPause();
+//                    manageViewsAnimation();
+                    Log.i(TAG, "state: " + mCurrentState + " type: " + mCurrentType);
+                    TimerTypeStateHandlerEvent timerHandlerEvent = new TimerTypeStateHandlerEvent();
+                    timerHandlerEvent.setCurrentState(mCurrentState);
+                    timerHandlerEvent.setShouldAnimate(true);
+                    timerHandlerEvent.setCurrentType(mCurrentType);
+                    timerHandlerEvent.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
+                    timerHandlerEvent.setSessionFinished(false);
+                    EventBus.getDefault().post(timerHandlerEvent);
                 } else {
                     handleBtnStop();
                 }
@@ -531,10 +520,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     @Subscribe
     public void onRandExerciseIdReceived(ExerciseIdSendEvent event) {
+        Log.i(TAG, "onRandExerciseIdReceived: " + event.getExerciseId());
         if (event.getExerciseId() != -1) {
             mListener.onRandomExerciseRequested(event.getExerciseId());
         } else {
-            Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getContext(), "No exercises found", Toast.LENGTH_LONG).show();
         }
     }
 
