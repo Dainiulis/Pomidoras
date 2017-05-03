@@ -13,10 +13,14 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <meta-data android:name="android.max_aspect" android:value="2.1"/>
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.1" />
+
         <activity
             android:name=".ui.activities.MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,7 +40,8 @@
                 android:name="andorid.support.PARENT_ACTIVITY"
                 android:value="com.dmiesoft.fitpomodoro.ui.activities.MainActivity" />
         </activity>
-        <activity android:name=".ui.activities.FavoriteActivity"
+        <activity
+            android:name=".ui.activities.FavoriteActivity"
             android:parentActivityName=".ui.activities.MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

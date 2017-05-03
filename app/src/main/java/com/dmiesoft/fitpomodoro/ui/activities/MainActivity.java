@@ -7,7 +7,10 @@ import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -16,7 +19,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -65,7 +68,9 @@ import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
-import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.CheckUncheckExerciseHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.UniversalAppHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -149,6 +154,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView tempMenuDelBtn, tempMenuFavBtn;
     private Menu menu;
     private ValueAnimator animToolbarColor, burgerAnim, tempBtnAnimatorAppear, tempBtnAnimatorDisappear;
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,6 +207,40 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void registerReceivers() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equalsIgnoreCase(NotificationHelper.ACTION_STOP)) {
+                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+                    if (timerTaskFragment != null) {
+                        timerTaskFragment.stopTimerFromNotification();
+                    }
+                } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG)) {
+                    if (!UniversalAppHelper.isAppOnForeground(context, UniversalAppHelper.PACKAGE_NAME_FIT_POMODORO)) {
+                        Intent intent1 = new Intent(MainActivity.this, MainActivity.class);
+                        startActivity(intent1);
+                    }
+                } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH)) {
+                    if (!UniversalAppHelper.isAppOnForeground(context, UniversalAppHelper.PACKAGE_NAME_FIT_POMODORO)) {
+                        Intent intent1 = new Intent(MainActivity.this, MainActivity.class);
+                        startActivity(intent1);
+                    }
+                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+                    if (timerTaskFragment != null) {
+                        timerTaskFragment.manualNotificationsClear();
+                    }
+                }
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(NotificationHelper.ACTION_STOP);
+        intentFilter.addAction(NotificationHelper.ACTION_OPEN_TIMER_FRAG);
+        intentFilter.addAction(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
     private void initFabs() {
@@ -308,8 +348,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        registerReceivers();
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
         dataSource.open();
@@ -324,7 +371,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
         if (prefs.getBoolean(SettingsActivity.FIRST_TIME_LOAD, true)) {
-            prefs.edit().putLong(TimerUIFragment.SELECTED_FAVORITE, -1).apply();
             firstTimeDatabaseInitialize();
         }
     }
@@ -580,15 +626,20 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
-                DisplayHelper displayHelper = new DisplayHelper(this);
-                float width = (int) displayHelper.getWidth();
-                float height = displayHelper.getHeight();
-                float density = getResources().getDisplayMetrics().density;
-                float dpW = width / density;
-                float dpH = height / density;
-                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
-                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
+//                DisplayHelper displayHelper = new DisplayHelper(this);
+//                float width = (int) displayHelper.getWidth();
+//                float height = displayHelper.getHeight();
+//                float density = getResources().getDisplayMetrics().density;
+//                float dpW = width / density;
+//                float dpH = height / density;
+//                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
+//                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();
+
+                if (fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG) != null) {
+                    ((TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG)).log();
+                    ((TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG)).log();
+                }
 
                 break;
 
@@ -848,13 +899,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onExercisesIdsRequested() {
-        TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-        long favoriteId = prefs.getLong(TimerUIFragment.SELECTED_FAVORITE, -1);
-        Log.i(TAG, "onExercisesIdsRequested: " + favoriteId);
-        if (fragment != null) {
-            exercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
-            fragment.setmExercisesIds(exercisesIds);
-        }
+        setExercisesIdsForTTFrag();
+    }
+
+    @Override
+    public void onFavoriteSelected() {
+        setExercisesIdsForTTFrag();
     }
 
     @Override
@@ -862,7 +912,6 @@ public class MainActivity extends AppCompatActivity
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
         Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
-        Log.i(TAG, randExerciseId + " onRandomExerciseRequested: " + exercise.getId() + " " + exercise.getName());
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.setExercise(exercise);
@@ -899,7 +948,6 @@ public class MainActivity extends AppCompatActivity
 
     @Subscribe
     public void onDeleteObject(DeleteObjects event) {
-        Log.i(TAG, "Requesting to delete object" + event.getClassName());
         Integer id = event.getId();
         whatToDelete = event.getClassName();
         if (deleteIdList.contains(id)) {
@@ -967,16 +1015,28 @@ public class MainActivity extends AppCompatActivity
     //**********************************************************************************************
 
     /**
+     * sets exercises ids for {@link TimerTaskFragment}
+     */
+    private void setExercisesIdsForTTFrag() {
+        TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+        long favoriteId = prefs.getLong(TimerUIFragment.SELECTED_FAVORITE, -1);
+        if (fragment != null) {
+            exercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
+            fragment.setmExercisesIds(exercisesIds);
+        }
+    }
+
+    /**
      * Helper function to clear multi selection and invalidateOptionsMenu
      */
     private void clearMultiSelection() {
         deleteIdList.clear();
         invalidateOptionsMenu();
         if (exercisesGroups != null) {
-            ObjectsHelper.uncheckExercisesGroups(exercisesGroups);
+            CheckUncheckExerciseHelper.uncheckExercisesGroups(exercisesGroups);
         }
         if (exercises != null) {
-            ObjectsHelper.uncheckExercises(exercises);
+            CheckUncheckExerciseHelper.uncheckExercises(exercises);
         }
     }
 

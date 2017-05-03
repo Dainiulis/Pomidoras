@@ -7,6 +7,8 @@ public class TimerTypeStateHandlerEvent {
 
     private int currentState;
     private int currentType;
+    private int previousState;
+    private int previousType;
     private boolean shouldAnimate, sessionFinished;
     private int publisher;
 
@@ -50,5 +52,21 @@ public class TimerTypeStateHandlerEvent {
 
     public void setSessionFinished(boolean sessionFinished) {
         this.sessionFinished = sessionFinished;
+    }
+
+    public int getPreviousState() {
+        return previousState;
+    }
+
+    public void setPreviousState(int previousState) {
+        this.previousState = previousState;
+    }
+
+    public int getPreviousType() {
+        return previousType;
+    }
+
+    public void setPreviousType(int previousType) {
+        this.previousType = previousType;
     }
 }
