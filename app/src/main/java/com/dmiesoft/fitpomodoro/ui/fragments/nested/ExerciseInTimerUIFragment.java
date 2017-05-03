@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +46,6 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
     public static ExerciseInTimerUIFragment newInstance(Exercise exercise, boolean isImage) {
         ExerciseInTimerUIFragment fragment = new ExerciseInTimerUIFragment();
         Bundle args = new Bundle();
-
         args.putParcelable(EXERCISE_MODEL, exercise);
         args.putBoolean(IS_IMAGE, isImage);
         fragment.setArguments(args);
@@ -59,7 +59,6 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
             exercise = getArguments().getParcelable(EXERCISE_MODEL);
             isImage = getArguments().getBoolean(IS_IMAGE);
         }
-
     }
 
     @Override

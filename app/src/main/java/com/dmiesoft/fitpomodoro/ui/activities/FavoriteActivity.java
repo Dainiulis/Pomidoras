@@ -26,7 +26,7 @@ import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesListAdapter;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.ObjectsHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.CheckUncheckExerciseHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -276,7 +276,7 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
         unfavoriteIdList.clear();
         invalidateOptionsMenu();
         if (exercises != null) {
-            ObjectsHelper.uncheckExercises(exercises);
+            CheckUncheckExerciseHelper.uncheckExercises(exercises);
         }
     }
 

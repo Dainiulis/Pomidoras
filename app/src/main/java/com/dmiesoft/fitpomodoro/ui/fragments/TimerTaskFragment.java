@@ -1,17 +1,21 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.ValueAnimator;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
@@ -21,6 +25,8 @@ import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
+import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -38,16 +44,14 @@ public class TimerTaskFragment extends Fragment {
     public static final int TYPE_SHORT_BREAK = 201;
     public static final int TYPE_LONG_BREAK = 202;
 
-    private int mCurrentState, mCurrentType, mPreviousState;
+    private int mCurrentState, mCurrentType, mPreviousState, mPreviousType;
     private static final String TAG = "TTF";
     private CountDownTimer timer;
     private long millisecs, mExerciseId;
     private int longBreakCounter;
     private SharedPreferences sharedPref;
-//    private TimerTypeStateHandlerEvent timerHandlerEvent;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
-    private Favorite favorite;
 
     ////////// Circle variables /////////////////
     static final int CIRCLE_RESUME = 7235;
@@ -61,8 +65,13 @@ public class TimerTaskFragment extends Fragment {
     private int mNextSecond, mCurrentSecond;
     /////////////////////////////////////////////
 
+    //Notifications
+    private NotificationCompat.Builder mTimeNotificationBuilder, mTimerFinishNotificationBuilder;
+    private NotificationManager mNotificationManager;
+
     private List<Long> mExercisesIds;
     private boolean misSessionFinished;
+    private PendingIntent mPendingIntentForFinishingNotification;
 
     public TimerTaskFragment() {
         // Required empty public constructor
@@ -74,9 +83,14 @@ public class TimerTaskFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-//        timerHandlerEvent = new TimerTypeStateHandlerEvent();
+        // init notification stuff
+        mNotificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        mPendingIntentForFinishingNotification = NotificationHelper.getPendingIntentForFinishingNotification(getContext());
+        // init events
         mCircleProgressEvent = new CircleProgressEvent();
         sendTimeEvent = new TimerSendTimeEvent();
+
+        //set starting state, type, variables...
         setmCurrentState(STATE_STOPPED);
         setmCurrentType(TYPE_WORK);
         longBreakCounter = 0;
@@ -116,6 +130,7 @@ public class TimerTaskFragment extends Fragment {
         if (timer != null) {
             timer.cancel();
         }
+        manualNotificationsClear();
     }
 
     //  **Handle millisecs and timer**
@@ -172,7 +187,8 @@ public class TimerTaskFragment extends Fragment {
 //  *********************************
 
     private void initTimer() {
-        setmCurrentState(STATE_RUNNING);
+        mTimeNotificationBuilder = NotificationHelper.getTimerTimeNotificationBuilder(
+                getContext(), mCurrentType, mPendingIntentForFinishingNotification);
         timer = new CountDownTimer(millisecs, 500) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -189,6 +205,9 @@ public class TimerTaskFragment extends Fragment {
                     mNextSecond = mCurrentSecond - 1;
                     mAnimatedVal += mAnimationFraction;
                     sendAnimatedTimerValue();
+                    if (mCurrentSecond == 0) {
+                        cancelNotification();
+                    }
                 }
 
                 millisecs = millisUntilFinished;
@@ -196,6 +215,7 @@ public class TimerTaskFragment extends Fragment {
                     sendTimeEvent.setMillisecs(millisecs);
                     EventBus.getDefault().post(sendTimeEvent);
                 }
+                updateNotificationTimer();
             }
 
             @Override
@@ -213,7 +233,7 @@ public class TimerTaskFragment extends Fragment {
                 /*
                  * isimena koks buvo laikmacio tipas
                  */
-                int previousType = mCurrentType;
+                mPreviousType = mCurrentType;
                 /*
                  * jei naudotojas pakeicia ilgos pertraukos kintamaji i mazesni nei yra suskaiciuotas
                  * tuomet pradedamas ilgosios pertraukos laikmatis
@@ -234,18 +254,21 @@ public class TimerTaskFragment extends Fragment {
                  * patikrinama kokio tipo laikmatis buvo
                  * jei trumpos ar ilgos pertraukos, tuomet nustatomas darbinis
                  */
-                if (previousType == TYPE_SHORT_BREAK || previousType == TYPE_LONG_BREAK) {
+                if (mPreviousType == TYPE_SHORT_BREAK || mPreviousType == TYPE_LONG_BREAK) {
                     setmCurrentType(TYPE_WORK);
                     if (isContinuous()) {
                         mExerciseId = -1;
                     }
                 }
                 setTimer();
-                mPreviousState = mCurrentState;
+//                mPreviousState = mCurrentState;
+                // misSessionFinished is used to determine whether
+                // the whole work session has finished or not
                 misSessionFinished = false;
-                if (isContinuous() && previousType != TYPE_LONG_BREAK) {
+                if (isContinuous() && mPreviousType != TYPE_LONG_BREAK) {
+                    setmCurrentState(STATE_RUNNING);
                     initTimer();
-                } else if (previousType == TYPE_LONG_BREAK) {
+                } else if (mPreviousType == TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_STOPPED);
                     misSessionFinished = true;
                 } else {
@@ -258,6 +281,67 @@ public class TimerTaskFragment extends Fragment {
             }
         };
         timer.start();
+    }
+
+    private void cancelNotification() {
+        if (mCurrentState != STATE_STOPPED) {
+            // if timer is continuous, then notification breaks sound too early. REMEMBER TO FIX IT!!!
+            // fixed it by adding second notification for finishing
+            manageNotificationWithSound();
+        }
+        mNotificationManager.cancel(NotificationHelper.TIMER_TIME_NOTIFICATION);
+        try {
+            mPendingIntentForFinishingNotification.send(NotificationHelper.RESULT_PENDING_INTENT_REQUEST_CODE);
+        } catch (PendingIntent.CanceledException e) {
+            e.printStackTrace();
+        }
+        mTimeNotificationBuilder = null;
+    }
+
+    public void manualNotificationsClear() {
+        mNotificationManager.cancel(NotificationHelper.TIMER_TIME_NOTIFICATION);
+        mNotificationManager.cancel(NotificationHelper.TIMER_FINISHED_NOTIFICATION);
+    }
+
+    /**
+     * if notification needs to play sound, it should cancel itself after the alarm sound
+     */
+    private void manageNotificationWithSound() {
+        Uri uri = Uri.parse(NotificationHelper.URI_TO_PACKAGE +
+                TimerHelper.getFromResources(mCurrentType, TimerHelper.RAW_SOUNDS));
+        mTimerFinishNotificationBuilder = NotificationHelper.getFinishedNotificationBuilder(
+                getContext(), mCurrentType);
+        mTimerFinishNotificationBuilder.setSound(uri);
+        mNotificationManager.notify(NotificationHelper.TIMER_FINISHED_NOTIFICATION, mTimerFinishNotificationBuilder.build());
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                mNotificationManager.cancel(NotificationHelper.TIMER_FINISHED_NOTIFICATION);
+            }
+        };
+        MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+        metadataRetriever.setDataSource(getContext(), uri);
+        long duration = Long.parseLong(metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+        if (isContinuous()) {
+            handler.postDelayed(runnable, duration);
+        }
+    }
+
+    /**
+     * Updates the timer in notification
+     */
+    private void updateNotificationTimer() {
+        if (mTimeNotificationBuilder != null) {
+            try {
+                mTimeNotificationBuilder.setContentTitle(TimerHelper.getTimerTypeName(mCurrentType) +
+                        " time remaining - " +
+                        TimerHelper.getTimerString(millisecs));
+                mNotificationManager.notify(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -274,17 +358,21 @@ public class TimerTaskFragment extends Fragment {
         TimerTypeStateHandlerEvent timerHandlerEvent = new TimerTypeStateHandlerEvent();
         timerHandlerEvent.setSessionFinished(sessionFinished);
         timerHandlerEvent.setShouldAnimate(shouldAnimate);
+        timerHandlerEvent.setPreviousState(mPreviousState);
+        timerHandlerEvent.setPreviousType(mPreviousType);
         timerHandlerEvent.setCurrentState(mCurrentState);
         timerHandlerEvent.setCurrentType(mCurrentType);
         EventBus.getDefault().post(timerHandlerEvent);
     }
 
-    public void setmCurrentState(int mCurrentState) {
-        this.mCurrentState = mCurrentState;
+    public void setmCurrentState(int currentState) {
+        this.mPreviousState = this.mCurrentState;
+        this.mCurrentState = currentState;
     }
 
-    public void setmCurrentType(int mCurrentType) {
-        this.mCurrentType = mCurrentType;
+    public void setmCurrentType(int currentType) {
+        this.mPreviousType = mCurrentType;
+        this.mCurrentType = currentType;
     }
 
 
@@ -296,7 +384,7 @@ public class TimerTaskFragment extends Fragment {
      * Request mainActivity for all exercises id's
      * (Later update to request for favorite exercises)
      */
-    private void requestExercisesIds() {
+    public void requestExercisesIds() {
         mListener.onExercisesIdsRequested();
     }
 
@@ -322,49 +410,58 @@ public class TimerTaskFragment extends Fragment {
         if (event.getCurrentType() == TYPE_WORK) {
             mExerciseId = -1;
         }
-        mPreviousState = mCurrentState;
+        setmCurrentState(event.getCurrentState());
         if (event.getCurrentState() == STATE_RUNNING) {
             misSessionFinished = false;
-            //butinai reikejo patikrinti sita salyga, kitaip buginosi laikmatis
-            if (mCurrentState != STATE_RUNNING) {
-                if (mPreviousState == STATE_STOPPED || mPreviousState == STATE_FINISHED) {
-                    requestExercisesIds();
-                }
-                initTimer();
+            if (mPreviousState == STATE_STOPPED || mPreviousState == STATE_FINISHED) {
+                requestExercisesIds();
             }
+            initTimer();
         } else if (event.getCurrentState() == STATE_PAUSED) {
             timer.cancel();
-//            handleTimerStates(CIRCLE_PAUSE);
-            mCurrentState = STATE_PAUSED;
         } else if (event.getCurrentState() == STATE_STOPPED) {
-//            if (mTimerAnimator != null) {
-//            }
             if (!event.isSessionFinished()) {
                 misSessionFinished = false;
             }
             boolean shouldAnimate = event.isShouldAnimate();
-            handleTimerStates(CIRCLE_STOP);
-            timer.cancel();
-            longBreakCounter = 0;
-            mExerciseId = -1;
-            mCurrentType = TYPE_WORK;
-            mCurrentState = STATE_STOPPED;
-            postCurrentStateAndType(shouldAnimate, misSessionFinished);
-            setTimer();
+            stopTimer(shouldAnimate);
+            cancelNotification();
         }
+    }
+
+    private void stopTimer(boolean shouldAnimate) {
+        handleTimerStates(CIRCLE_STOP);
+        timer.cancel();
+        longBreakCounter = 0;
+        mExerciseId = -1;
+        setmCurrentType(TYPE_WORK);
+        postCurrentStateAndType(shouldAnimate, misSessionFinished);
+        setTimer();
+    }
+
+    public void stopTimerFromNotification() {
+        setmCurrentState(STATE_STOPPED);
+        stopTimer(true);
+        mNotificationManager.cancel(NotificationHelper.TIMER_TIME_NOTIFICATION);
     }
 
     @Subscribe
     public void onTimerUIUpdateRequest(TimerUpdateRequestEvent event) {
         if (event.isAskingForCurrentState()) {
-            if (mCurrentState != STATE_RUNNING) {
-                sendTimeEvent.setMillisecs(millisecs);
-                EventBus.getDefault().post(sendTimeEvent);
-            }
-            if (mCurrentState == STATE_PAUSED) {
-                mCircleProgressEvent.setCircleProgress(mAnimatedVal);
-                EventBus.getDefault().post(mCircleProgressEvent);
-            }
+//            nesuprantu kam as cia buvau i if'us sukises
+//            if (mCurrentState != STATE_RUNNING) {
+//                sendTimeEvent.setMillisecs(millisecs);
+//                EventBus.getDefault().post(sendTimeEvent);
+//            }
+//            if (mCurrentState == STATE_PAUSED || mCurrentState == STATE_FINISHED) {
+//                mCircleProgressEvent.setCircleProgress(mAnimatedVal);
+//                EventBus.getDefault().post(mCircleProgressEvent);
+//            }
+            sendTimeEvent.setMillisecs(millisecs);
+            EventBus.getDefault().post(sendTimeEvent);
+            mCircleProgressEvent.setCircleProgress(mAnimatedVal);
+            EventBus.getDefault().post(mCircleProgressEvent);
+
             sendRandomExerciseId();
             postCurrentStateAndType(false, misSessionFinished);
         }
@@ -433,5 +530,9 @@ public class TimerTaskFragment extends Fragment {
 
     public interface TimerTaskFragmentListener {
         void onExercisesIdsRequested();
+    }
+
+    public void log() {
+
     }
 }
