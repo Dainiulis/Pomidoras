@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
@@ -35,6 +36,7 @@ import android.widget.Spinner;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
@@ -77,7 +79,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private SharedPreferences sharedPrefs;
     private boolean misSessionFinished;
     private ExercisePagerAdapter mPagerAdapter;
-    boolean mFirstSpinnerLoad;
+    private View view;
+    private AlertDialog alertDialog;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -115,7 +118,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         // Inflate the layout for this fragment
         mListener.onFavoritesListRequested();
         setHasOptionsMenu(true);
-        View view = inflater.inflate(R.layout.fragment_timer, container, false);
+        view = inflater.inflate(R.layout.fragment_timer, container, false);
         initViews(view);
         return view;
     }
@@ -123,8 +126,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.timer_menu, menu);
-
-        mFirstSpinnerLoad = true;
 
         MenuItem item = menu.findItem(R.id.fav_spinner);
         final Spinner spinner = (Spinner) MenuItemCompat.getActionView(item);
@@ -174,6 +175,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     public void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
+        if (alertDialog != null && alertDialog.isShowing()) {
+            alertDialog.dismiss();
+        }
     }
 
     @Override
@@ -189,6 +193,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         container = (LinearLayout) view.findViewById(R.id.content_fragment_timer);
         mFakeView = view.findViewById(R.id.fake_view);
         mViewPager = (ViewPager) view.findViewById(R.id.pager);
+        mViewPager.setVisibility(View.GONE);
 
         mCustomTimerView = (CustomTimerView) view.findViewById(R.id.customTimer);
         mCustomTimerView.setOnClickListener(this);
@@ -350,7 +355,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         mCustomViewPagerAnimator.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
             }
 
             @Override
@@ -358,6 +362,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                 if (hideViewPager) {
                     animateCustomTimer(hideViewPager, -getAnimationDistance(.25f), 0f);
                 }
+                EventBus.getDefault().post(new TimerAnimationStatusEvent(true));
             }
 
             @Override
@@ -436,10 +441,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void setPropertyName() {
-        if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
-            mPropertyName = View.TRANSLATION_Y;
-        } else {
-            mPropertyName = View.TRANSLATION_X;
+        if (getActivity() != null) {
+            if (new DisplayHelper(getActivity()).getOrientation() == Configuration.ORIENTATION_PORTRAIT) {
+                mPropertyName = View.TRANSLATION_Y;
+            } else {
+                mPropertyName = View.TRANSLATION_X;
+            }
         }
     }
 
@@ -470,6 +477,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         } else {
             setBtnTypes(BTN_STOP);
             if (misSessionFinished) {
+                if (mViewPager.getVisibility() != View.VISIBLE) {
+                    mViewPager.setVisibility(View.VISIBLE);
+                }
                 initAlertDialog("Session ended", "Did you finish your exercise?", BTN_START);
             }
         }
@@ -527,7 +537,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                 dialog.dismiss();
             }
         });
-        builder.show();
+        alertDialog = builder.create();
+        alertDialog.show();
     }
 
     public interface TimerUIFragmentListener {
@@ -559,7 +570,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     public void log() {
-
+        
     }
 
 }

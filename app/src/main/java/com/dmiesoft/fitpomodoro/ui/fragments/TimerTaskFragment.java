@@ -20,6 +20,7 @@ import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
@@ -52,6 +53,7 @@ public class TimerTaskFragment extends Fragment {
     private SharedPreferences sharedPref;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
+    private boolean mShouldAnimate;
 
     ////////// Circle variables /////////////////
     static final int CIRCLE_RESUME = 7235;
@@ -271,10 +273,6 @@ public class TimerTaskFragment extends Fragment {
                 // the whole work session has finished or not
                 misSessionFinished = false;
 
-                Log.i(TAG, "onFinish: " +
-                        "\nmPreviousType: " + TimerHelper.getTimerStateOrTypeString(mPreviousType) +
-                        "\nmCurrentType: " + TimerHelper.getTimerStateOrTypeString(mCurrentType));
-
                 if (isContinuous() && mPreviousType != TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_RUNNING);
                     initTimer();
@@ -284,7 +282,8 @@ public class TimerTaskFragment extends Fragment {
                 } else {
                     setmCurrentState(STATE_FINISHED);
                 }
-                postCurrentStateAndType(true, misSessionFinished);
+                mShouldAnimate = true;
+                postCurrentStateAndType(mShouldAnimate, misSessionFinished);
                 if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                     sendRandomExerciseId();
                 }
@@ -381,11 +380,6 @@ public class TimerTaskFragment extends Fragment {
     }
 
     public void setmCurrentType(int currentType) {
-        Log.i(TAG, "set: " +
-                "\nmPreviousType: " + TimerHelper.getTimerStateOrTypeString(mPreviousType) +
-                "\nmCurrentType: " + TimerHelper.getTimerStateOrTypeString(mCurrentType) +
-                "\ncurrentType: " + TimerHelper.getTimerStateOrTypeString(currentType));
-
         this.mPreviousType = mCurrentType;
         this.mCurrentType = currentType;
     }
@@ -414,7 +408,9 @@ public class TimerTaskFragment extends Fragment {
                 mExerciseId = mExercisesIds.get(index);
             }
         }
-        EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
+        if (EventBus.getDefault().hasSubscriberForEvent(ExerciseIdSendEvent.class)) {
+            EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
+        }
     }
 
     @Subscribe
@@ -432,6 +428,7 @@ public class TimerTaskFragment extends Fragment {
                 requestExercisesIds();
             }
             initTimer();
+            manualNotificationsClear();
         } else if (event.getCurrentState() == STATE_PAUSED) {
             timer.cancel();
         } else if (event.getCurrentState() == STATE_STOPPED) {
@@ -440,7 +437,7 @@ public class TimerTaskFragment extends Fragment {
             }
             boolean shouldAnimate = event.isShouldAnimate();
             stopTimer(shouldAnimate);
-            cancelNotification();
+            manualNotificationsClear();
         }
     }
 
@@ -476,9 +473,16 @@ public class TimerTaskFragment extends Fragment {
             EventBus.getDefault().post(sendTimeEvent);
             mCircleProgressEvent.setCircleProgress(mAnimatedVal);
             EventBus.getDefault().post(mCircleProgressEvent);
-
             sendRandomExerciseId();
-            postCurrentStateAndType(false, misSessionFinished);
+            postCurrentStateAndType(mShouldAnimate, misSessionFinished);
+        }
+    }
+
+    @Subscribe
+    public void onAnimationEnded(TimerAnimationStatusEvent event) {
+        if (event.isAnimated()) {
+            Log.i(TAG, "onAnimationEnded: " + event.isAnimated());
+            mShouldAnimate = false;
         }
     }
 
