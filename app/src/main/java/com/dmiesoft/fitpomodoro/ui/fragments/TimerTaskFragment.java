@@ -161,8 +161,18 @@ public class TimerTaskFragment extends Fragment {
         return sharedPref.getInt(SettingsActivity.PREF_KEY_WHEN_LONG_BREAK, 4);
     }
 
+    /**
+     * @return true if sharedPref is set for continuous mode
+     */
     private boolean isContinuous() {
         return sharedPref.getBoolean(SettingsActivity.PREF_CONTINUOUS_MODE, false);
+    }
+
+    /**
+     * @return true if app is set to auto open when finished
+     */
+    private boolean isAutoOpen() {
+        return sharedPref.getBoolean(SettingsActivity.PREF_AUTO_OPEN_WHEN_TIMER_FINISH, false);
     }
 
     private long getMillisecs(long minutes) {
@@ -231,10 +241,6 @@ public class TimerTaskFragment extends Fragment {
                     longBreakCounter++;
                 }
                 /*
-                 * isimena koks buvo laikmacio tipas
-                 */
-                mPreviousType = mCurrentType;
-                /*
                  * jei naudotojas pakeicia ilgos pertraukos kintamaji i mazesni nei yra suskaiciuotas
                  * tuomet pradedamas ilgosios pertraukos laikmatis
                  */
@@ -247,24 +253,28 @@ public class TimerTaskFragment extends Fragment {
                  */
                 if (longBreakCounter == getWhenLongBreak()) {
                     setmCurrentType(TYPE_LONG_BREAK);
-                } else {
+                } else if (longBreakCounter != 0) {
                     setmCurrentType(TYPE_SHORT_BREAK);
                 }
                 /*
                  * patikrinama kokio tipo laikmatis buvo
                  * jei trumpos ar ilgos pertraukos, tuomet nustatomas darbinis
                  */
-                if (mPreviousType == TYPE_SHORT_BREAK || mPreviousType == TYPE_LONG_BREAK) {
+                if (mPreviousType == TYPE_SHORT_BREAK || mPreviousType == TYPE_LONG_BREAK || longBreakCounter == 0) {
                     setmCurrentType(TYPE_WORK);
                     if (isContinuous()) {
                         mExerciseId = -1;
                     }
                 }
                 setTimer();
-//                mPreviousState = mCurrentState;
                 // misSessionFinished is used to determine whether
                 // the whole work session has finished or not
                 misSessionFinished = false;
+
+                Log.i(TAG, "onFinish: " +
+                        "\nmPreviousType: " + TimerHelper.getTimerStateOrTypeString(mPreviousType) +
+                        "\nmCurrentType: " + TimerHelper.getTimerStateOrTypeString(mCurrentType));
+
                 if (isContinuous() && mPreviousType != TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_RUNNING);
                     initTimer();
@@ -285,15 +295,15 @@ public class TimerTaskFragment extends Fragment {
 
     private void cancelNotification() {
         if (mCurrentState != STATE_STOPPED) {
-            // if timer is continuous, then notification breaks sound too early. REMEMBER TO FIX IT!!!
-            // fixed it by adding second notification for finishing
             manageNotificationWithSound();
         }
         mNotificationManager.cancel(NotificationHelper.TIMER_TIME_NOTIFICATION);
-        try {
-            mPendingIntentForFinishingNotification.send(NotificationHelper.RESULT_PENDING_INTENT_REQUEST_CODE);
-        } catch (PendingIntent.CanceledException e) {
-            e.printStackTrace();
+        if (isAutoOpen()) {
+            try {
+                mPendingIntentForFinishingNotification.send(NotificationHelper.RESULT_PENDING_INTENT_REQUEST_CODE);
+            } catch (PendingIntent.CanceledException e) {
+                e.printStackTrace();
+            }
         }
         mTimeNotificationBuilder = null;
     }
@@ -371,6 +381,11 @@ public class TimerTaskFragment extends Fragment {
     }
 
     public void setmCurrentType(int currentType) {
+        Log.i(TAG, "set: " +
+                "\nmPreviousType: " + TimerHelper.getTimerStateOrTypeString(mPreviousType) +
+                "\nmCurrentType: " + TimerHelper.getTimerStateOrTypeString(mCurrentType) +
+                "\ncurrentType: " + TimerHelper.getTimerStateOrTypeString(currentType));
+
         this.mPreviousType = mCurrentType;
         this.mCurrentType = currentType;
     }

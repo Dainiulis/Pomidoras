@@ -2,9 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sample="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
-        android:title="Durations"
-        android:key="pref_key_durations_category">
-    <!--nepamirst kad naudoju MaterialSeekBarPreference!!!!-->
+        android:key="pref_key_durations_category"
+        android:title="Durations">
+        <!--nepamirst kad naudoju MaterialSeekBarPreference!!!!-->
         <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:defaultValue="25"
             android:key="pref_key_work_time"
@@ -45,27 +45,29 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Notifications"
-        android:key="pref_key_notifications_category">
+        android:key="pref_key_notifications_category"
+        android:title="Notifications">
+        <CheckBoxPreference
+            android:key="pref_auto_open_when_timer_finish"
+            android:defaultValue="false"
+            android:title="Auto open app when timer finishes"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_exercises_category"
+        android:title="Exercises">
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:title="Exercises"
-        android:key="pref_key_exercises_category">
-
+        android:key="pref_key_other_category"
+        android:title="Other">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_continuous_mode"
+            android:summary="If selected the timer will autoswitch"
+            android:title="Continuous mode" />
     </PreferenceCategory>
-
-    <PreferenceCategory
-        android:title="Other"
-        android:key="pref_key_other_category">
-    <CheckBoxPreference
-        android:key="pref_continuous_mode"
-        android:title="Continuous mode"
-        android:summary="If selected the timer will autoswitch"
-        android:defaultValue="false"/>
-    </PreferenceCategory>
-
 
 
 </PreferenceScreen>
