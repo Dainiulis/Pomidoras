@@ -48,7 +48,7 @@
         android:key="pref_key_notifications_category"
         android:title="Notifications">
         <CheckBoxPreference
-            android:key="pref_auto_open_when_timer_finish"
+            android:key="pref_key_auto_open_when_timer_finish"
             android:defaultValue="false"
             android:title="Auto open app when timer finishes"/>
     </PreferenceCategory>
@@ -64,7 +64,7 @@
         android:title="Other">
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="pref_continuous_mode"
+            android:key="pref_key_continuous_mode"
             android:summary="If selected the timer will autoswitch"
             android:title="Continuous mode" />
     </PreferenceCategory>

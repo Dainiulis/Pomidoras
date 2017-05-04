@@ -79,12 +79,15 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         doneBtn = (Button) view.findViewById(R.id.doneBtn);
 
         imageView = (ImageView) view.findViewById(R.id.exerciseImage);
-        if (isImage) {
-            suggestionLayout.setVisibility(View.GONE);
-            loadImage();
-        } else {
-            imageView.setVisibility(View.GONE);
-            loadExerciseSuggestion();
+
+        if (exercise != null) {
+            if (isImage) {
+                suggestionLayout.setVisibility(View.GONE);
+                loadImage();
+            } else {
+                imageView.setVisibility(View.GONE);
+                loadExerciseSuggestion();
+            }
         }
     }
 
