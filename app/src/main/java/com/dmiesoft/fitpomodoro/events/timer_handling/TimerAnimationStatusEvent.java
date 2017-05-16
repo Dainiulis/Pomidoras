@@ -6,7 +6,7 @@ package com.dmiesoft.fitpomodoro.events.timer_handling;
 
 public class TimerAnimationStatusEvent {
 
-    boolean animated;
+    private boolean animated;
 
     public TimerAnimationStatusEvent(boolean animated) {
         this.animated = animated;

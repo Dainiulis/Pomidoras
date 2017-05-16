@@ -1,6 +1,7 @@
 package com.dmiesoft.fitpomodoro.ui.fragments.nested;
 
 
+import android.app.Application;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.application.GlobalVariables;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
@@ -26,28 +28,36 @@ import java.util.Locale;
 
 public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickListener {
 
+    public static final int PAGE_SAVE_PROGRESS = 4477;
+    public static final int PAGE_ALL_HISTORY = 4488;
+    public static final int PAGE_CURRENT_HISTORY = 4499;
+    public static final int PAGE_IMAGE = 4411;
     private static final String EXERCISE_MODEL = ".model.Exercise";
-    private static final String IS_IMAGE = "IS_IMAGE";
+    private static final String CURRENT_PAGE = "CURRENT_PAGE";
+
     private static final String TAG = "ETUIF";
+
     private Exercise exercise;
-    private boolean isImage;
+    private int mCurrentPage;
     private LinearLayout suggestionLayout;
     private TextView exerciseNameTV, repsTimeTV;
     private ImageButton subsBtn, addBtn;
     private Button doneBtn;
     private ImageView imageView;
     private View view;
+    private GlobalVariables appContext;
+    private int repsValue;
     private TextToSpeech textToSpeech;
 
     public ExerciseInTimerUIFragment() {
         // Required empty public constructor
     }
 
-    public static ExerciseInTimerUIFragment newInstance(Exercise exercise, boolean isImage) {
+    public static ExerciseInTimerUIFragment newInstance(Exercise exercise, int currentPage) {
         ExerciseInTimerUIFragment fragment = new ExerciseInTimerUIFragment();
         Bundle args = new Bundle();
         args.putParcelable(EXERCISE_MODEL, exercise);
-        args.putBoolean(IS_IMAGE, isImage);
+        args.putInt(CURRENT_PAGE, currentPage);
         fragment.setArguments(args);
         return fragment;
     }
@@ -57,8 +67,10 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             exercise = getArguments().getParcelable(EXERCISE_MODEL);
-            isImage = getArguments().getBoolean(IS_IMAGE);
+            mCurrentPage = getArguments().getInt(CURRENT_PAGE);
         }
+        appContext = (GlobalVariables) getActivity().getApplicationContext();
+        repsValue = appContext.getReps();
     }
 
     @Override
@@ -81,10 +93,10 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         imageView = (ImageView) view.findViewById(R.id.exerciseImage);
 
         if (exercise != null) {
-            if (isImage) {
+            if (mCurrentPage == PAGE_IMAGE) {
                 suggestionLayout.setVisibility(View.GONE);
                 loadImage();
-            } else {
+            } else if (mCurrentPage == PAGE_SAVE_PROGRESS){
                 imageView.setVisibility(View.GONE);
                 loadExerciseSuggestion();
             }
@@ -104,7 +116,12 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
 //            }
 //        });
         exerciseNameTV.setText(exercise.getName());
-        repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
+        Log.i(TAG, "loadExerciseSuggestion: " + appContext.getReps());
+        if (repsValue >= 0) {
+            repsTimeTV.setText(String.valueOf(appContext.getReps()));
+        } else {
+            repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
+        }
         subsBtn.setOnClickListener(this);
         addBtn.setOnClickListener(this);
         doneBtn.setOnClickListener(this);
@@ -124,22 +141,28 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
 
     @Override
     public void onClick(View v) {
+        repsValue = getIntValue(repsTimeTV.getText().toString());
         switch (v.getId()) {
             case R.id.substBtn:
-                int val = getIntValue(repsTimeTV.getText().toString());
-                if (val > 0) {
-                    val--;
+//                int val = getIntValue(repsTimeTV.getText().toString());
+//                if (val > 0) {
+//                    val--;
+//                }
+//                repsTimeTV.setText(String.valueOf(val));
+                if (repsValue > 0) {
+                    repsValue--;
                 }
-                repsTimeTV.setText(String.valueOf(val));
                 break;
             case R.id.addBtn:
-                int val2 = getIntValue(repsTimeTV.getText().toString());
-                val2++;
-                repsTimeTV.setText(String.valueOf(val2));
+//                int val2 = getIntValue(repsTimeTV.getText().toString());
+//                val2++;
+//                repsTimeTV.setText(String.valueOf(val2));
+                repsValue++;
                 break;
             case R.id.doneBtn:
                 break;
         }
+        repsTimeTV.setText(String.valueOf(repsValue));
     }
 
     private int getIntValue(String stringVal) {
@@ -148,5 +171,13 @@ public class ExerciseInTimerUIFragment extends Fragment implements View.OnClickL
         }
         int val = Integer.parseInt(stringVal);
         return val;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mCurrentPage == PAGE_SAVE_PROGRESS) {
+            appContext.setReps(repsValue);
+        }
     }
 }

@@ -78,7 +78,24 @@ public class DatabaseContract {
                         COLUMN_FAVORITE_ID + " INTEGER," +
                         " FOREIGN KEY(" + COLUMN_EXERCISE_ID + ") REFERENCES " + ExercisesTable.TABLE_NAME + "(" + ExercisesTable._ID + ") ON DELETE CASCADE" +
                         " FOREIGN KEY(" + COLUMN_FAVORITE_ID + ") REFERENCES " + FavoritesTable.TABLE_NAME + "(" + FavoritesTable._ID + ") ON DELETE CASCADE" + COMMA_SEP +
-                        " PRIMARY KEY(" + COLUMN_EXERCISE_ID + COMMA_SEP +  COLUMN_FAVORITE_ID + ")" +
+                        " PRIMARY KEY(" + COLUMN_EXERCISE_ID + COMMA_SEP + COLUMN_FAVORITE_ID + ")" +
+                        ");";
+        public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
+    }
+
+    public static abstract class ExerciseHistoryTable implements BaseColumns {
+        public static final String TABLE_NAME = "exercise_history";
+        public static final String COLUMN_EXERCISE_ID = "exercise_id";
+        public static final String COLUMNT_HOW_MANY_REPS_TIME = "how_many_reps_time";
+        public static final String COLUMN_DATE = "date_timestamp";
+
+        public static final String CREATE_TABLE =
+                CREATE_TABLE_STRING + TABLE_NAME + "(" +
+                        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COLUMNT_HOW_MANY_REPS_TIME + " INTEGER, " +
+                        COLUMN_DATE + " TIMESTAMP NOT NULL DEFAULT current_timestamp" +
+                        COLUMN_EXERCISE_ID + " INTEGER," +
+                        " FOREIGN KEY(" + COLUMN_EXERCISE_ID + ") REFERENCES " + ExercisesTable.TABLE_NAME + "(" + ExercisesTable._ID + ") ON DELETE CASCADE)" +
                         ");";
         public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }
