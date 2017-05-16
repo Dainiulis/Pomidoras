@@ -220,16 +220,12 @@ public class MainActivity extends AppCompatActivity
                         timerTaskFragment.stopTimerFromNotification();
                     }
                 } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG)) {
-//                    if (!UniversalAppHelper.isAppOnForeground(context, UniversalAppHelper.PACKAGE_NAME_FIT_POMODORO)) {
-                        Intent intent1 = new Intent(context, MainActivity.class);
-                        startActivity(intent1);
-//                    }
+                    Intent intent1 = new Intent(context, MainActivity.class);
+                    startActivity(intent1);
                 } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH)) {
                     Log.i(TAG, "onReceive: ");
-//                    if (!UniversalAppHelper.isAppOnForeground(context, UniversalAppHelper.PACKAGE_NAME_FIT_POMODORO)) {
-                        Intent intent1 = new Intent(context, MainActivity.class);
-                        startActivity(intent1);
-//                    }
+                    Intent intent1 = new Intent(context, MainActivity.class);
+                    startActivity(intent1);
                     timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
                     if (timerTaskFragment != null) {
                         timerTaskFragment.manualNotificationsClear();

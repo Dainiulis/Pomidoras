@@ -34,6 +34,8 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.application.GlobalVariables;
+import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
@@ -81,6 +83,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private ExercisePagerAdapter mPagerAdapter;
     private View view;
     private AlertDialog alertDialog;
+    private GlobalVariables appContext;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -91,6 +94,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         super.onCreate(savedInstanceState);
         mShouldAnimate = false;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        appContext = (GlobalVariables) getActivity().getApplicationContext();
     }
 
     @Override
@@ -380,6 +384,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void manageViewsAnimation() {
+        Log.i(TAG, TimerHelper.getTimerStateOrTypeString(mCurrentState) +
+                TimerHelper.getTimerStateOrTypeString(mCurrentType));
         if (!mShouldAnimate) {
             manageFVandVPVisibility();
         } else {
@@ -391,6 +397,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                 }
             } else if (mCurrentState == TimerTaskFragment.STATE_STOPPED && mViewPager.getVisibility() == View.VISIBLE) {
                 animateViewPager(true, 1f, 0f);
+            } else if (mCurrentState == TimerTaskFragment.STATE_FINISHED && mCurrentType == TimerTaskFragment.TYPE_WORK) {
+                showViewPager();
             }
         }
     }
@@ -484,9 +492,21 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             }
         }
         if (!misSessionFinished) {
+            managePagerAdapter();
             manageViewsAnimation();
         } else {
             mFakeView.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * This method is used to determine whether to set adapter to null (required to call it's on destroy method) and reset GlobalVariables.
+     * Basically it determines if exercises should be reset.
+     */
+    private void managePagerAdapter() {
+        if (mCurrentState == TimerTaskFragment.STATE_RUNNING && mCurrentType == TimerTaskFragment.TYPE_WORK) {
+            mViewPager.setAdapter(null);
+            appContext.setReps(-1);
         }
     }
 
@@ -543,7 +563,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     public interface TimerUIFragmentListener {
         void onRandomExerciseRequested(long randExerciseId);
+
         void onFavoritesListRequested();
+
         void onFavoriteSelected();
     }
 
@@ -554,8 +576,8 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         public ExercisePagerAdapter(FragmentManager fm, Exercise exercise) {
             super(fm);
             fragments = new Vector<>();
-            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, false));
-            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, true));
+            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, ExerciseInTimerUIFragment.PAGE_SAVE_PROGRESS));
+            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, ExerciseInTimerUIFragment.PAGE_IMAGE));
         }
 
         @Override
@@ -570,7 +592,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     public void log() {
-        
+
     }
 
 }

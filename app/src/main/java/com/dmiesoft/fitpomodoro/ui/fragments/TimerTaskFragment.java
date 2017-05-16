@@ -18,13 +18,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.animation.LinearInterpolator;
 
+import com.dmiesoft.fitpomodoro.application.GlobalVariables;
+import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
-import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
@@ -74,6 +75,7 @@ public class TimerTaskFragment extends Fragment {
     private List<Long> mExercisesIds;
     private boolean misSessionFinished;
     private PendingIntent mPendingIntentForFinishingNotification;
+    private GlobalVariables appContext;
 
     public TimerTaskFragment() {
         // Required empty public constructor
@@ -99,6 +101,7 @@ public class TimerTaskFragment extends Fragment {
         mExerciseId = -1;
         sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         setTimer();
+        appContext = (GlobalVariables) getActivity().getApplicationContext();
     }
 
     @Override
@@ -483,6 +486,14 @@ public class TimerTaskFragment extends Fragment {
         if (event.isAnimated()) {
             Log.i(TAG, "onAnimationEnded: " + event.isAnimated());
             mShouldAnimate = false;
+        }
+    }
+
+    @Subscribe
+    public void onRequestForNewExercise(RequestForNewExerciseEvent event) {
+        if (event.isNeedNewExercise()) {
+            mExerciseId = -1;
+            sendRandomExerciseId();
         }
     }
 

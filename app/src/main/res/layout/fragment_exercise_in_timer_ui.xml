@@ -36,6 +36,7 @@
                 android:layout_margin="10dp"
                 android:id="@+id/repsTime"
                 android:textColor="@color/teal"
+                android:text="10"
                 android:textSize="@dimen/number_count_and_text_size_in_nested_fragment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
