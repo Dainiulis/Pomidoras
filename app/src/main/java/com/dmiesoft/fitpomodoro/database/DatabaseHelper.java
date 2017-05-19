@@ -24,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.ExercisesTable.CREATE_TABLE);
         db.execSQL(DatabaseContract.FavoritesTable.CREATE_TABLE);
         db.execSQL(DatabaseContract.FavExIdsTable.CREATE_TABLE);
+        db.execSQL(DatabaseContract.ExerciseHistoryTable.CREATE_TABLE);
     }
 
     @Override
@@ -32,6 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(DatabaseContract.ExercisesTable.DELETE_TABLE);
         db.execSQL(DatabaseContract.FavoritesTable.DELETE_TABLE);
         db.execSQL(DatabaseContract.FavExIdsTable.DELETE_TABLE);
+        db.execSQL(DatabaseContract.ExerciseHistoryTable.DELETE_TABLE);
         onCreate(db);
     }
 }

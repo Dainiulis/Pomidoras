@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -51,9 +50,11 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
+import com.dmiesoft.fitpomodoro.events.exercises.UpdateNestedExerciseHistoryEvent;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
@@ -64,13 +65,14 @@ import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseGroupDialog;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.ExitDialogFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedExerciseHistoryListFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
 import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.CheckUncheckExerciseHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.UniversalAppHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -92,7 +94,9 @@ public class MainActivity extends AppCompatActivity
         AsyncFirstLoad.AsyncFirstLoadListrener,
         MultiSelectionFragment.MultiSelectionFragmentListener,
         TimerTaskFragment.TimerTaskFragmentListener,
-        TimerUIFragment.TimerUIFragmentListener {
+        TimerUIFragment.TimerUIFragmentListener,
+        NestedSaveExerciseFragment.NestedExerciseFragListener,
+        NestedExerciseHistoryListFragment.OnListFragmentInteractionListener{
 
     private static final String TAG = "MAct";
 
@@ -168,6 +172,9 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle("");
 
         deleteIdList = new ArrayList<>();
+
+        registerReceivers();
+
         if (savedInstanceState != null) {
             exercisesGroups = savedInstanceState.getParcelableArrayList(EXERCISES_GROUPS);
             exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
@@ -221,15 +228,14 @@ public class MainActivity extends AppCompatActivity
                     }
                 } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG)) {
                     Intent intent1 = new Intent(context, MainActivity.class);
-                    startActivity(intent1);
+                    getApplicationContext().startActivity(intent1);
                 } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH)) {
-                    Log.i(TAG, "onReceive: ");
                     Intent intent1 = new Intent(context, MainActivity.class);
-                    startActivity(intent1);
-                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-                    if (timerTaskFragment != null) {
-                        timerTaskFragment.manualNotificationsClear();
-                    }
+                    getApplicationContext().startActivity(intent1);
+//                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
+//                    if (timerTaskFragment != null) {
+//                        timerTaskFragment.manualNotificationsClear();
+//                    }
                 }
             }
         };
@@ -623,14 +629,14 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
-//                DisplayHelper displayHelper = new DisplayHelper(this);
-//                float width = (int) displayHelper.getWidth();
-//                float height = displayHelper.getHeight();
-//                float density = getResources().getDisplayMetrics().density;
-//                float dpW = width / density;
-//                float dpH = height / density;
-//                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
-//                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
+                DisplayHelper displayHelper = new DisplayHelper(this);
+                float width = (int) displayHelper.getWidth();
+                float height = displayHelper.getHeight();
+                float density = getResources().getDisplayMetrics().density;
+                float dpW = width / density;
+                float dpH = height / density;
+                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
+                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();
 
                 if (fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG) != null) {
@@ -909,9 +915,10 @@ public class MainActivity extends AppCompatActivity
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
         Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
+        List<ExerciseHistory> exerciseHistoryList = dataSource.getExerciseHistory(exercise.getId());
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
-            fragment.setExercise(exercise);
+            fragment.setExercise(exercise, exerciseHistoryList);
         }
     }
 
@@ -922,6 +929,20 @@ public class MainActivity extends AppCompatActivity
         if (fragment != null) {
             fragment.setFavorites(favorites);
         }
+    }
+
+    @Override
+    public void onExerciseDonePressed(int howMany, long exerciseId, String exerciseName) {
+        dataSource.saveExerciseHistory(howMany, exerciseId);
+        ExerciseHistory exerciseHistory = new ExerciseHistory();
+        exerciseHistory.setHowMany(howMany);
+        exerciseHistory.setName(exerciseName);
+        EventBus.getDefault().post(new UpdateNestedExerciseHistoryEvent(exerciseHistory));
+    }
+
+    @Override
+    public void onListFragmentInteraction(ExerciseHistory exercise) {
+
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1037,6 +1058,4 @@ public class MainActivity extends AppCompatActivity
             CheckUncheckExerciseHelper.uncheckExercises(exercises);
         }
     }
-
-
 }

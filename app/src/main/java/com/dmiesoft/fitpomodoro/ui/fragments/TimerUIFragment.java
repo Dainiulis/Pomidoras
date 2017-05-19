@@ -25,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
@@ -35,7 +34,6 @@ import android.widget.Spinner;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.application.GlobalVariables;
-import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
@@ -43,9 +41,12 @@ import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
-import com.dmiesoft.fitpomodoro.ui.fragments.nested.ExerciseInTimerUIFragment;
+import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedExerciseHistoryListFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
@@ -286,7 +287,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         if (hideViewPager) {
             hideViewPager();
         }
-        int duration = 1000;
+        final int duration = 1000;
         extraTimerAnimation(duration);
         mCustomTimerAnimator = ObjectAnimator.ofFloat(mCustomTimerView, mPropertyName, values);
         mCustomTimerAnimator.setDuration(duration);
@@ -384,8 +385,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void manageViewsAnimation() {
-        Log.i(TAG, TimerHelper.getTimerStateOrTypeString(mCurrentState) +
-                TimerHelper.getTimerStateOrTypeString(mCurrentType));
         if (!mShouldAnimate) {
             manageFVandVPVisibility();
         } else {
@@ -458,8 +457,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         }
     }
 
-    public void setExercise(Exercise exercise) {
-        mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise);
+    public void setExercise(Exercise exercise, List<ExerciseHistory> exerciseHistoryList) {
+        Log.i(TAG, "setExercise: " + exerciseHistoryList);
+        mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise, exerciseHistoryList);
         mViewPager.setAdapter(mPagerAdapter);
     }
 
@@ -476,7 +476,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
         mShouldAnimate = event.isShouldAnimate();
-        mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType);
+        mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType, sharedPrefs.getBoolean(SettingsActivity.PREF_KEY_SHOW_TIMER_TEXT_SUGGESTIONS, true));
         misSessionFinished = event.isSessionFinished();
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);
@@ -524,10 +524,14 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     public void setFavorites(List<Favorite> favorites) {
         this.favorites = favorites;
-        Favorite all = new Favorite();
-        all.setId(-1);
-        all.setName("All");
-        favorites.add(0, all);
+        Favorite random_sequence = new Favorite();
+        random_sequence.setId(-2);
+        random_sequence.setName(getString(R.string.rand_sequence));
+        Favorite all_rand = new Favorite();
+        all_rand.setId(-1);
+        all_rand.setName(getString(R.string.random_exercise));
+        favorites.add(0, all_rand);
+        favorites.add(1, random_sequence);
 //        favorites.addAll(favorites);
     }
 
@@ -573,11 +577,12 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
         private List<Fragment> fragments;
 
-        public ExercisePagerAdapter(FragmentManager fm, Exercise exercise) {
+        public ExercisePagerAdapter(FragmentManager fm, Exercise exercise, List<ExerciseHistory> exerciseHistoryList) {
             super(fm);
             fragments = new Vector<>();
-            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, ExerciseInTimerUIFragment.PAGE_SAVE_PROGRESS));
-            fragments.add(ExerciseInTimerUIFragment.newInstance(exercise, ExerciseInTimerUIFragment.PAGE_IMAGE));
+            fragments.add(NestedSaveExerciseFragment.newInstance(exercise));
+            fragments.add(NestedExerciseHistoryListFragment.newInstance(exerciseHistoryList, 1));
+//            fragments.add(NestedSaveExerciseFragment.newInstance(exercise, NestedSaveExerciseFragment.PAGE_ALL_HISTORY));
         }
 
         @Override

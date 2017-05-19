@@ -5,15 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -249,13 +248,11 @@ public class ExercisesDataSource {
     }
 
     public void createFavExIds(HashMap<Long, Long> favExIds) {
-        Log.i(TAG, "createFavExIds: " + favExIds.size());
         for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
             ContentValues values = new ContentValues();
             values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
             values.put(DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID, entry.getValue());
             long rowID = database.insert(DatabaseContract.FavExIdsTable.TABLE_NAME, null, values);
-            Log.i(TAG, "row: " + rowID);
         }
     }
 
@@ -265,8 +262,10 @@ public class ExercisesDataSource {
         Cursor cursor = database.rawQuery(
                 "SELECT * FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
                         " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
-                        " ON " + DatabaseContract.ExercisesTable._ID + " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
-                        " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = " + String.valueOf(favoriteId) +
+                        " ON " + DatabaseContract.ExercisesTable._ID +
+                        " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
+                        " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID +
+                        " = " + String.valueOf(favoriteId) +
                         " ORDER BY " + DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC",
                 null
         );
@@ -301,6 +300,44 @@ public class ExercisesDataSource {
         String where = DatabaseContract.FavoritesTable._ID + "=?";
         String[] whereArgs = {String.valueOf(favoriteId)};
         database.delete(DatabaseContract.FavoritesTable.TABLE_NAME, where, whereArgs);
+    }
+
+    public void saveExerciseHistory(int howMany, long exerciseId) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID, exerciseId);
+        values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME, howMany);
+        database.insert(DatabaseContract.ExerciseHistoryTable.TABLE_NAME, null, values);
+    }
+
+    public List<ExerciseHistory> getExerciseHistory(long exerciseId) {
+        List<ExerciseHistory> exercisesHistory = new ArrayList<>();
+        String commaSep = ", ";
+        String selection = DatabaseContract.ExercisesTable.COLUMN_NAME + commaSep +
+                DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME + commaSep +
+                DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE;
+        Cursor cursor = database.rawQuery(
+                "SELECT " + selection + " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+                        " INNER JOIN " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
+                        " ON " + DatabaseContract.ExercisesTable.TABLE_NAME + "." + DatabaseContract.ExercisesTable._ID +
+                        " = " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
+                        " WHERE " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
+                        " = " + String.valueOf(exerciseId) +
+                        " ORDER BY " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC",
+                null
+        );
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                ExerciseHistory exerciseHistory = new ExerciseHistory();
+                exerciseHistory.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+                exerciseHistory.setHowMany(cursor.getInt(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME)));
+                exerciseHistory.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_DATE)));
+                exercisesHistory.add(exerciseHistory);
+            }
+        }
+        cursor.close();
+        return exercisesHistory;
+
     }
 
 }
