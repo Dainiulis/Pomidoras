@@ -3,7 +3,7 @@
     xmlns:sample="http://schemas.android.com/apk/res-auto">
     <PreferenceCategory
         android:key="pref_key_durations_category"
-        android:title="Durations">
+        android:title="Timer">
         <!--nepamirst kad naudoju MaterialSeekBarPreference!!!!-->
         <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:defaultValue="25"
@@ -42,6 +42,11 @@
             sample:msbp_maxValue="60"
             sample:msbp_measurementUnit="minutes"
             sample:msbp_minValue="1" />
+        <CheckBoxPreference
+            android:key="pref_key_show_timer_text_suggestions"
+            android:defaultValue="true"
+            android:title="Timer suggestion"
+            android:summary="Show suggestion for starting/stopping on timer"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -56,6 +61,15 @@
     <PreferenceCategory
         android:key="pref_key_exercises_category"
         android:title="Exercises">
+        <CheckBoxPreference
+            android:key="pref_key_auto_start_timed_exercises"
+            android:defaultValue="false"
+            android:title="Auto start timed exercises"/>
+        <CheckBoxPreference
+            android:key="pref_key_auto_save_timed_exercises"
+            android:defaultValue="false"
+            android:title="Auto save timed exercises"
+            android:summary="Best used with Auto start timed exercies to get the experience of guided timed workout"/>
 
     </PreferenceCategory>
 

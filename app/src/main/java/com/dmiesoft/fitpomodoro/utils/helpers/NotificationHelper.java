@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
@@ -22,6 +23,7 @@ public class NotificationHelper {
      * used for getting to package, if raw data is needed (sounds, images, etc.)
      */
     public static final String URI_TO_PACKAGE = "android.resource://com.dmiesoft.fitpomodoro/";
+    private static final String TAG = "NH";
 
     /**
      * Gets timer time notification builder (used for showing which timer is going and it's time)
@@ -64,6 +66,7 @@ public class NotificationHelper {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setSmallIcon(TimerHelper.getFromResources(timerType, TimerHelper.DRAWABLE_ICONS))
                 .setContentTitle(TimerHelper.getTimerTypeName(timerType) + " time has finished...")
+                .setOngoing(true)
                 .setContentText("Tap to continue your session")
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(resultPendingIntent);

@@ -1,6 +1,7 @@
 package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.ValueAnimator;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -349,7 +350,8 @@ public class TimerTaskFragment extends Fragment {
                 mTimeNotificationBuilder.setContentTitle(TimerHelper.getTimerTypeName(mCurrentType) +
                         " time remaining - " +
                         TimerHelper.getTimerString(millisecs));
-                mNotificationManager.notify(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());
+                Notification notification = mTimeNotificationBuilder.build();
+                mNotificationManager.notify(NotificationHelper.TIMER_TIME_NOTIFICATION, notification);
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }

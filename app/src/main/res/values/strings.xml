@@ -34,4 +34,6 @@
     <string name="delete">Delete</string>
     <string name="could_not_load_img">There was an error. Please clear app from memory and start again.</string>
     <string name="done">Done</string>
+    <string name="random_exercise">Random exercise</string>
+    <string name="rand_sequence">Random squence</string>
 </resources>
