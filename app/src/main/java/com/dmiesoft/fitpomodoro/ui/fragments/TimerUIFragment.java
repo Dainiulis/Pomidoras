@@ -582,7 +582,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             fragments = new Vector<>();
             fragments.add(NestedSaveExerciseFragment.newInstance(exercise));
             fragments.add(NestedExerciseHistoryListFragment.newInstance(exerciseHistoryList, 1));
-//            fragments.add(NestedSaveExerciseFragment.newInstance(exercise, NestedSaveExerciseFragment.PAGE_ALL_HISTORY));
         }
 
         @Override
