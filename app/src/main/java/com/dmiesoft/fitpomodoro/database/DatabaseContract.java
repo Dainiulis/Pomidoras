@@ -4,7 +4,7 @@ import android.provider.BaseColumns;
 
 public class DatabaseContract {
 
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 7;
     public static final String DATABASE_NAME = "pomidoras.db";
     private static final String TEXT = " TEXT";
     private static final String COMMA_SEP = ",";
@@ -21,6 +21,8 @@ public class DatabaseContract {
         public static final String COLUMN_GROUP_ID = "exercise_group_id";
         public static final String COLUMN_IMAGE = "image";
         public static final String COLUMN_DATE = "date_timestamp";
+        public static final String COLUMN_TOTAL_REPS = "total_reps_done";
+        public static final String COLUMN_HOW_MANY_TIMES_DONE = "how_many_times_done";
 
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
@@ -31,6 +33,8 @@ public class DatabaseContract {
                         COLUMN_IMAGE + TEXT + COMMA_SEP +
                         COLUMN_DATE + " TIMESTAMP NOT NULL DEFAULT current_timestamp, " +
                         COLUMN_GROUP_ID + " INTEGER," +
+                        COLUMN_TOTAL_REPS + " INTEGER," +
+                        COLUMN_HOW_MANY_TIMES_DONE + " INTEGER," +
                         " FOREIGN KEY(" + COLUMN_GROUP_ID + ") REFERENCES " + ExercisesGroupsTable.TABLE_NAME + "(" + ExercisesGroupsTable._ID + ") ON DELETE CASCADE" +
                         ");";
         public static final String DELETE_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;

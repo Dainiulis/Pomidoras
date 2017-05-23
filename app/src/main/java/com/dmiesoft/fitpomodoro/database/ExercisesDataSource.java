@@ -29,7 +29,9 @@ public class ExercisesDataSource {
             DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION,
             DatabaseContract.ExercisesTable.COLUMN_GROUP_ID,
             DatabaseContract.ExercisesTable.COLUMN_IMAGE,
-            DatabaseContract.ExercisesTable.COLUMN_DATE
+            DatabaseContract.ExercisesTable.COLUMN_DATE,
+            DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE,
+            DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS
     };
 
     private static String[] exercises_groups_columns = {
@@ -168,6 +170,8 @@ public class ExercisesDataSource {
                 exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
                 exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
                 exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
+                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
+                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
                 exercises.add(exercise);
             }
         }
@@ -280,6 +284,8 @@ public class ExercisesDataSource {
                 exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
                 exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
                 exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
+                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
+                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
                 exercises.add(exercise);
             }
         }
@@ -307,6 +313,16 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID, exerciseId);
         values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME, howMany);
         database.insert(DatabaseContract.ExerciseHistoryTable.TABLE_NAME, null, values);
+
+        String where = DatabaseContract.ExercisesTable._ID + " = ?";
+        String[] whereArgs = {String.valueOf(exerciseId)};
+        Exercise exercise = findExercises(where, whereArgs).get(0);
+        int howManyTimesDone = exercise.getHowManyTimesDone() + 1;
+        int totalReps = exercise.getTotalRepsDone() + howMany;
+        values.clear();
+        values.put(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE, howManyTimesDone);
+        values.put(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS, totalReps);
+        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs );
     }
 
     public List<ExerciseHistory> getExerciseHistory(long exerciseId) {
