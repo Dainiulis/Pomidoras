@@ -9,6 +9,8 @@ import com.dmiesoft.fitpomodoro.R;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    public static final String PREF_TIMER_TIME_FOR_TESTING = "pref_timer_time_for_testing";
+
     public static final String PREF_KEY_WORK_TIME = "pref_key_work_time";
     public static final String PREF_KEY_REST_TIME = "pref_key_rest_time";
     public static final String PREF_KEY_WHEN_LONG_BREAK = "pref_key_when_long_break";

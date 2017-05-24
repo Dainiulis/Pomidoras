@@ -9,7 +9,7 @@ public class TimerTypeStateHandlerEvent {
     private int currentType;
     private int previousState;
     private int previousType;
-    private boolean shouldAnimate, sessionFinished;
+    private boolean shouldAnimate, sessionFinished, shouldAnimateBackgroundColor;
     private int publisher;
 
     public TimerTypeStateHandlerEvent() {}
@@ -68,5 +68,13 @@ public class TimerTypeStateHandlerEvent {
 
     public void setPreviousType(int previousType) {
         this.previousType = previousType;
+    }
+
+    public boolean isShouldAnimateBackgroundColor() {
+        return shouldAnimateBackgroundColor;
+    }
+
+    public void setShouldAnimateBackgroundColor(boolean shouldAnimateBackgroundColor) {
+        this.shouldAnimateBackgroundColor = shouldAnimateBackgroundColor;
     }
 }
