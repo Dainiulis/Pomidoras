@@ -13,6 +13,8 @@ public class Exercise implements Parcelable{
     private String image;
     private long date;
     private boolean isChecked;
+    private int howManyTimesDone;
+    private int totalRepsDone;
 
     public Exercise() {}
 
@@ -24,6 +26,8 @@ public class Exercise implements Parcelable{
         exerciseGroupId = in.readLong();
         image = in.readString();
         date = in.readLong();
+        howManyTimesDone = in.readInt();
+        totalRepsDone = in.readInt();
     }
 
     public static final Creator<Exercise> CREATOR = new Creator<Exercise>() {
@@ -102,6 +106,22 @@ public class Exercise implements Parcelable{
         isChecked = checked;
     }
 
+    public int getHowManyTimesDone() {
+        return howManyTimesDone;
+    }
+
+    public void setHowManyTimesDone(int howManyTimesDone) {
+        this.howManyTimesDone = howManyTimesDone;
+    }
+
+    public int getTotalRepsDone() {
+        return totalRepsDone;
+    }
+
+    public void setTotalRepsDone(int totalRepsDone) {
+        this.totalRepsDone = totalRepsDone;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -116,5 +136,7 @@ public class Exercise implements Parcelable{
         dest.writeLong(exerciseGroupId);
         dest.writeString(image);
         dest.writeLong(date);
+        dest.writeInt(howManyTimesDone);
+        dest.writeInt(totalRepsDone);
     }
 }

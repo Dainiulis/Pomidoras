@@ -90,6 +90,8 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
         exerciseNameTV.setText(exercise.getName());
         if (repsValue >= 0) {
             repsTimeTV.setText(String.valueOf(appContext.getReps()));
+        } else if (getAverageReps() > 0) {
+            repsTimeTV.setText(String.valueOf(getAverageReps()));
         } else {
             repsTimeTV.setText(String.valueOf(getIntValue(repsTimeTV.getText().toString())));
         }
@@ -132,6 +134,14 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
         }
         int val = Integer.parseInt(stringVal);
         return val;
+    }
+
+    private int getAverageReps() {
+        if (exercise.getHowManyTimesDone() > 0) {
+            return exercise.getTotalRepsDone() / exercise.getHowManyTimesDone();
+        } else {
+            return 0;
+        }
     }
 
     @Override
