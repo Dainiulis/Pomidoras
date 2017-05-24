@@ -182,8 +182,13 @@ public class TimerTaskFragment extends Fragment {
     }
 
     private long getMillisecs(long minutes) {
-        //Testavimui pasidaryti minutes * 1000(bus sekundes), naudojimui minutes * 60000(bus minutes)
-        return minutes * 1000;
+
+        //while developing, when released, leave multiplier = 60000;
+        long multiplier = 1000;
+        if (!sharedPref.getBoolean(SettingsActivity.PREF_TIMER_TIME_FOR_TESTING, true)) {
+            multiplier = 60000;
+        }
+        return minutes * multiplier;
     }
 
     private long getDefaultMins(boolean workTimer) {
@@ -276,18 +281,19 @@ public class TimerTaskFragment extends Fragment {
                 // misSessionFinished is used to determine whether
                 // the whole work session has finished or not
                 misSessionFinished = false;
-
+                boolean shouldAnimateBackgroundColor = false;
                 if (isContinuous() && mPreviousType != TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_RUNNING);
                     initTimer();
                 } else if (mPreviousType == TYPE_LONG_BREAK) {
                     setmCurrentState(STATE_STOPPED);
                     misSessionFinished = true;
+                    shouldAnimateBackgroundColor = true;
                 } else {
                     setmCurrentState(STATE_FINISHED);
                 }
                 mShouldAnimate = true;
-                postCurrentStateAndType(mShouldAnimate, misSessionFinished);
+                postCurrentStateAndType(mShouldAnimate, misSessionFinished, shouldAnimateBackgroundColor);
                 if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
                     sendRandomExerciseId();
                 }
@@ -368,7 +374,7 @@ public class TimerTaskFragment extends Fragment {
         }
     }
 
-    private void postCurrentStateAndType(boolean shouldAnimate, boolean sessionFinished) {
+    private void postCurrentStateAndType(boolean shouldAnimate, boolean sessionFinished, boolean shouldAnimateBackgoundColor) {
         TimerTypeStateHandlerEvent timerHandlerEvent = new TimerTypeStateHandlerEvent();
         timerHandlerEvent.setSessionFinished(sessionFinished);
         timerHandlerEvent.setShouldAnimate(shouldAnimate);
@@ -376,6 +382,7 @@ public class TimerTaskFragment extends Fragment {
         timerHandlerEvent.setPreviousType(mPreviousType);
         timerHandlerEvent.setCurrentState(mCurrentState);
         timerHandlerEvent.setCurrentType(mCurrentType);
+        timerHandlerEvent.setShouldAnimateBackgroundColor(shouldAnimateBackgoundColor);
         EventBus.getDefault().post(timerHandlerEvent);
     }
 
@@ -441,24 +448,25 @@ public class TimerTaskFragment extends Fragment {
                 misSessionFinished = false;
             }
             boolean shouldAnimate = event.isShouldAnimate();
-            stopTimer(shouldAnimate);
+            stopTimer(shouldAnimate, event.isShouldAnimateBackgroundColor());
             manualNotificationsClear();
         }
     }
 
-    private void stopTimer(boolean shouldAnimate) {
+    private void stopTimer(boolean shouldAnimate, boolean shouldAnimateBackGround) {
+        Log.i(TAG, "stopTimer: ");
         handleTimerStates(CIRCLE_STOP);
         timer.cancel();
         longBreakCounter = 0;
         mExerciseId = -1;
         setmCurrentType(TYPE_WORK);
-        postCurrentStateAndType(shouldAnimate, misSessionFinished);
+        postCurrentStateAndType(shouldAnimate, misSessionFinished, shouldAnimateBackGround);
         setTimer();
     }
 
     public void stopTimerFromNotification() {
         setmCurrentState(STATE_STOPPED);
-        stopTimer(true);
+        stopTimer(true, false);
         mNotificationManager.cancel(NotificationHelper.TIMER_TIME_NOTIFICATION);
     }
 
@@ -479,7 +487,7 @@ public class TimerTaskFragment extends Fragment {
             mCircleProgressEvent.setCircleProgress(mAnimatedVal);
             EventBus.getDefault().post(mCircleProgressEvent);
             sendRandomExerciseId();
-            postCurrentStateAndType(mShouldAnimate, misSessionFinished);
+            postCurrentStateAndType(mShouldAnimate, misSessionFinished, false);
         }
     }
 

@@ -81,6 +81,11 @@
             android:key="pref_key_continuous_mode"
             android:summary="If selected the timer will autoswitch"
             android:title="Continuous mode" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_timer_time_for_testing"
+            android:title="Test timer time" />
     </PreferenceCategory>
 
 

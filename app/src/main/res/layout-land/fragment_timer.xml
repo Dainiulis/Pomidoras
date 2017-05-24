@@ -4,8 +4,8 @@
     android:id="@+id/content_fragment_timer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:gravity="center"
+    android:orientation="horizontal"
     android:weightSum="10"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment">
@@ -21,20 +21,20 @@
         android:layout_weight="4"
         android:padding="5dp"
         app:text="time"
-        app:textColor="@android:color/darker_gray"
+        app:textColor="@color/timer_text"
         app:textSize="@dimen/timer_text_size" />
 
     <View
+        android:id="@+id/fake_view"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:id="@+id/fake_view"
         android:layout_alignParentBottom="true"
         android:layout_centerVertical="true"
         android:layout_gravity="center_horizontal"
         android:layout_toEndOf="@+id/customTimer"
         android:layout_toRightOf="@+id/customTimer"
-        android:background="@android:color/transparent"/>
+        android:layout_weight="1"
+        android:background="@android:color/transparent" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
@@ -49,4 +49,5 @@
         android:padding="10dp" />
 
 </LinearLayout>
+
 

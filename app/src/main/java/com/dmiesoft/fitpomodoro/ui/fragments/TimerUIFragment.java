@@ -2,11 +2,15 @@ package com.dmiesoft.fitpomodoro.ui.fragments;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -30,6 +34,7 @@ import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -50,6 +55,7 @@ import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
+import com.dmiesoft.fitpomodoro.utils.helpers.UniversalAppHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -257,16 +263,27 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void timerHandler(boolean shouldAnimate, int currentState) {
+        Log.i(TAG, "timerHandler: curr " + TimerHelper.getTimerStateOrTypeString(currentState) + " prev " + TimerHelper.getTimerStateOrTypeString(mCurrentState));
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
         timerHandler.setCurrentState(currentState);
         timerHandler.setPreviousType(mPreviousType);
         timerHandler.setPreviousState(mCurrentState);
         timerHandler.setCurrentType(mCurrentType);
         timerHandler.setShouldAnimate(shouldAnimate);
+        timerHandler.setShouldAnimateBackgroundColor(shouldAnimateBackgroundColor(currentState));
         timerHandler.setPublisher(TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT);
         EventBus.getDefault().post(timerHandler);
     }
 //  *********************************************
+
+    /**
+     * @param currentState
+     * @return Returns whether background color should be animated
+     */
+    private boolean shouldAnimateBackgroundColor(int currentState) {
+        return ((currentState == TimerTaskFragment.STATE_RUNNING && mCurrentState == TimerTaskFragment.STATE_STOPPED) ||
+                (currentState == TimerTaskFragment.STATE_STOPPED && mCurrentState == TimerTaskFragment.STATE_RUNNING));
+    }
 
     //      Change buttons and timer textview according to btn tag
     private void setBtnTypes(int clickedButtonTag) {
@@ -458,7 +475,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     public void setExercise(Exercise exercise, List<ExerciseHistory> exerciseHistoryList) {
-        Log.i(TAG, "setExercise: " + exerciseHistoryList);
         mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise, exerciseHistoryList);
         mViewPager.setAdapter(mPagerAdapter);
     }
@@ -476,6 +492,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         mCurrentState = event.getCurrentState();
         mCurrentType = event.getCurrentType();
         mShouldAnimate = event.isShouldAnimate();
+
         mCustomTimerView.setmTimerStateAndType(mCurrentState, mCurrentType, sharedPrefs.getBoolean(SettingsActivity.PREF_KEY_SHOW_TIMER_TEXT_SUGGESTIONS, true));
         misSessionFinished = event.isSessionFinished();
         if (mCurrentState == TimerTaskFragment.STATE_RUNNING) {
@@ -497,6 +514,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         } else {
             mFakeView.setVisibility(View.GONE);
         }
+        manageBackgroundColor(event.isShouldAnimateBackgroundColor());
     }
 
     /**
@@ -520,6 +538,42 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         if (event.getExerciseId() != -1) {
             mListener.onRandomExerciseRequested(event.getExerciseId());
         }
+    }
+
+    private void manageBackgroundColor(boolean shouldAnimateBackgroundColor) {
+        int color = getResources().getColor(R.color.timer_running);
+        if (shouldAnimateBackgroundColor) {
+            if (mPreviousState == TimerTaskFragment.STATE_STOPPED) {
+                animateBackgroundColor(true, color);
+            } else {
+                animateBackgroundColor(false, color);
+            }
+        } else {
+            if (mCurrentState == TimerTaskFragment.STATE_STOPPED) {
+                container.setBackgroundColor(Color.WHITE);
+            } else {
+                container.setBackgroundColor(color);
+            }
+        }
+
+    }
+
+    private void animateBackgroundColor(boolean whiteToColor, int color) {
+        ValueAnimator backgroundAnimation = null;
+        if (whiteToColor) {
+            backgroundAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), Color.WHITE, color)
+                    .setDuration(400);
+        } else {
+            backgroundAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), color, Color.WHITE)
+                    .setDuration(400);
+        }
+        backgroundAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                container.setBackgroundColor((int) animation.getAnimatedValue());
+            }
+        });
+        backgroundAnimation.start();
     }
 
     public void setFavorites(List<Favorite> favorites) {

@@ -286,7 +286,6 @@ public class CustomTimerView extends View {
 //            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
 //            setBitmapFromVectorDrawable(R.drawable.ic_pull_up_dude);
 //        }
-        Log.i(TAG, "setmTimerStateAndType: ");
         if (showSuggestion) {
             mTimerHintTextColor2 = Color.RED;
             if (timerState == TimerTaskFragment.STATE_RUNNING) {

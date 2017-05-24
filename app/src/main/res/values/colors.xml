@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <!--Main colors-->
+    <color name="colorPrimary">#F44336</color>
+    <color name="colorPrimaryDark">#D32F2F</color>
+    <color name="colorAccent">#4CAF50</color>
+
+    <!--Misc colors-->
     <color name="buttonSelected">#f7f6f7</color>
     <color name="cyan">#20B2AA</color>
     <color name="teal">#008080</color>
+    <color name="primary_light">#FFCDD2</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#BDBDBD</color>
+
+    <!--Timer colors-->
+    <color name="timer_text">@color/secondary_text</color>
+    <color name="timer_running">#bbd98f</color>
 </resources>

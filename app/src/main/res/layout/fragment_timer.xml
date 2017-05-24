@@ -2,39 +2,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_fragment_timer"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="10"
     android:gravity="center"
+    android:orientation="vertical"
+    android:weightSum="10"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:activity="com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment">
 
     <com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView
         android:id="@+id/customTimer"
         android:layout_width="wrap_content"
-        android:layout_gravity="center"
         android:layout_height="0dp"
+        android:layout_gravity="center"
         android:layout_weight="4"
         android:padding="5dp"
-        app:text="time"
         app:strokeWidth="@dimen/custom_timer_stroke_width"
-        app:textColor="@android:color/darker_gray"
+        app:text="time"
+        app:textColor="@color/timer_text"
         app:textSize="@dimen/timer_text_size" />
 
     <View
+        android:id="@+id/fake_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:id="@+id/fake_view"
-        android:background="@android:color/transparent"/>
+        android:background="@android:color/transparent" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center"
-        android:layout_weight="6"
-        android:layout_margin="5dp"/>
+        android:layout_margin="5dp"
+        android:layout_weight="6" />
+
 
 </LinearLayout>
