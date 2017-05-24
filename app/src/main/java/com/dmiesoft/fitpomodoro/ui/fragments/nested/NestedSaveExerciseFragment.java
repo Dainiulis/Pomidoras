@@ -140,7 +140,7 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
         if (exercise.getHowManyTimesDone() > 0) {
             return exercise.getTotalRepsDone() / exercise.getHowManyTimesDone();
         } else {
-            return 0; 
+            return 0;
         }
     }
 
