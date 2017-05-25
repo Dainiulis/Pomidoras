@@ -14,7 +14,18 @@ public class GlobalVariables extends Application {
      * saved pager page of the mViewPager
      */
     private int pagerPage;
+    /**
+     * How many times the exercise was done
+     */
+    private int howManyTimesDone;
 
+    public int getHowManyTimesDone() {
+        return howManyTimesDone;
+    }
+
+    public void setHowManyTimesDone(int howManyTimesDone) {
+        this.howManyTimesDone = howManyTimesDone;
+    }
 
     public int getReps() {
         return reps;
