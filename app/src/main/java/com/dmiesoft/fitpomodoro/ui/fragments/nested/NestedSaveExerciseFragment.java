@@ -120,6 +120,7 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
     }
 
     private void saveExerciseToHistory() {
+
         mListener.onExerciseDonePressed(repsValue, exercise.getId(), exercise.getName());
         Toast.makeText(getContext(),
                 "Done " + exercise.getName() + " " +

@@ -50,17 +50,17 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="pref_key_notifications_category"
-        android:title="Notifications">
-        <CheckBoxPreference
-            android:key="pref_key_auto_open_when_timer_finish"
-            android:defaultValue="false"
-            android:title="Auto open app when timer finishes"/>
-    </PreferenceCategory>
-
-    <PreferenceCategory
         android:key="pref_key_exercises_category"
         android:title="Exercises">
+        <com.pavelsikun.seekbarpreference.SeekBarPreference
+            android:defaultValue="3"
+            android:key="pref_key_suggest_other_exercise_after_the_number_of_sets"
+            android:title="Sets to do before changing the exercise"
+            sample:msbp_dialogEnabled="false"
+            sample:msbp_interval="1"
+            sample:msbp_maxValue="15"
+            sample:msbp_measurementUnit="sets"
+            sample:msbp_minValue="1" />
         <CheckBoxPreference
             android:key="pref_key_auto_start_timed_exercises"
             android:defaultValue="false"
@@ -71,6 +71,15 @@
             android:title="Auto save timed exercises"
             android:summary="Best used with Auto start timed exercies to get the experience of guided timed workout"/>
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_notifications_category"
+        android:title="Notifications">
+        <CheckBoxPreference
+            android:key="pref_key_auto_open_when_timer_finish"
+            android:defaultValue="false"
+            android:title="Auto open app when timer finishes"/>
     </PreferenceCategory>
 
     <PreferenceCategory
