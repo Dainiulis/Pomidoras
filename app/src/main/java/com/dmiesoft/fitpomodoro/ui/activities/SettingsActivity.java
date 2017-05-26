@@ -20,6 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_AUTO_START_TIMED_EXERCISES = "pref_key_auto_start_timed_exercises";
     public static final String PREF_KEY_AUTO_SAVE_TIMED_EXERCISES = "pref_key_auto_save_timed_exercises";
     public static final String PREF_KEY_SHOW_TIMER_TEXT_SUGGESTIONS = "pref_key_show_timer_text_suggestions";
+    public static final String PREF_KEY_SETS_BEFORE_CHANGING_EXERCISE = "pref_key_sets_before_changing_exercise";
     public static final String FIRST_TIME_LOAD = "FIRST_TIME_LOAD";
 
     @Override

@@ -54,7 +54,7 @@
         android:title="Exercises">
         <com.pavelsikun.seekbarpreference.SeekBarPreference
             android:defaultValue="3"
-            android:key="pref_key_suggest_other_exercise_after_the_number_of_sets"
+            android:key="pref_key_sets_before_changing_exercise"
             android:title="Sets to do before changing the exercise"
             sample:msbp_dialogEnabled="false"
             sample:msbp_interval="1"

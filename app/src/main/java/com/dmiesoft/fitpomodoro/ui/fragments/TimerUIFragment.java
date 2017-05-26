@@ -34,7 +34,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
 import com.dmiesoft.fitpomodoro.R;
@@ -55,7 +54,6 @@ import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
 import com.dmiesoft.fitpomodoro.utils.customViews.CustomTimerView;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.UniversalAppHelper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -263,7 +261,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     private void timerHandler(boolean shouldAnimate, int currentState) {
-        Log.i(TAG, "timerHandler: curr " + TimerHelper.getTimerStateOrTypeString(currentState) + " prev " + TimerHelper.getTimerStateOrTypeString(mCurrentState));
         TimerTypeStateHandlerEvent timerHandler = new TimerTypeStateHandlerEvent();
         timerHandler.setCurrentState(currentState);
         timerHandler.setPreviousType(mPreviousType);
@@ -382,6 +379,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (hideViewPager) {
+                    clearViewPager();
                     animateCustomTimer(hideViewPager, -getAnimationDistance(.25f), 0f);
                 }
                 EventBus.getDefault().post(new TimerAnimationStatusEvent(true));
@@ -476,7 +474,51 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
 
     public void setExercise(Exercise exercise, List<ExerciseHistory> exerciseHistoryList) {
         mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise, exerciseHistoryList);
-        mViewPager.setAdapter(mPagerAdapter);
+//        mViewPager.setAdapter(mPagerAdapter);
+
+        if (appContext.shouldAnimateViewPager()) {
+//            appContext.setAnimateViewPager(false); // if not set to false here it then animation continues on screen orientation change until DONE button is pressed
+            mViewPager.animate()
+                    .setDuration(300)
+                    .scaleX(0f)
+                    .scaleY(0f)
+                    .alpha(.2f)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            mViewPager.setAdapter(mPagerAdapter);
+                            appContext.setAnimateViewPager(false); // if not set to false here it then animation continues on screen orientation change until DONE button is pressed
+                            mViewPager.animate()
+                                    .setDuration(300)
+                                    .scaleX(1f)
+                                    .scaleY(1f)
+                                    .alpha(1f)
+                                    .setListener(null)
+                                    .start();
+                        }
+                    })
+                    .start();
+//            animViewPagerWhenSettingExercise();
+        } else {
+            mViewPager.setAdapter(mPagerAdapter);
+        }
+
+    }
+
+    private void animViewPagerWhenSettingExercise() {
+        ObjectAnimator animScaleX = ObjectAnimator.ofFloat(mViewPager, "scaleX", 1f, 0f);
+        animScaleX.setRepeatCount(1);
+        animScaleX.setRepeatMode(ValueAnimator.REVERSE);
+        ObjectAnimator animScaleY = ObjectAnimator.ofFloat(mViewPager, "scaleY", 1f, 0f);
+        animScaleY.setRepeatCount(1);
+        animScaleY.setRepeatMode(ValueAnimator.REVERSE);
+        ObjectAnimator animAlpha = ObjectAnimator.ofFloat(mViewPager, "alpha", 1f, .2f);
+        animAlpha.setRepeatCount(1);
+        animAlpha.setRepeatMode(ValueAnimator.REVERSE);
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.playTogether(animScaleX, animScaleY, animAlpha);
+        animSet.setDuration(500);
+        animSet.start();
     }
 
     @Subscribe
@@ -522,10 +564,15 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
      * Basically it determines if exercises should be reset.
      */
     private void managePagerAdapter() {
-        if (mCurrentState == TimerTaskFragment.STATE_RUNNING && mCurrentType == TimerTaskFragment.TYPE_WORK) {
-            mViewPager.setAdapter(null);
-            appContext.setReps(-1);
+        if (mCurrentType == TimerTaskFragment.TYPE_WORK && !mShouldAnimate && (mCurrentState == TimerTaskFragment.STATE_RUNNING || mCurrentState == TimerTaskFragment.STATE_PAUSED)) {
+            clearViewPager();
         }
+    }
+
+    private void clearViewPager() {
+        mViewPager.setAdapter(null);
+        appContext.setReps(-1);
+        appContext.setHowManyTimesDone(0);
     }
 
     @Subscribe
