@@ -28,6 +28,7 @@ import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
+import com.dmiesoft.fitpomodoro.utils.LogToFile;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
 import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceHelper;
@@ -35,7 +36,8 @@ import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceHelper;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.Arrays;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -79,6 +81,9 @@ public class TimerTaskFragment extends Fragment {
     private boolean misSessionFinished;
     private PendingIntent mPendingIntentForFinishingNotification;
     private GlobalVariables appContext;
+
+    //for txt logging
+    private LogToFile logToFile;
 
     public TimerTaskFragment() {
         // Required empty public constructor
@@ -125,11 +130,6 @@ public class TimerTaskFragment extends Fragment {
         if (mCurrentState == STATE_STOPPED) {
             setTimer();
         }
-//        restoreTimerParameters();
-    }
-
-    private void restoreTimerParameters() {
-
     }
 
     @Override
@@ -224,17 +224,17 @@ public class TimerTaskFragment extends Fragment {
                  * then it evaluates if current second and next second difference is 0
                  * and only then the value for timer animation drawing is sent
                  */
-                mCurrentSecond = (int) (millisUntilFinished / 1000);
+                millisecs = millisUntilFinished;
+                mCurrentSecond = (int) (millisecs / 1000);
+
                 int difference = mCurrentSecond - mNextSecond;
 
-                Log.i(TAG, "onTick: " + difference);
-
                 if (Math.abs(difference) > 1) {
+//                    logToFileMillisAndSecs("Difference too high (" + difference + ")");
                     difference = 0;
                 }
                 if (difference == 0) {
                     mNextSecond = mCurrentSecond - 1;
-//                    mAnimatedVal += mAnimationFraction;
                     mAnimatedVal = mAnimationFraction * (mInitializedMillisecs / 1000 - mCurrentSecond);
                     sendAnimatedTimerValue();
                     if (mCurrentSecond == 0) {
@@ -242,11 +242,11 @@ public class TimerTaskFragment extends Fragment {
                     }
                 }
 
-                millisecs = millisUntilFinished;
                 if (EventBus.getDefault().hasSubscriberForEvent(sendTimeEvent.getClass())) {
                     sendTimeEvent.setMillisecs(millisecs);
                     EventBus.getDefault().post(sendTimeEvent);
                 }
+//                logToFileMillisAndSecs("onTick");
                 if (mCurrentSecond != 0) {
                     updateNotificationTimer();
                 }
@@ -384,6 +384,7 @@ public class TimerTaskFragment extends Fragment {
                 Notification notification = mTimeNotificationBuilder.build();
                 mNotificationManager.notify(NotificationHelper.TIMER_TIME_NOTIFICATION, notification);
             } catch (NullPointerException e) {
+//                logToFile.appendLog("Error " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -584,6 +585,15 @@ public class TimerTaskFragment extends Fragment {
 
     public interface TimerTaskFragmentListener {
         void onExercisesIdsRequested();
+    }
+
+    private void logToFileMillisAndSecs(String identifyingText) {
+        if (logToFile == null) {
+            logToFile = new LogToFile(getContext(), "log.txt");
+        }
+        if (logToFile != null) {
+            logToFile.appendLog(identifyingText + " millisecs (" + millisecs + ")   currSec (" + mCurrentSecond + ")     nextSec (" + mNextSecond + ")");
+        }
     }
 
     public void log() {

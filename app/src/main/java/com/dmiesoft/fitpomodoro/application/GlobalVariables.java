@@ -18,6 +18,10 @@ public class GlobalVariables extends Application {
      * How many times the exercise was done
      */
     private int howManyTimesDone;
+    /**
+     * For notifying {@link com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment} to animate ViewPager
+     */
+    private boolean animateViewPager;
 
     public int getHowManyTimesDone() {
         return howManyTimesDone;
@@ -33,6 +37,14 @@ public class GlobalVariables extends Application {
 
     public void setReps(int reps) {
         this.reps = reps;
+    }
+
+    public boolean shouldAnimateViewPager() {
+        return animateViewPager;
+    }
+
+    public void setAnimateViewPager(boolean animateViewPager) {
+        this.animateViewPager = animateViewPager;
     }
 
     public int getPagerPage() {

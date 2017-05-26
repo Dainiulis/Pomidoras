@@ -50,6 +50,7 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
+import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.exercises.UpdateNestedExerciseHistoryEvent;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
@@ -932,12 +933,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onExerciseDonePressed(int howMany, long exerciseId, String exerciseName) {
+    public void onExerciseDonePressed(int howMany, long exerciseId, String exerciseName, String exerciseType, boolean needNewExercise) {
+
+        Toast.makeText(this,
+                "Done " + exerciseName + " " +
+                        howMany + " " +
+                        ((exerciseType.equalsIgnoreCase(getResources().getString(R.string.reps))) ? "reps" : "sec"),
+                Toast.LENGTH_SHORT).show();
+
         dataSource.saveExerciseHistory(howMany, exerciseId);
         ExerciseHistory exerciseHistory = new ExerciseHistory();
         exerciseHistory.setHowMany(howMany);
         exerciseHistory.setName(exerciseName);
         EventBus.getDefault().post(new UpdateNestedExerciseHistoryEvent(exerciseHistory));
+        if (needNewExercise) {
+            EventBus.getDefault().post(new RequestForNewExerciseEvent(true));
+        }
     }
 
     @Override

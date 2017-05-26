@@ -2,8 +2,11 @@ package com.dmiesoft.fitpomodoro.ui.fragments.nested;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +19,14 @@ import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.application.GlobalVariables;
+import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 
 public class NestedSaveExerciseFragment extends Fragment implements View.OnClickListener {
 
     private static final String EXERCISE_MODEL = ".model.Exercise";
-    private static final String TAG = "ETUIF";
+    private static final String TAG = "NSEF";
 
     private Exercise exercise;
     private LinearLayout suggestionLayout;
@@ -31,8 +36,9 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
     private ImageView imageView;
     private View view;
     private GlobalVariables appContext;
-    private int repsValue;
+    private int repsValue, howManyTimesDone;
     private NestedExerciseFragListener mListener;
+    private SharedPreferences prefs;
 
     public NestedSaveExerciseFragment() {
         // Required empty public constructor
@@ -62,8 +68,10 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
         if (getArguments() != null) {
             exercise = getArguments().getParcelable(EXERCISE_MODEL);
         }
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         appContext = (GlobalVariables) getActivity().getApplicationContext();
         repsValue = appContext.getReps();
+        howManyTimesDone = appContext.getHowManyTimesDone();
     }
 
     @Override
@@ -120,13 +128,14 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
     }
 
     private void saveExerciseToHistory() {
-
-        mListener.onExerciseDonePressed(repsValue, exercise.getId(), exercise.getName());
-        Toast.makeText(getContext(),
-                "Done " + exercise.getName() + " " +
-                        repsValue + " " +
-                        ((exercise.getType().equalsIgnoreCase(getResources().getString(R.string.reps))) ? "reps" : "sec"),
-                Toast.LENGTH_SHORT).show();
+        howManyTimesDone++;
+        boolean needNewExercise = false;
+        if (prefs.getInt(SettingsActivity.PREF_KEY_SETS_BEFORE_CHANGING_EXERCISE, 3) <= howManyTimesDone) {
+            howManyTimesDone = 0;
+            needNewExercise = true;
+        }
+        appContext.setAnimateViewPager(needNewExercise);
+        mListener.onExerciseDonePressed(repsValue, exercise.getId(), exercise.getName(), exercise.getType(), needNewExercise);
     }
 
     private int getIntValue(String stringVal) {
@@ -148,10 +157,14 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (appContext.shouldAnimateViewPager()) {
+            repsValue = -1;
+        }
         appContext.setReps(repsValue);
+        appContext.setHowManyTimesDone(howManyTimesDone);
     }
 
     public interface NestedExerciseFragListener {
-        void onExerciseDonePressed(int howMany, long exerciseId, String exerciseName);
+        void onExerciseDonePressed(int howMany, long exerciseId, String exerciseName, String exerciseType, boolean needNewExercise);
     }
 }
