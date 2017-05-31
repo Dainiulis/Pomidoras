@@ -58,6 +58,7 @@ import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
+import com.dmiesoft.fitpomodoro.services.TimerService;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
@@ -159,7 +160,6 @@ public class MainActivity extends AppCompatActivity
     private ImageView tempMenuDelBtn, tempMenuFavBtn;
     private Menu menu;
     private ValueAnimator animToolbarColor, burgerAnim, tempBtnAnimatorAppear, tempBtnAnimatorDisappear;
-    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -173,8 +173,6 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle("");
 
         deleteIdList = new ArrayList<>();
-
-        registerReceivers();
 
         if (savedInstanceState != null) {
             exercisesGroups = savedInstanceState.getParcelableArrayList(EXERCISES_GROUPS);
@@ -217,40 +215,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void registerReceivers() {
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (action.equalsIgnoreCase(NotificationHelper.ACTION_STOP)) {
-                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-                    if (timerTaskFragment != null) {
-                        timerTaskFragment.stopTimerFromNotification();
-                    }
-                } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG)) {
-                    Intent intent1 = new Intent(context, MainActivity.class);
-                    getApplicationContext().startActivity(intent1);
-                } else if (action.equalsIgnoreCase(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH)) {
-                    Intent intent1 = new Intent(context, MainActivity.class);
-                    getApplicationContext().startActivity(intent1);
-//                    timerTaskFragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-//                    if (timerTaskFragment != null) {
-//                        timerTaskFragment.manualNotificationsClear();
-//                    }
-                }
-            }
-        };
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(NotificationHelper.ACTION_STOP);
-        intentFilter.addAction(NotificationHelper.ACTION_OPEN_TIMER_FRAG);
-        intentFilter.addAction(NotificationHelper.ACTION_OPEN_TIMER_FRAG_FROM_FINISH);
-        registerReceiver(broadcastReceiver, intentFilter);
-    }
-
     private void initFabs() {
         mainFab = (FloatingActionButton) findViewById(R.id.fab_main);
     }
-
 
     public FloatingActionButton getMainFab() {
         return mainFab;
@@ -354,13 +321,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(broadcastReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop: ");
+        super.onStop();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        registerReceivers();
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
         dataSource.open();

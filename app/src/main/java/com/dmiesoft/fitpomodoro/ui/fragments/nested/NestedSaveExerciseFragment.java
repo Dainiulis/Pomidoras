@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +14,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.application.GlobalVariables;
-import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
+import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 
@@ -35,7 +32,7 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
     private Button doneBtn;
     private ImageView imageView;
     private View view;
-    private GlobalVariables appContext;
+    private FitPomodoroApplication appContext;
     private int repsValue, howManyTimesDone;
     private NestedExerciseFragListener mListener;
     private SharedPreferences prefs;
@@ -69,7 +66,7 @@ public class NestedSaveExerciseFragment extends Fragment implements View.OnClick
             exercise = getArguments().getParcelable(EXERCISE_MODEL);
         }
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        appContext = (GlobalVariables) getActivity().getApplicationContext();
+        appContext = (FitPomodoroApplication) getActivity().getApplicationContext();
         repsValue = appContext.getReps();
         howManyTimesDone = appContext.getHowManyTimesDone();
     }
