@@ -21,7 +21,6 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.util.Property;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +36,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.application.GlobalVariables;
+import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
@@ -88,7 +87,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private ExercisePagerAdapter mPagerAdapter;
     private View view;
     private AlertDialog alertDialog;
-    private GlobalVariables appContext;
+    private FitPomodoroApplication appContext;
 
     public TimerUIFragment() {
         // Required empty public constructor
@@ -99,7 +98,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         super.onCreate(savedInstanceState);
         mShouldAnimate = false;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        appContext = (GlobalVariables) getActivity().getApplicationContext();
+        appContext = (FitPomodoroApplication) getActivity().getApplicationContext();
     }
 
     @Override
@@ -560,7 +559,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     /**
-     * This method is used to determine whether to set adapter to null (required to call it's on destroy method) and reset GlobalVariables.
+     * This method is used to determine whether to set adapter to null (required to call it's on destroy method) and reset FitPomodoroApplication.
      * Basically it determines if exercises should be reset.
      */
     private void managePagerAdapter() {

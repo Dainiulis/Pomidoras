@@ -9,17 +9,13 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 
-/**
- * Created by daini on 2017-05-25.
- */
-
 public class LogToFile {
 
     private File file;
     private BufferedWriter bufferedWriter;
 
-    public LogToFile(Context context, String logFile) {
-        file = new File(context.getExternalFilesDir(null), logFile);
+    public LogToFile(Context context, String logFileName) {
+        file = new File(context.getExternalFilesDir(null), logFileName);
         if (!file.exists()) {
             try {
                 file.createNewFile();
@@ -27,7 +23,6 @@ public class LogToFile {
                 e.printStackTrace();
             }
         }
-        appendLog("....................Starting new Timer LOG...........................");
     }
 
     public void appendLog(String text) {

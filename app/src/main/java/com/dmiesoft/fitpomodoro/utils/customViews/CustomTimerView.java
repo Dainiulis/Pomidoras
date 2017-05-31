@@ -267,25 +267,8 @@ public class CustomTimerView extends View {
     }
 
     public void setmTimerStateAndType(int timerState, int timerType, boolean showSuggestion) {
-//        Random rand = new Random();
         setmTimerTypeText(TimerHelper.getTimerTypeName(timerType));
         mShowSuggestion = showSuggestion;
-//        if (timerType == TimerTaskFragment.TYPE_WORK) {
-//            setmTimerTypeText("Work");
-//            int index = rand.nextInt(DRAWABLES_WORK.length);
-//            setBitmapFromVectorDrawable(DRAWABLES_WORK[index]);
-//            setBitmapFromVectorDrawable(R.drawable.ic_hard_working_dude);
-//        } else if (timerType == TimerTaskFragment.TYPE_SHORT_BREAK) {
-//            setmTimerTypeText("Short break");
-//            int index = rand.nextInt(DRAWABLES_SHORT_BREAK.length);
-//            setBitmapFromVectorDrawable(DRAWABLES_SHORT_BREAK[index]);
-//            setBitmapFromVectorDrawable(R.drawable.ic_stretching_dude);
-//        } else {
-//            setmTimerTypeText("Long break");
-//            int index = rand.nextInt(DRAWABLES_LONG_BREAK.length);
-//            setBitmapFromVectorDrawable(DRAWABLES_LONG_BREAK[index]);
-//            setBitmapFromVectorDrawable(R.drawable.ic_pull_up_dude);
-//        }
         if (showSuggestion) {
             mTimerHintTextColor2 = Color.RED;
             if (timerState == TimerTaskFragment.STATE_RUNNING) {

@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name=".application.GlobalVariables"
+        android:name=".application.FitPomodoroApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -49,6 +49,19 @@
                 android:name="andorid.support.PARENT_ACTIVITY"
                 android:value="com.dmiesoft.fitpomodoro.ui.activities.MainActivity" />
         </activity>
+
+        <service
+            android:name=".services.TimerService"
+            android:exported="false"
+            android:stopWithTask="false"/>
+
+        <receiver android:name=".receivers.TimerBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.dmiesoft.fitpomodoro.ACTION_STOP_TIMER"/>
+                <action android:name="com.dmiesoft.fitpomodoro.ACTION_OPEN_TIMER_FRAG"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
