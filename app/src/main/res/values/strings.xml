@@ -36,4 +36,6 @@
     <string name="done">Done</string>
     <string name="random_exercise">Random exercise</string>
     <string name="rand_sequence">Random squence</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
 </resources>

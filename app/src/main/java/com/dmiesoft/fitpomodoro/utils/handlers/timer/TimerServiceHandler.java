@@ -10,11 +10,13 @@ import com.dmiesoft.fitpomodoro.services.TimerService;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.LogToFile;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
+import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 /**
  * Handler for running timer in another Thread
  */
 public class TimerServiceHandler extends Handler {
+
     private static final String TAG = "TSH";
     private Handler mHandler;
     private long mMillisecs;
@@ -29,18 +31,24 @@ public class TimerServiceHandler extends Handler {
 
     @Override
     public void handleMessage(Message msg) {
-        Log.i(TAG, "currState: " + TimerHelper.getTimerStateOrTypeString(msg.arg1) +
-                "  prevState " + TimerHelper.getTimerStateOrTypeString(msg.arg2));
-        if (msg.arg1 == TimerTaskFragment.STATE_RUNNING && (msg.arg2 != TimerTaskFragment.STATE_PAUSED)) {
-            mMillisecs = msg.getData().getLong(TimerService.STARTING_TIME);
+        if (msg.arg1 == TimerTaskFragment.STATE_STOPPED || msg.arg1 == TimerTaskFragment.STATE_FINISHED) {
+            mMillisecs = TimerPreferenceManager.getDefaultMillisecs((Integer) msg.obj);
+            if ((Integer) msg.obj == TimerTaskFragment.TYPE_LONG_BREAK) {
+                TimerPreferenceManager.setLongBreakCounter(0);
+            }
         }
+        msg.what = TimerService.MSG_TIMER_STATUS;
         if (!mTimerRunning) {
             initTimer();
+            msg.arg1 = TimerService.ARG_TIMER_STATUS_RUNNING;
             mTimerRunning = true;
         } else {
             mCountDownTimer.cancel();
+            msg.arg1 = TimerService.ARG_TIMER_STATUS_PAUSED;
             mTimerRunning = false;
         }
+        msg.obj = mMillisecs;
+        mHandler.handleMessage(msg);
     }
 
     private void initTimer() {

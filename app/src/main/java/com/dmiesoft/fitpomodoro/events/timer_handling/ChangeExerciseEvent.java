@@ -1,11 +1,11 @@
 package com.dmiesoft.fitpomodoro.events.timer_handling;
 
-public class ExerciseIdSendEvent {
+public class ChangeExerciseEvent {
 
     long exerciseId;
     boolean isSessionFinished;
 
-    public ExerciseIdSendEvent(long exerciseId) {
+    public ChangeExerciseEvent(long exerciseId) {
         this.exerciseId = exerciseId;
     }
 

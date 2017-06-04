@@ -55,10 +55,11 @@
             android:exported="false"
             android:stopWithTask="false"/>
 
-        <receiver android:name=".receivers.TimerBroadcastReceiver">
+        <receiver android:name=".receivers.TimerNotificationBroadcastReceiver">
             <intent-filter>
                 <action android:name="com.dmiesoft.fitpomodoro.ACTION_STOP_TIMER"/>
                 <action android:name="com.dmiesoft.fitpomodoro.ACTION_OPEN_TIMER_FRAG"/>
+                <action android:name="com.dmiesoft.fitpomodoro.ACTION_PAUSE_RESUME_TIMER_FRAG"/>
             </intent-filter>
         </receiver>
 

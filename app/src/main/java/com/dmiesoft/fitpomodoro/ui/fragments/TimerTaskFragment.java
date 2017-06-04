@@ -7,31 +7,27 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.ExerciseIdSendEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.ChangeExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerHandlerEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerStateChanged;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.services.TimerService;
-import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 import com.dmiesoft.fitpomodoro.utils.LogToFile;
-import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
-import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceHelper;
+import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -49,20 +45,13 @@ public class TimerTaskFragment extends Fragment {
     public static final int TYPE_SHORT_BREAK = 201;
     public static final int TYPE_LONG_BREAK = 202;
 
-    private int mCurrentState, mCurrentType, mPreviousState, mPreviousType;
     private static final String TAG = "TTF";
-    private CountDownTimer mTimer;
     private long millisecs, mExerciseId, mInitializedMillisecs;
-    private int mLongBreakCounter;
-    private SharedPreferences sharedPref, timerPrefs;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
-    private boolean mShouldAnimate;
 
     ////////// Circle variables /////////////////
-    static final int CIRCLE_RESUME = 7235;
-    static final int CIRCLE_STOP = 2864;
-    static final int CIRCLE_PAUSE = 9898;
+    public static final int CIRCLE_STOP = 2864;
     private ValueAnimator mTimerAnimator;
     private CircleProgressEvent mCircleProgressEvent;
     private float mCircleProgressValue;
@@ -71,13 +60,7 @@ public class TimerTaskFragment extends Fragment {
     private int mNextSecond, mCurrentSecond;
     /////////////////////////////////////////////
 
-    //Notifications
-//    private NotificationCompat.Builder mTimeNotificationBuilder;
-//    private NotificationManager mNotificationManager;
-//    private PendingIntent mPendingIntentForFinishingNotification;
-
     private List<Long> mExercisesIds;
-    private boolean misSessionFinished;
     private FitPomodoroApplication appContext;
 
     //for txt logging
@@ -93,24 +76,20 @@ public class TimerTaskFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        // init notification stuff
-//        mNotificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-//        mPendingIntentForFinishingNotification = NotificationHelper.getPendingIntentForFinishingNotification(getContext());
+        TimerPreferenceManager.initPreferences(getContext());
+        appContext = (FitPomodoroApplication) getActivity().getApplicationContext();
+
         // init events
         mCircleProgressEvent = new CircleProgressEvent();
         sendTimeEvent = new TimerSendTimeEvent();
-        timerPrefs = getContext().getSharedPreferences(TimerPreferenceHelper.TIMER_PARAMS_PREF, Context.MODE_PRIVATE);
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         //set starting state, type, variables...
-        mCurrentState = STATE_STOPPED;
-        mCurrentType = TYPE_WORK;
-        setmCurrentState(STATE_STOPPED);
-        setmCurrentType(TYPE_WORK);
-        setmLongBreakCounter(0);
-        mExerciseId = -1;
+        if (appContext.getCurrentType() == TYPE_WORK) {
+            setmExerciseId(-1);
+        } else {
+            mExerciseId = TimerPreferenceManager.getCurrentRandomExercise();
+        }
         setTimer();
-        appContext = (FitPomodoroApplication) getActivity().getApplicationContext();
 
         registerBroadcastReceiver();
     }
@@ -129,7 +108,7 @@ public class TimerTaskFragment extends Fragment {
     public void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        if (mCurrentState == STATE_STOPPED) {
+        if (appContext.getCurrentState() == STATE_STOPPED) {
             setTimer();
         }
     }
@@ -142,15 +121,13 @@ public class TimerTaskFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLocalBroadcastReceiver);
         super.onDestroy();
-        if (mTimer != null) {
-            mTimer.cancel();
-        }
     }
 
     //  **Handle millisecs and mTimer**
     private void setTimer() {
-        millisecs = getMillisecs(getDefaultMins());
+        millisecs = TimerPreferenceManager.getDefaultMillisecs(appContext.getCurrentType());
         sendTimeEvent.setMillisecs(millisecs);
         EventBus.getDefault().post(sendTimeEvent);
         mInitializedMillisecs = millisecs;
@@ -166,72 +143,6 @@ public class TimerTaskFragment extends Fragment {
         mAnimatedVal = 0;
         mAnimationFraction = (float) 1000 / (float) millisecs;
         mNextSecond = (int) (millisecs / 1000) - 1;
-    }
-
-    private int getWhenLongBreak() {
-        return sharedPref.getInt(SettingsActivity.PREF_KEY_WHEN_LONG_BREAK, 4);
-    }
-
-    /**
-     * @return true if sharedPref is set for continuous mode
-     */
-    private boolean isContinuous() {
-        return sharedPref.getBoolean(SettingsActivity.PREF_CONTINUOUS_MODE, false);
-    }
-
-    /**
-     * @return true if app is set to auto open when finished
-     */
-    private boolean isAutoOpen() {
-        return sharedPref.getBoolean(SettingsActivity.PREF_AUTO_OPEN_WHEN_TIMER_FINISH, false);
-    }
-
-    private long getMillisecs(long minutes) {
-
-        //while developing, when released, leave multiplier = 60000;
-        long multiplier = 1000;
-        if (!sharedPref.getBoolean(SettingsActivity.PREF_TIMER_TIME_FOR_TESTING, true)) {
-            multiplier = 60000;
-        }
-        return minutes * multiplier;
-    }
-
-    private long getDefaultMins() {
-        int defMinutes = 0;
-        if (mCurrentType == TYPE_WORK) {
-            defMinutes = sharedPref.getInt(SettingsActivity.PREF_KEY_WORK_TIME, 25);
-        } else {
-//            if (mLongBreakCounter == getWhenLongBreak())
-            if (mLongBreakCounter == getWhenLongBreak()) {
-                defMinutes = sharedPref.getInt(SettingsActivity.PREF_KEY_LONG_BREAK_TIME, 15);
-                setmLongBreakCounter(0);
-            } else {
-                defMinutes = sharedPref.getInt(SettingsActivity.PREF_KEY_REST_TIME, 5);
-            }
-        }
-        return (long) defMinutes;
-    }
-//  *********************************
-
-    private void initTimer() {
-//        initTimeNotifBuilder();
-        mTimer = new CountDownTimer(millisecs, 300) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                onTimerTick(millisUntilFinished);
-            }
-
-            @Override
-            public void onFinish() {
-                mTimer.cancel();
-                if (mCurrentSecond != 0) {
-                    initTimer();
-                } else {
-                    onTimerFinish();
-                }
-            }
-        };
-        mTimer.start();
     }
 
     public void onTimerTick(long millisUntilFinished) {
@@ -266,57 +177,28 @@ public class TimerTaskFragment extends Fragment {
         //this part is required to clear mTimer animation
         mAnimatedVal = 0;
         sendAnimatedTimerValue();
-                /*
-                 *skaiciuoja kada bus ilga pertrauka
-                 */
-        if (mCurrentType == TYPE_WORK) {
-            setmLongBreakCounter(++mLongBreakCounter);
-        }
-                /*
-                 * jei naudotojas pakeicia ilgos pertraukos kintamaji i mazesni nei yra suskaiciuotas
-                 * tuomet pradedamas ilgosios pertraukos laikmatis
-                 */
-        if (mLongBreakCounter > getWhenLongBreak()) {
-            setmLongBreakCounter(getWhenLongBreak());
-        }
-                /*
-                 * jei ilgoji pertrauka, tuomet pradedama
-                 * kitaip pradedama trumpoji pertrauka
-                 */
-        if (mLongBreakCounter == getWhenLongBreak()) {
-            setmCurrentType(TYPE_LONG_BREAK);
-        } else if (mLongBreakCounter != 0) {
-            setmCurrentType(TYPE_SHORT_BREAK);
-        }
-                /*
-                 * patikrinama kokio tipo laikmatis buvo
-                 * jei trumpos ar ilgos pertraukos, tuomet nustatomas darbinis
-                 */
-        if (mPreviousType == TYPE_SHORT_BREAK || mPreviousType == TYPE_LONG_BREAK || mLongBreakCounter == 0) {
-            setmCurrentType(TYPE_WORK);
-            if (isContinuous()) {
+
+        int longBreakCounter = TimerPreferenceManager.getLongBreakCounter();
+
+        if (appContext.getPreviousType() == TYPE_SHORT_BREAK || appContext.getPreviousType() == TYPE_LONG_BREAK || longBreakCounter == 0) {
+            if (TimerPreferenceManager.isContinuous()) {
                 mExerciseId = -1;
             }
         }
         setTimer();
 
-        // misSessionFinished is used to determine whether
-        // the whole work session has finished or not
-        misSessionFinished = false;
-        boolean shouldAnimateBackgroundColor = false;
-        if (isContinuous() && mPreviousType != TYPE_LONG_BREAK) {
-            setmCurrentState(STATE_RUNNING);
+        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TYPE_LONG_BREAK) {
             startTimerService();
-        } else if (mPreviousType == TYPE_LONG_BREAK) {
-            setmCurrentState(STATE_STOPPED);
-            misSessionFinished = true;
-            shouldAnimateBackgroundColor = true;
-        } else {
-            setmCurrentState(STATE_FINISHED);
         }
-        mShouldAnimate = true;
-        postCurrentStateAndType(mShouldAnimate, misSessionFinished, shouldAnimateBackgroundColor);
-        if (mCurrentType == TYPE_SHORT_BREAK || mCurrentType == TYPE_LONG_BREAK) {
+        boolean shouldAnimBGColor = false;
+        if (appContext.getPreviousType() == TYPE_LONG_BREAK) {
+            shouldAnimBGColor = true;
+        }
+        // the second param shouldAnimBGColor is because if timer should animate BG
+        // color from onTimerFinish, then it automatically is stopped, so the timer is always
+        // stopped in this case
+        postTimerHandlerEvent(shouldAnimBGColor, shouldAnimBGColor);
+        if (appContext.getCurrentType() == TYPE_SHORT_BREAK || appContext.getCurrentType() == TYPE_LONG_BREAK) {
             sendRandomExerciseId();
         }
     }
@@ -331,41 +213,17 @@ public class TimerTaskFragment extends Fragment {
         }
     }
 
-    private void postCurrentStateAndType(boolean shouldAnimate, boolean sessionFinished, boolean shouldAnimateBackgoundColor) {
-        TimerTypeStateHandlerEvent timerHandlerEvent = new TimerTypeStateHandlerEvent();
-        timerHandlerEvent.setSessionFinished(sessionFinished);
-        timerHandlerEvent.setShouldAnimate(shouldAnimate);
-        timerHandlerEvent.setPreviousState(mPreviousState);
-        timerHandlerEvent.setPreviousType(mPreviousType);
-        timerHandlerEvent.setCurrentState(mCurrentState);
-        timerHandlerEvent.setCurrentType(mCurrentType);
-        timerHandlerEvent.setShouldAnimateBackgroundColor(shouldAnimateBackgoundColor);
+    private void postTimerHandlerEvent(boolean shouldAnimateBGColor, boolean timerStopped) {
+        TimerHandlerEvent timerHandlerEvent = new TimerHandlerEvent();
+        timerHandlerEvent.setShouldAnimateBackgroundColor(shouldAnimateBGColor);
+        timerHandlerEvent.setStopTimer(timerStopped);
+        timerHandlerEvent.setPublisher(TimerHandlerEvent.PUBLISHER_TIMER_TASK_FRAGMENT);
         EventBus.getDefault().post(timerHandlerEvent);
     }
 
-    public void setmLongBreakCounter(int mLongBreakCounter) {
-        this.mLongBreakCounter = mLongBreakCounter;
-        timerPrefs.edit()
-                .putInt(TimerPreferenceHelper.LONG_BREAK_COUNTER, mLongBreakCounter)
-                .apply();
-    }
-
-    public void setmCurrentState(int currentState) {
-        this.mPreviousState = this.mCurrentState;
-        this.mCurrentState = currentState;
-        timerPrefs.edit()
-                .putInt(TimerPreferenceHelper.CURRENT_TIMER_STATE, mCurrentState)
-                .putInt(TimerPreferenceHelper.PREVIOUS_TIMER_STATE, mPreviousState)
-                .apply();
-    }
-
-    public void setmCurrentType(int currentType) {
-        this.mPreviousType = mCurrentType;
-        this.mCurrentType = currentType;
-        timerPrefs.edit()
-                .putInt(TimerPreferenceHelper.CURRENT_TIMER_TYPE, mCurrentType)
-                .putInt(TimerPreferenceHelper.PREVIOUS_TIMER_TYPE, mPreviousType)
-                .apply();
+    private void setmExerciseId(long mExerciseId) {
+        this.mExerciseId = mExerciseId;
+        TimerPreferenceManager.setCurrentRandExercise(mExerciseId);
     }
 
     public void setmExercisesIds(List<Long> mExercisesIds) {
@@ -391,49 +249,32 @@ public class TimerTaskFragment extends Fragment {
                 mExerciseId = mExercisesIds.get(index);
             }
         }
-        if (EventBus.getDefault().hasSubscriberForEvent(ExerciseIdSendEvent.class)) {
-            EventBus.getDefault().post(new ExerciseIdSendEvent(mExerciseId));
+        if (EventBus.getDefault().hasSubscriberForEvent(ChangeExerciseEvent.class)) {
+            EventBus.getDefault().post(new ChangeExerciseEvent(mExerciseId));
         }
     }
 
     @Subscribe
-    public void onTimerButtonClicked(TimerTypeStateHandlerEvent event) {
-        if (event.getPublisher() != TimerTypeStateHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT) {
+    public void onTimerButtonClicked(TimerHandlerEvent event) {
+        // negerai, kai tas pats fragment siuncia ir kitam ir sau ta pati event.
+        if (event.getPublisher() == TimerHandlerEvent.PUBLISHER_TIMER_TASK_FRAGMENT) {
             return;
         }
-        if (event.getCurrentType() == TYPE_WORK) {
+        if (appContext.getCurrentType() == TYPE_WORK) {
             mExerciseId = -1;
         }
-        setmCurrentState(event.getCurrentState());
-        if (event.getCurrentState() == STATE_RUNNING) {
-            misSessionFinished = false;
-            if (mPreviousState == STATE_STOPPED || mPreviousState == STATE_FINISHED) {
-                requestExercisesIds();
-            }
+        if (!event.shouldStopTimer()) {
             startTimerService();
-//            initTimer();
-        } else if (event.getCurrentState() == STATE_PAUSED) {
-            startTimerService();
-//            mTimer.cancel();
-        } else if (event.getCurrentState() == STATE_STOPPED) {
-            if (!event.isSessionFinished()) {
-                misSessionFinished = false;
-            }
-            boolean shouldAnimate = event.isShouldAnimate();
+        } else {
             TimerService.stopTimerService(getContext());
-            stopTimer(shouldAnimate, event.isShouldAnimateBackgroundColor());
+//            stopTimer(true);
         }
     }
 
-    private void stopTimer(boolean shouldAnimate, boolean shouldAnimateBackGround) {
+    private void stopTimer(boolean shouldAnimBGColor, boolean shouldStopTimer) {
         handleTimerStates(CIRCLE_STOP);
-        setmLongBreakCounter(0);
         mExerciseId = -1;
-        setmCurrentType(TYPE_WORK);
-        if (mCurrentState != STATE_STOPPED) {
-            setmCurrentState(STATE_STOPPED);
-        }
-        postCurrentStateAndType(shouldAnimate, misSessionFinished, shouldAnimateBackGround);
+        postTimerHandlerEvent(shouldAnimBGColor, shouldStopTimer);
         setTimer();
     }
 
@@ -445,14 +286,7 @@ public class TimerTaskFragment extends Fragment {
             mCircleProgressEvent.setCircleProgress(mAnimatedVal);
             EventBus.getDefault().post(mCircleProgressEvent);
             sendRandomExerciseId();
-            postCurrentStateAndType(mShouldAnimate, misSessionFinished, false);
-        }
-    }
-
-    @Subscribe
-    public void onAnimationEnded(TimerAnimationStatusEvent event) {
-        if (event.isAnimated()) {
-            mShouldAnimate = false;
+            postTimerHandlerEvent(false, false);
         }
     }
 
@@ -508,25 +342,7 @@ public class TimerTaskFragment extends Fragment {
     private void handleTimerStates(int state) {
         switch (state) {
             case CIRCLE_STOP:
-//                mTimerAnimator.cancel();
                 getCircleAnimator((long) (mAnimatedVal * 1000), mAnimatedVal, 0f).start();
-                break;
-            //not used
-            case CIRCLE_PAUSE: //not used
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    mTimerAnimator.pause();
-                } else {
-                    mTimerAnimator.cancel();
-                }
-                break;
-            //not used
-            case CIRCLE_RESUME: // not used
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    mTimerAnimator.resume();
-                } else {
-                    mTimerAnimator = getCircleAnimator(millisecs, mCircleProgressValue, 1f);
-                    mTimerAnimator.start();
-                }
                 break;
         }
     }
@@ -544,12 +360,26 @@ public class TimerTaskFragment extends Fragment {
 
 
     public void log() {
-        Log.i(TAG, "log: " + Thread.getAllStackTraces().keySet());
+        Log.i(TAG, "service running : " + TimerService.serviceRunning);
+
+//        int mCurrentType = TimerPreferenceManager.getCurrentType();
+//        int mCurrentState = TimerPreferenceManager.getCurrentState();
+//        int mPreviousType = TimerPreferenceManager.getPreviousType();
+//        int mPreviousState = TimerPreferenceManager.getPreviousState();
+//        Log.i(TAG, "TIMER TASK FROM PREFS: currType " + TimerHelper.getTimerStateOrTypeString(mCurrentType) + "  currState " + TimerHelper.getTimerStateOrTypeString(mCurrentState) +
+//                "\n prevType " + TimerHelper.getTimerStateOrTypeString(mPreviousType) + "   prevState " + TimerHelper.getTimerStateOrTypeString(mPreviousState));
+
+        int CurrentType = appContext.getCurrentType();
+        int CurrentState = appContext.getCurrentState();
+        int PreviousType = appContext.getPreviousType();
+        int PreviousState = appContext.getPreviousState();
+
+        Log.i(TAG, "TIMER TASK from context: currType " + TimerHelper.getTimerStateOrTypeString(CurrentType) + "  currState " + TimerHelper.getTimerStateOrTypeString(CurrentState) +
+                "\n prevType " + TimerHelper.getTimerStateOrTypeString(PreviousType) + "   prevState " + TimerHelper.getTimerStateOrTypeString(PreviousState));
     }
 
     private void startTimerService() {
         Intent timerIntent = new Intent(getActivity(), TimerService.class);
-        timerIntent.putExtra(TimerService.STARTING_TIME, getMillisecs(getDefaultMins()));
         getContext().startService(timerIntent);
     }
 
@@ -560,10 +390,11 @@ public class TimerTaskFragment extends Fragment {
         intentFilter.addAction(TimerService.INTENT_TIMER_TICK);
         intentFilter.addAction(TimerService.INTENT_TIMER_FINISH);
         intentFilter.addAction(TimerService.INTENT_TIMER_STOP);
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mBroadcastReceiver, intentFilter);
+        intentFilter.addAction(TimerService.INTENT_TIMER_START_PAUSE);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(mLocalBroadcastReceiver, intentFilter);
     }
 
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mLocalBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -573,15 +404,29 @@ public class TimerTaskFragment extends Fragment {
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_FINISH)) {
                 onTimerFinish();
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_STOP)) {
-                stopTimer(true, false);
+                appContext.setAnimateViewPager(true);
+                stopTimer(true, true);
+            } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_START_PAUSE)) {
+                boolean shouldAnimBGColor = false;
+                if (appContext.getCurrentState() == STATE_RUNNING && appContext.getPreviousState() == STATE_STOPPED) {
+                    shouldAnimBGColor = true;
+                }
+                if (appContext.getPreviousState() == TimerTaskFragment.STATE_FINISHED) {
+                    appContext.setAnimateViewPager(true);
+                }
+                if (appContext.isSessionFinished()) {
+                    appContext.setSessionFinished(false);
+                    appContext.setAnimateViewPager(true);
+                }
+
+                postTimerHandlerEvent(shouldAnimBGColor, false);
             }
         }
     };
 
     /*
-        TimerService conncetion
+     *   TimerService conncetion
      */
-
     // TimerService vars
 //    private TimerService mTimerService;
 //    private boolean mBound = false;

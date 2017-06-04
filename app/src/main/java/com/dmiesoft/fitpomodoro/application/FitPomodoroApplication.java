@@ -5,7 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.dmiesoft.fitpomodoro.services.TimerService;
+import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
+import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 public class FitPomodoroApplication extends Application {
 
@@ -31,12 +34,6 @@ public class FitPomodoroApplication extends Application {
         }
     };
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-//        appInitialization();
-    }
-
     private void appInitialization() {
         defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(mUncaughtExceptionHandler);
@@ -45,7 +42,6 @@ public class FitPomodoroApplication extends Application {
     private boolean isUIThread() {
         return Looper.getMainLooper().getThread() == Thread.currentThread();
     }
-
     /**
      * For saving how many reps was selected in {@link NestedSaveExerciseFragment}
      */
@@ -62,6 +58,69 @@ public class FitPomodoroApplication extends Application {
      * For notifying {@link com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment} to animate ViewPager
      */
     private boolean animateViewPager;
+
+    private int currentState;
+    private int currentType;
+    private int previousState;
+    private int previousType;
+    private boolean sessionFinished;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        TimerPreferenceManager.initPreferences(getApplicationContext());
+//        if (TimerService.serviceRunning) {
+//            setCurrentState(TimerPreferenceManager.getCurrentState());
+//            setCurrentType(TimerPreferenceManager.getCurrentType());
+//            setPreviousType(TimerPreferenceManager.getPreviousType());
+//            setPreviousState(TimerPreferenceManager.getPreviousState());
+//        } else {
+//            setCurrentType(TimerTaskFragment.TYPE_WORK);
+//            setCurrentState(TimerTaskFragment.STATE_STOPPED);
+//            setPreviousType(TimerTaskFragment.TYPE_WORK);
+//            setPreviousState(TimerTaskFragment.STATE_STOPPED);
+//        }
+        setCurrentType(TimerTaskFragment.TYPE_WORK);
+        setCurrentState(TimerTaskFragment.STATE_STOPPED);
+        setPreviousType(TimerTaskFragment.TYPE_WORK);
+        setPreviousState(TimerTaskFragment.STATE_STOPPED);
+        setSessionFinished(false);
+//        appInitialization();
+    }
+
+    public int getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(int currentState) {
+        setPreviousState(this.currentState);
+        this.currentState = currentState;
+    }
+
+    public int getCurrentType() {
+        return currentType;
+    }
+
+    public void setCurrentType(int currentType) {
+        setPreviousType(this.currentType);
+        this.currentType = currentType;
+    }
+
+    public int getPreviousState() {
+        return previousState;
+    }
+
+    public void setPreviousState(int previousState) {
+        this.previousState = previousState;
+    }
+
+    public int getPreviousType() {
+        return previousType;
+    }
+
+    public void setPreviousType(int previousType) {
+        this.previousType = previousType;
+    }
 
     public int getHowManyTimesDone() {
         return howManyTimesDone;
@@ -85,6 +144,14 @@ public class FitPomodoroApplication extends Application {
 
     public void setAnimateViewPager(boolean animateViewPager) {
         this.animateViewPager = animateViewPager;
+    }
+
+    public boolean isSessionFinished() {
+        return sessionFinished;
+    }
+
+    public void setSessionFinished(boolean sessionFinished) {
+        this.sessionFinished = sessionFinished;
     }
 
     public int getPagerPage() {
