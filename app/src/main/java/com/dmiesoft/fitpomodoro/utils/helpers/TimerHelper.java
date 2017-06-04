@@ -1,5 +1,7 @@
 package com.dmiesoft.fitpomodoro.utils.helpers;
 
+import android.util.Log;
+
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 
@@ -7,6 +9,7 @@ public class TimerHelper {
 
     public static final int RAW_SOUNDS = 10;
     public static final int DRAWABLE_ICONS = 11;
+    private static final String TAG = "TIMERHELPER";
 
     public static String getTimerTypeName(int timerType) {
         String timerTypeName = null;

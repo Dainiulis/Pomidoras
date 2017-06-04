@@ -6,6 +6,10 @@ public class TimerUpdateRequestEvent {
 
     public TimerUpdateRequestEvent() {}
 
+    public TimerUpdateRequestEvent(boolean isAsking) {
+        this.isAsking = isAsking;
+    }
+
     public void askForCurrentState(boolean isAsking) {
         this.isAsking = isAsking;
     }

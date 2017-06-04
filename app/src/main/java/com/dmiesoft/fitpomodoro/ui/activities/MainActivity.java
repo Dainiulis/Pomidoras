@@ -7,11 +7,7 @@ import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -53,12 +49,11 @@ import com.dmiesoft.fitpomodoro.events.DeleteObjects;
 import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.exercises.UpdateNestedExerciseHistoryEvent;
 import com.dmiesoft.fitpomodoro.events.navigation.DrawerItemClickedEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerTypeStateHandlerEvent;
+import com.dmiesoft.fitpomodoro.events.timer_handling.TimerHandlerEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
-import com.dmiesoft.fitpomodoro.services.TimerService;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
@@ -74,7 +69,7 @@ import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.CheckUncheckExerciseHelper;
-import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
+import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -148,7 +143,6 @@ public class MainActivity extends AppCompatActivity
     private Snackbar.Callback snackbarCallback;
     private MultiSelectionFragment multiSelectionFragment;
     private TreeMap<Integer, ?> map;
-    private SharedPreferences prefs;
     private ActionBarDrawerToggle toggle;
     private DrawerLayout drawer;
     private List<Long> exercisesIds;
@@ -165,10 +159,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        TimerPreferenceManager.initPreferences(this);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         getSupportActionBar().setTitle("");
 
@@ -345,7 +338,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-        if (prefs.getBoolean(SettingsActivity.FIRST_TIME_LOAD, true)) {
+        if (TimerPreferenceManager.isFirstTimeLoad()) {
             firstTimeDatabaseInitialize();
         }
     }
@@ -860,7 +853,7 @@ public class MainActivity extends AppCompatActivity
             this.exercisesGroups = exercisesGroups;
             pD.dismiss();
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-            prefs.edit().putBoolean(SettingsActivity.FIRST_TIME_LOAD, false).apply();
+            TimerPreferenceManager.setiSFirstTimeLoad(false);
         }
     }
 
@@ -959,7 +952,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Subscribe
-    public void onTimerTypeStateChanged(TimerTypeStateHandlerEvent event) {
+    public void onTimerTypeStateChanged(TimerHandlerEvent event) {
         Fragment fragment = fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment == null) {
             EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, TIMER_UI_FRAGMENT_TAG, false));
@@ -1020,7 +1013,7 @@ public class MainActivity extends AppCompatActivity
     private void setExercisesIdsForTTFrag() {
         dataSource.open();
         TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-        long favoriteId = prefs.getLong(TimerUIFragment.SELECTED_FAVORITE, -1);
+        long favoriteId = TimerPreferenceManager.getSelectedFavorite();
         if (fragment != null) {
             exercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
             fragment.setmExercisesIds(exercisesIds);
