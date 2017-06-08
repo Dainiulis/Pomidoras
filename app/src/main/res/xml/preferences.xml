@@ -77,6 +77,10 @@
         android:key="pref_key_notifications_category"
         android:title="Notifications">
         <CheckBoxPreference
+            android:key="pref_key_vibrate"
+            android:defaultValue="true"
+            android:title="Vibrate"/>
+        <CheckBoxPreference
             android:key="pref_key_auto_open_when_timer_finish"
             android:defaultValue="false"
             android:title="Auto open app when timer finishes"/>

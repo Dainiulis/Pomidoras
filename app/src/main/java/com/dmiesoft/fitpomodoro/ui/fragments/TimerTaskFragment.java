@@ -121,8 +121,8 @@ public class TimerTaskFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLocalBroadcastReceiver);
         super.onDestroy();
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLocalBroadcastReceiver);
     }
 
     //  **Handle millisecs and mTimer**
@@ -187,9 +187,9 @@ public class TimerTaskFragment extends Fragment {
         }
         setTimer();
 
-        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TYPE_LONG_BREAK) {
-            startTimerService();
-        }
+//        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TYPE_LONG_BREAK) {
+//            startTimerService();
+//        }
         boolean shouldAnimBGColor = false;
         if (appContext.getPreviousType() == TYPE_LONG_BREAK) {
             shouldAnimBGColor = true;
@@ -197,7 +197,8 @@ public class TimerTaskFragment extends Fragment {
         // the second param shouldAnimBGColor is because if timer should animate BG
         // color from onTimerFinish, then it automatically is stopped, so the timer is always
         // stopped in this case
-        postTimerHandlerEvent(shouldAnimBGColor, shouldAnimBGColor);
+        if (!TimerPreferenceManager.isContinuous())
+            postTimerHandlerEvent(shouldAnimBGColor, shouldAnimBGColor);
         if (appContext.getCurrentType() == TYPE_SHORT_BREAK || appContext.getCurrentType() == TYPE_LONG_BREAK) {
             sendRandomExerciseId();
         }
@@ -403,6 +404,7 @@ public class TimerTaskFragment extends Fragment {
                 onTimerTick(time);
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_FINISH)) {
                 onTimerFinish();
+                Log.i(TAG, "onReceive: Finish");
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_STOP)) {
                 appContext.setAnimateViewPager(true);
                 stopTimer(true, true);
@@ -418,7 +420,7 @@ public class TimerTaskFragment extends Fragment {
                     appContext.setSessionFinished(false);
                     appContext.setAnimateViewPager(true);
                 }
-
+                Log.i(TAG, "onReceive: INTENT_TIMER_START_PAUSE");
                 postTimerHandlerEvent(shouldAnimBGColor, false);
             }
         }

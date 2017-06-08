@@ -7,6 +7,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
+import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 public class NotificationHelper {
 
@@ -32,24 +33,35 @@ public class NotificationHelper {
      * @return
      */
     public static NotificationCompat.Builder getTimerTimeNotificationBuilder(
-            Context context, int timerType, boolean lastSessionTimer, PendingIntent resultPendingIntent, String pauseResumeAction) {
+            Context context, int timerType, boolean lastSessionTimer, boolean finishingNotif, PendingIntent resultPendingIntent, String pauseResumeAction) {
 
         Intent stopIntent = new Intent(ACTION_STOP_TIMER);
         PendingIntent stopPendingIntent = PendingIntent.getBroadcast(context, STOP_BROADCAST_REQUEST_CODE, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        String stopBtnName = "Stop";
         Intent pauseResumeIntent = new Intent(ACTION_PAUSE_RESUME_TIMER_FRAG);
         PendingIntent pauseResumePendingIntent = PendingIntent.getBroadcast(context, STOP_BROADCAST_REQUEST_CODE, pauseResumeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (lastSessionTimer) {
             pauseResumeAction = pauseResumeAction + " NEW SESSION";
+            stopBtnName = "Dismiss";
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(TimerHelper.getFromResources(timerType, TimerHelper.DRAWABLE_ICONS))
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setContentIntent(resultPendingIntent)
-                .addAction(R.drawable.ic_pause, pauseResumeAction, pauseResumePendingIntent);
-        if (!lastSessionTimer) {
-            builder.addAction(R.drawable.ic_stop_for_notif, "Stop", stopPendingIntent);
-            builder.setOngoing(true);
+                .addAction(R.drawable.ic_pause, pauseResumeAction, pauseResumePendingIntent)
+                .addAction(R.drawable.ic_stop_for_notif, stopBtnName, stopPendingIntent);
+        //situ nereikia, nes notif yra foreground, automatiskai ongoing tol kol service - gyvas
+//        if (!lastSessionTimer) {
+//            builder.setOngoing(true);
+//        } else {
+//            builder.setOngoing(false);
+//        }
+        if (finishingNotif && TimerPreferenceManager.isVibrate()) {
+            long[] pattern = {200, 700, 200, 700};
+            builder.setVibrate(pattern);
+        } else {
+            builder.setVibrate(null);
         }
 
         return builder;

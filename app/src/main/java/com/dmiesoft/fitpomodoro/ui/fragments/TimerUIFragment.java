@@ -513,6 +513,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         if (event.getPublisher() == TimerHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT) {
             return;
         }
+        Log.i(TAG, "onTimerHandlerRequest: ");
         mCustomTimerView.setmTimerStateAndType(appContext.getCurrentState(), appContext.getCurrentType(), TimerPreferenceManager.showTimerSuggestions());
         if (appContext.getCurrentState() == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);
