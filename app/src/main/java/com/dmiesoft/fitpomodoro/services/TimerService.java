@@ -158,9 +158,7 @@ public class TimerService extends Service {
         }
         // misSessionFinished is used to determine whether
         // the whole work session has finished or not
-        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TimerTaskFragment.TYPE_LONG_BREAK) {
-            appContext.setCurrentState(TimerTaskFragment.STATE_RUNNING);
-        } else if (appContext.getPreviousType() == TimerTaskFragment.TYPE_LONG_BREAK) {
+        if (appContext.getPreviousType() == TimerTaskFragment.TYPE_LONG_BREAK) {
             appContext.setCurrentState(TimerTaskFragment.STATE_STOPPED);
         } else {
             appContext.setCurrentState(TimerTaskFragment.STATE_FINISHED);
@@ -171,12 +169,35 @@ public class TimerService extends Service {
         }
         appContext.setAnimateViewPager(true);
 
-        Log.i(TAG + "S", "onFinishTImer: currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) + "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
+        Log.i(TAG, "onFinishTImer: currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) + "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
                 "\n prevType " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousType()) + "   prevState " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousState()));
 
 
         Intent intent = new Intent(INTENT_TIMER_FINISH);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
+        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TimerTaskFragment.TYPE_LONG_BREAK) {
+
+            //not perfect solution, but works...
+            //basically the problem is that as soon as onFinish calls animations
+            //the newly started timer also calls animations and the whole thing looks like shit
+            //and timer acts very buggy
+            //Better solution would be to learn Threads more deeply and run animation code in it and/or synchronize
+            //methods running animations...
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    Intent intentc = new Intent(TimerService.this, TimerService.class);
+                    startService(intentc);
+                }
+            };
+            Handler handler = new Handler();
+            handler.postDelayed(runnable, 500);
+
+//            Intent intentc = new Intent(TimerService.this, TimerService.class);
+//            startService(intentc);
+        }
+
     }
 
     private void manageTimerInUI(String action) {
@@ -236,11 +257,13 @@ public class TimerService extends Service {
             mPendingIntentForFinishingNotification = NotificationHelper.getPendingIntentForFinishingNotification(this);
         }
         mTimeNotificationBuilder = NotificationHelper.getTimerTimeNotificationBuilder(
-                this, appContext.getCurrentType(), false, mPendingIntentForFinishingNotification, firstBtnText)
+                this, appContext.getCurrentType(), false, false, mPendingIntentForFinishingNotification, firstBtnText)
                 .setContentTitle(TimerHelper.getTimerTypeName(appContext.getCurrentType()) +
                         " time remaining - " +
                         TimerHelper.getTimerString(millisecs));
-        startForeground(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());
+        if (!mNotifSoundOngoing && !TimerPreferenceManager.isContinuous()) {
+            startForeground(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());
+        }
     }
 
     private void finishingNotification(boolean lastSessionTimer) {
@@ -261,7 +284,7 @@ public class TimerService extends Service {
         Uri uri = Uri.parse(NotificationHelper.URI_TO_PACKAGE +
                 TimerHelper.getFromResources(appContext.getCurrentType(), TimerHelper.RAW_SOUNDS));
         mTimeNotificationBuilder = NotificationHelper
-                .getTimerTimeNotificationBuilder(this, appContext.getCurrentType(), lastSessionTimer, mPendingIntentForFinishingNotification, "Start")
+                .getTimerTimeNotificationBuilder(this, appContext.getCurrentType(), lastSessionTimer, true, mPendingIntentForFinishingNotification, "Start")
                 .setSound(uri)
                 .setContentTitle(TimerHelper.getTimerTypeName(appContext.getCurrentType()) + " time has finished...");
         startForeground(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());

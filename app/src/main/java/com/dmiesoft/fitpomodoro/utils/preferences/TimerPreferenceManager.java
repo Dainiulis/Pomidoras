@@ -156,6 +156,10 @@ public class TimerPreferenceManager {
         return getDefaultMins(currentType) * multiplier;
     }
 
+    public static boolean isVibrate() {
+        return mDefaultSharedPrefs.getBoolean(SettingsActivity.PREF_KEY_VIBRATE, true);
+    }
+
     private static long getDefaultMins(int currentType) {
         int defMinutes = 0;
         if (currentType == TimerTaskFragment.TYPE_WORK) {
