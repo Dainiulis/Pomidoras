@@ -1,5 +1,6 @@
 package com.dmiesoft.fitpomodoro.database;
 
+import android.accounts.Account;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
