@@ -92,11 +92,16 @@ public class TimerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Message msg = mTimerServiceHandler.obtainMessage();
-        Log.i(TAG + "S", "onStartCommand: " +
-                "   currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) +
-                "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
-                "\n prevType " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousType()) +
-                "   prevState " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousState()));
+//        Log.i(TAG + "S", "onStartCommand: " +
+//                "   currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) +
+//                "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
+//                "\n prevType " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousType()) +
+//                "   prevState " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousState()));
+
+        if (appContext.getCurrentState() == TimerTaskFragment.STATE_STOPPED ||
+                appContext.getCurrentState() == TimerTaskFragment.STATE_FINISHED) {
+            startLogging();
+        }
 
         msg.arg1 = appContext.getCurrentState();
         msg.arg2 = appContext.getPreviousState();
@@ -124,6 +129,8 @@ public class TimerService extends Service {
     }
 
     private void finishTimer(long millisecs) {
+
+        logToFileMillisAndSecs("Timer finished with millis left: " + millisecs);
 
         boolean lastSession = false;
         if (appContext.getCurrentType() == TimerTaskFragment.TYPE_LONG_BREAK) {
@@ -219,10 +226,8 @@ public class TimerService extends Service {
     }
 
     private void startLogging() {
-        if (appContext.getCurrentState() == TimerTaskFragment.STATE_RUNNING && (appContext.getPreviousState() != TimerTaskFragment.STATE_PAUSED)) {
-            logToFileMillisAndSecs("---------------------------------------------------");
-            logToFileMillisAndSecs("Starting new timer");
-        }
+        logToFileMillisAndSecs("---------------------------------------------------");
+        logToFileMillisAndSecs("Starting new timer");
     }
 
     /**
@@ -285,8 +290,10 @@ public class TimerService extends Service {
                 TimerHelper.getFromResources(appContext.getCurrentType(), TimerHelper.RAW_SOUNDS));
         mTimeNotificationBuilder = NotificationHelper
                 .getTimerTimeNotificationBuilder(this, appContext.getCurrentType(), lastSessionTimer, true, mPendingIntentForFinishingNotification, "Start")
-                .setSound(uri)
                 .setContentTitle(TimerHelper.getTimerTypeName(appContext.getCurrentType()) + " time has finished...");
+        if (!TimerPreferenceManager.isSilence()) {
+            mTimeNotificationBuilder.setSound(uri);
+        }
         startForeground(NotificationHelper.TIMER_TIME_NOTIFICATION, mTimeNotificationBuilder.build());
         mNotifSoundOngoing = true;
         Handler handler = new Handler();

@@ -8,6 +8,9 @@ import android.util.Log;
 import com.dmiesoft.fitpomodoro.ui.activities.SettingsActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 
+import java.util.List;
+import java.util.Random;
+
 public class TimerPreferenceManager {
 
     public static final String TIMER_PARAMS_PREF = "timer_params_pref";
@@ -90,8 +93,15 @@ public class TimerPreferenceManager {
         return mTimerPrefs.getLong(CURRENT_RAND_EXERCISE, -1);
     }
 
-    public static void setCurrentRandExercise(long randExerciseID) {
-        mTimerPrefs.edit().putLong(CURRENT_RAND_EXERCISE, randExerciseID).apply();
+    public static void setCurrentRandExercise(List<Long> exercisesIds) {
+        if (exercisesIds != null) {
+            if (exercisesIds.size() > 0) {
+                Random randomGenerator = new Random();
+                int index = randomGenerator.nextInt(exercisesIds.size());
+                long randExerciseID = exercisesIds.get(index);
+                mTimerPrefs.edit().putLong(CURRENT_RAND_EXERCISE, randExerciseID).apply();
+            }
+        }
     }
 
 
@@ -158,6 +168,10 @@ public class TimerPreferenceManager {
 
     public static boolean isVibrate() {
         return mDefaultSharedPrefs.getBoolean(SettingsActivity.PREF_KEY_VIBRATE, true);
+    }
+
+    public static boolean isSilence() {
+        return mDefaultSharedPrefs.getBoolean(SettingsActivity.PREF_KEY_SILENCE, false);
     }
 
     private static long getDefaultMins(int currentType) {

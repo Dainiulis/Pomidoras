@@ -224,7 +224,7 @@ public class TimerTaskFragment extends Fragment {
 
     private void setmExerciseId(long mExerciseId) {
         this.mExerciseId = mExerciseId;
-        TimerPreferenceManager.setCurrentRandExercise(mExerciseId);
+        TimerPreferenceManager.setCurrentRandExercise(mExercisesIds);
     }
 
     public void setmExercisesIds(List<Long> mExercisesIds) {
@@ -233,7 +233,6 @@ public class TimerTaskFragment extends Fragment {
 
     /**
      * Request mainActivity for all exercises id's
-     * (Later update to request for favorite exercises)
      */
     public void requestExercisesIds() {
         mListener.onExercisesIdsRequested();
