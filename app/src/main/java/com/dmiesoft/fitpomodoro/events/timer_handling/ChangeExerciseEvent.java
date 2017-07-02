@@ -2,26 +2,13 @@ package com.dmiesoft.fitpomodoro.events.timer_handling;
 
 public class ChangeExerciseEvent {
 
-    long exerciseId;
-    boolean isSessionFinished;
+    boolean isChangeExercise;
 
-    public ChangeExerciseEvent(long exerciseId) {
-        this.exerciseId = exerciseId;
+    public ChangeExerciseEvent(boolean isChangeExercise) {
+        this.isChangeExercise = isChangeExercise;
     }
 
-    public long getExerciseId() {
-        return exerciseId;
-    }
-
-    public void setExerciseId(long exerciseId) {
-        this.exerciseId = exerciseId;
-    }
-
-    public boolean isSessionFinished() {
-        return isSessionFinished;
-    }
-
-    public void setSessionFinished(boolean sessionFinished) {
-        isSessionFinished = sessionFinished;
+    public boolean isChangeExercise() {
+        return isChangeExercise;
     }
 }

@@ -339,9 +339,7 @@ public class ExercisesDataSource {
                         " = " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
                         " WHERE " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
                         " = " + String.valueOf(exerciseId) +
-                        " ORDER BY " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC",
-                null
-        );
+                        " ORDER BY " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC", null);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {

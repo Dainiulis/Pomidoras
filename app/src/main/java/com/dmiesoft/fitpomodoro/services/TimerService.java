@@ -21,12 +21,15 @@ import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.utils.LogToFile;
 import com.dmiesoft.fitpomodoro.utils.handlers.timer.TimerServiceHandler;
 import com.dmiesoft.fitpomodoro.utils.helpers.NotificationHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.TimerHelper;
 import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
+
+import java.util.List;
 
 public class TimerService extends Service {
 
@@ -50,7 +53,6 @@ public class TimerService extends Service {
     public static final int MSG_TIMER_STATUS = 122;
     public static final int ARG_TIMER_STATUS_RUNNING = 411;
     public static final int ARG_TIMER_STATUS_PAUSED = 511;
-
 
     private Intent intentTimerTick;
     public static boolean serviceRunning = false;
@@ -143,15 +145,12 @@ public class TimerService extends Service {
         if (appContext.getCurrentType() == TimerTaskFragment.TYPE_WORK) {
             ++longBreakCounter;
             TimerPreferenceManager.setLongBreakCounter(longBreakCounter);
-            /*
-            * jei ilgoji pertrauka, tuomet pradedama
-            * kitaip pradedama trumpoji pertrauka
-            */
             if (longBreakCounter == TimerPreferenceManager.getWhenLongBreak()) {
                 appContext.setCurrentType(TimerTaskFragment.TYPE_LONG_BREAK);
             } else if (longBreakCounter != 0) {
                 appContext.setCurrentType(TimerTaskFragment.TYPE_SHORT_BREAK);
             }
+            appContext.setRandExerciseId();
         } else {
             appContext.setCurrentType(TimerTaskFragment.TYPE_WORK);
         }
@@ -207,6 +206,7 @@ public class TimerService extends Service {
 
     }
 
+    //notify timer in UI
     private void manageTimerInUI(String action) {
         Intent intent = new Intent(action);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -309,7 +309,7 @@ public class TimerService extends Service {
         handler.postDelayed(runnable, duration);
     }
 
-    public void setmTimerRunning(int state) {
+    private void setmTimerRunning(int state) {
         switch (state) {
             case ARG_TIMER_STATUS_PAUSED:
                 appContext.setCurrentState(TimerTaskFragment.STATE_PAUSED);

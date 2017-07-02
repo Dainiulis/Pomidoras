@@ -12,17 +12,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.events.exercises.RequestForNewExerciseEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ChangeExerciseEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerHandlerEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerStateChanged;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.services.TimerService;
 import com.dmiesoft.fitpomodoro.utils.LogToFile;
@@ -31,9 +28,6 @@ import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-
-import java.util.List;
-import java.util.Random;
 
 public class TimerTaskFragment extends Fragment {
 
@@ -46,13 +40,12 @@ public class TimerTaskFragment extends Fragment {
     public static final int TYPE_LONG_BREAK = 202;
 
     private static final String TAG = "TTF";
-    private long millisecs, mExerciseId, mInitializedMillisecs;
+    private long millisecs, mInitializedMillisecs;
     private TimerSendTimeEvent sendTimeEvent;
     private TimerTaskFragmentListener mListener;
 
     ////////// Circle variables /////////////////
     public static final int CIRCLE_STOP = 2864;
-    private ValueAnimator mTimerAnimator;
     private CircleProgressEvent mCircleProgressEvent;
     private float mCircleProgressValue;
 
@@ -60,7 +53,6 @@ public class TimerTaskFragment extends Fragment {
     private int mNextSecond, mCurrentSecond;
     /////////////////////////////////////////////
 
-    private List<Long> mExercisesIds;
     private FitPomodoroApplication appContext;
 
     //for txt logging
@@ -84,11 +76,6 @@ public class TimerTaskFragment extends Fragment {
         sendTimeEvent = new TimerSendTimeEvent();
 
         //set starting state, type, variables...
-        if (appContext.getCurrentType() == TYPE_WORK) {
-            setmExerciseId(-1);
-        } else {
-            mExerciseId = TimerPreferenceManager.getCurrentRandomExercise();
-        }
         setTimer();
 
         registerBroadcastReceiver();
@@ -97,11 +84,11 @@ public class TimerTaskFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof TimerTaskFragmentListener) {
-            mListener = (TimerTaskFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement TimerTaskFragmentListener");
-        }
+//        if (context instanceof TimerTaskFragmentListener) {
+//            mListener = (TimerTaskFragmentListener) context;
+//        } else {
+//            throw new RuntimeException(context.toString() + " must implement TimerTaskFragmentListener");
+//        }
     }
 
     @Override
@@ -179,12 +166,6 @@ public class TimerTaskFragment extends Fragment {
         sendAnimatedTimerValue();
 
         int longBreakCounter = TimerPreferenceManager.getLongBreakCounter();
-
-        if (appContext.getPreviousType() == TYPE_SHORT_BREAK || appContext.getPreviousType() == TYPE_LONG_BREAK || longBreakCounter == 0) {
-            if (TimerPreferenceManager.isContinuous()) {
-                mExerciseId = -1;
-            }
-        }
         setTimer();
 
 //        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TYPE_LONG_BREAK) {
@@ -199,9 +180,6 @@ public class TimerTaskFragment extends Fragment {
         // stopped in this case
         if (!TimerPreferenceManager.isContinuous())
             postTimerHandlerEvent(shouldAnimBGColor, shouldAnimBGColor);
-        if (appContext.getCurrentType() == TYPE_SHORT_BREAK || appContext.getCurrentType() == TYPE_LONG_BREAK) {
-            sendRandomExerciseId();
-        }
     }
 
     /**
@@ -222,35 +200,12 @@ public class TimerTaskFragment extends Fragment {
         EventBus.getDefault().post(timerHandlerEvent);
     }
 
-    private void setmExerciseId(long mExerciseId) {
-        this.mExerciseId = mExerciseId;
-        TimerPreferenceManager.setCurrentRandExercise(mExercisesIds);
-    }
-
-    public void setmExercisesIds(List<Long> mExercisesIds) {
-        this.mExercisesIds = mExercisesIds;
-    }
-
-    /**
-     * Request mainActivity for all exercises id's
-     */
-    public void requestExercisesIds() {
-        mListener.onExercisesIdsRequested();
-    }
-
     /**
      * Send random exercise id through eventbus
      */
-    private void sendRandomExerciseId() {
-        if (mExercisesIds != null) {
-            if (mExerciseId == -1 && mExercisesIds.size() > 0) {
-                Random randomGenerator = new Random();
-                int index = randomGenerator.nextInt(mExercisesIds.size());
-                mExerciseId = mExercisesIds.get(index);
-            }
-        }
+    private void setOrChangeRandomExercise() {
         if (EventBus.getDefault().hasSubscriberForEvent(ChangeExerciseEvent.class)) {
-            EventBus.getDefault().post(new ChangeExerciseEvent(mExerciseId));
+            EventBus.getDefault().post(new ChangeExerciseEvent(true));
         }
     }
 
@@ -259,9 +214,6 @@ public class TimerTaskFragment extends Fragment {
         // negerai, kai tas pats fragment siuncia ir kitam ir sau ta pati event.
         if (event.getPublisher() == TimerHandlerEvent.PUBLISHER_TIMER_TASK_FRAGMENT) {
             return;
-        }
-        if (appContext.getCurrentType() == TYPE_WORK) {
-            mExerciseId = -1;
         }
         if (!event.shouldStopTimer()) {
             startTimerService();
@@ -273,7 +225,6 @@ public class TimerTaskFragment extends Fragment {
 
     private void stopTimer(boolean shouldAnimBGColor, boolean shouldStopTimer) {
         handleTimerStates(CIRCLE_STOP);
-        mExerciseId = -1;
         postTimerHandlerEvent(shouldAnimBGColor, shouldStopTimer);
         setTimer();
     }
@@ -285,7 +236,8 @@ public class TimerTaskFragment extends Fragment {
             EventBus.getDefault().post(sendTimeEvent);
             mCircleProgressEvent.setCircleProgress(mAnimatedVal);
             EventBus.getDefault().post(mCircleProgressEvent);
-            sendRandomExerciseId();
+            Log.i(TAG, "onTimerUIUpdateRequest: ");
+            setOrChangeRandomExercise();
             postTimerHandlerEvent(false, false);
         }
     }
@@ -293,8 +245,9 @@ public class TimerTaskFragment extends Fragment {
     @Subscribe
     public void onRequestForNewExercise(RequestForNewExerciseEvent event) {
         if (event.isNeedNewExercise()) {
-            mExerciseId = -1;
-            sendRandomExerciseId();
+            Log.i(TAG, "onRequestForNewExercise: ");
+            appContext.setRandExerciseId();
+            setOrChangeRandomExercise();
         }
     }
 
@@ -403,7 +356,6 @@ public class TimerTaskFragment extends Fragment {
                 onTimerTick(time);
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_FINISH)) {
                 onTimerFinish();
-                Log.i(TAG, "onReceive: Finish");
             } else if (action.equalsIgnoreCase(TimerService.INTENT_TIMER_STOP)) {
                 appContext.setAnimateViewPager(true);
                 stopTimer(true, true);
@@ -419,7 +371,6 @@ public class TimerTaskFragment extends Fragment {
                     appContext.setSessionFinished(false);
                     appContext.setAnimateViewPager(true);
                 }
-                Log.i(TAG, "onReceive: INTENT_TIMER_START_PAUSE");
                 postTimerHandlerEvent(shouldAnimBGColor, false);
             }
         }

@@ -41,7 +41,6 @@
                 android:layout_marginTop="5dp"
                 android:text="@string/exercise_group"
                 android:textAlignment="center"
-                android:textColor="@android:color/white"
                 android:textSize="28sp" />
 
             <TextView
@@ -56,17 +55,6 @@
                 android:textSize="15sp" />
 
         </RelativeLayout>
-
-        <ImageButton
-            android:id="@+id/edit_image_name_type"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:background="?attr/selectableItemBackground"
-            android:padding="10dp"
-            android:src="@drawable/ic_edit_24dp" />
 
     </RelativeLayout>
 
@@ -99,15 +87,6 @@
                     android:layout_alignParentLeft="true"
                     android:textStyle="bold" />
 
-                <ImageButton
-                    android:padding="@dimen/fragments_padding"
-                    android:background="?attr/selectableItemBackground"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/edit_description"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:src="@drawable/ic_edit_24dp"/>
             </RelativeLayout>
 
             <TextView

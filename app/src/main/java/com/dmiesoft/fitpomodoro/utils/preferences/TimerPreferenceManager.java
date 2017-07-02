@@ -100,6 +100,8 @@ public class TimerPreferenceManager {
                 int index = randomGenerator.nextInt(exercisesIds.size());
                 long randExerciseID = exercisesIds.get(index);
                 mTimerPrefs.edit().putLong(CURRENT_RAND_EXERCISE, randExerciseID).apply();
+            } else {
+                mTimerPrefs.edit().putLong(CURRENT_RAND_EXERCISE, -1).apply();
             }
         }
     }

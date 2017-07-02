@@ -38,10 +38,8 @@ import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.events.timer_handling.CircleProgressEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.ChangeExerciseEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerAnimationStatusEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerSendTimeEvent;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerHandlerEvent;
-import com.dmiesoft.fitpomodoro.events.timer_handling.TimerStateChanged;
 import com.dmiesoft.fitpomodoro.events.timer_handling.TimerUpdateRequestEvent;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
@@ -66,7 +64,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     private static final int BTN_START = 1001;
     private static final int BTN_PAUSE = 1002;
     private static final int BTN_STOP = 1003;
-    public static final String TAG = "TIMER";
+    public static final String TAG = "TIMERUI";
 
     private CustomTimerView mCustomTimerView;
     private TimerUIFragmentListener mListener;
@@ -144,8 +142,13 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 long favId = ((Favorite) parent.getItemAtPosition(position)).getId();
-                TimerPreferenceManager.saveSelectedFavorite(favId);
-                mListener.onFavoriteSelected();
+                if (TimerPreferenceManager.getSelectedFavorite() != favId) {
+                    TimerPreferenceManager.saveSelectedFavorite(favId);
+                    appContext.setExercisesIds();
+                    appContext.setRandExerciseId();
+                    appContext.setAnimateViewPager(true);
+                    mListener.onSetRandomExercise();
+                }
             }
 
             @Override
@@ -449,7 +452,11 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     public void setExercise(Exercise exercise, List<ExerciseHistory> exerciseHistoryList) {
-        mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise, exerciseHistoryList);
+        if (exercise != null) {
+            mPagerAdapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise, exerciseHistoryList);
+        } else {
+            mPagerAdapter = null;
+        }
 //        mViewPager.setAdapter(mPagerAdapter);
 
         if (appContext.shouldAnimateViewPager()) {
@@ -462,6 +469,7 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
+                            Log.i(TAG, "onAnimationEnd: " + mPagerAdapter);
                             mViewPager.setAdapter(mPagerAdapter);
                             appContext.setAnimateViewPager(false); // if not set to false here it then animation continues on screen orientation change until DONE button is pressed
                             mViewPager.animate()
@@ -560,9 +568,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     @Subscribe
-    public void onRandExerciseIdReceived(ChangeExerciseEvent event) {
-        if (event.getExerciseId() != -1) {
-            mListener.onRandomExerciseRequested(event.getExerciseId());
+    public void onChangeRandExerciseReceived(ChangeExerciseEvent event) {
+        if (event.isChangeExercise()) {
+            mListener.onSetRandomExercise();
         }
     }
 
@@ -647,11 +655,9 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
     }
 
     public interface TimerUIFragmentListener {
-        void onRandomExerciseRequested(long randExerciseId);
+        void onSetRandomExercise();
 
         void onFavoritesListRequested();
-
-        void onFavoriteSelected();
     }
 
     private class ExercisePagerAdapter extends FragmentStatePagerAdapter {

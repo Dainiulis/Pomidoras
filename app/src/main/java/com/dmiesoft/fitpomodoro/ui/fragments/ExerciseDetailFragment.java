@@ -7,10 +7,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.util.ColorGenerator;
@@ -27,10 +29,8 @@ public class ExerciseDetailFragment extends Fragment {
     private static final String TAG = "EDF";
     private Exercise exercise;
     private View view;
-    private ImageView imageView, iVeditImageNameType, iVeditDescription;
+    private ImageView imageView;
     private TextView nameTextView, typeTextView, descriptionText;
-    private RelativeLayout imageLayout;
-    private int color;
     private ExerciseDetailFragmentListener mListener;
 
     public ExerciseDetailFragment() {
@@ -69,37 +69,44 @@ public class ExerciseDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        
+        setHasOptionsMenu(true);
         view = inflater.inflate(R.layout.fragment_exercise_detail, container, false);
         initializeViews();
         return view;
     }
 
     private void initializeViews() {
-        iVeditImageNameType = (ImageView) view.findViewById(R.id.edit_image_name_type);
-        iVeditDescription = (ImageView) view.findViewById(R.id.edit_description);
         nameTextView = (TextView) view.findViewById(R.id.nameExercise);
         typeTextView = (TextView) view.findViewById(R.id.typeExercise);
         descriptionText = (TextView) view.findViewById(R.id.descriptionText);
         imageView = (ImageView) view.findViewById(R.id.imageExercise);
-        imageLayout = (RelativeLayout) view.findViewById(R.id.imageLayout);
 
         refreshDisplay();
 
-        iVeditImageNameType.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mListener.onEditExerciseLongClicked(exercise, false);
-            }
-        });
+    }
 
-        iVeditDescription.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mListener.onEditExerciseLongClicked(exercise, true);
-            }
-        });
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.detail_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.menu_edit_image_name_type:
+                mListener.onEditExerciseDescClicked(exercise, false);
+                break;
+
+            case R.id.menu_edit_description:
+                mListener.onEditExerciseDescClicked(exercise, true);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -117,9 +124,7 @@ public class ExerciseDetailFragment extends Fragment {
         typeTextView.setText(exercise.getType());
 
         descriptionText.setText(exercise.getDescription());
-        color = generateColor();
         int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.exercise_detail_image);
-        imageLayout.setBackgroundColor(color);
         if (exercise.getImage() != null) {
             Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
             if (bitmap != null) {
@@ -136,9 +141,9 @@ public class ExerciseDetailFragment extends Fragment {
         }
     }
 
-    public int getColor() {
-        return color;
-    }
+//    public int getColor() {
+//        return color;
+//    }
 
     private int generateColor() {
         ColorGenerator generator = ColorGenerator.MATERIAL;
@@ -163,7 +168,7 @@ public class ExerciseDetailFragment extends Fragment {
     }
 
     public interface ExerciseDetailFragmentListener{
-        void onEditExerciseLongClicked(Exercise exercise, boolean description);
+        void onEditExerciseDescClicked(Exercise exercise, boolean description);
     }
 
 }

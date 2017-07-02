@@ -5,10 +5,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.services.TimerService;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
 import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
+
+import java.util.List;
 
 public class FitPomodoroApplication extends Application {
 
@@ -64,6 +67,8 @@ public class FitPomodoroApplication extends Application {
     private int previousState;
     private int previousType;
     private boolean sessionFinished;
+    private List<Long> mExercisesIds;
+
 
     @Override
     public void onCreate() {
@@ -85,7 +90,22 @@ public class FitPomodoroApplication extends Application {
         setPreviousType(TimerTaskFragment.TYPE_WORK);
         setPreviousState(TimerTaskFragment.STATE_STOPPED);
         setSessionFinished(false);
+        setExercisesIds();
 //        appInitialization();
+    }
+
+    public void setExercisesIds() {
+        ExercisesDataSource dataSource = new ExercisesDataSource(this);
+        dataSource.open();
+        long favoriteId = TimerPreferenceManager.getSelectedFavorite();
+        Log.i(TAG, "setExercisesIds: "  + favoriteId);
+        mExercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
+        Log.i(TAG, "setExercisesIds: " + mExercisesIds);
+        dataSource.close();
+    }
+
+    public void setRandExerciseId() {
+        TimerPreferenceManager.setCurrentRandExercise(mExercisesIds);
     }
 
     public int getCurrentState() {

@@ -38,4 +38,6 @@
     <string name="rand_sequence">Random squence</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="menu_edit_name">Edit name</string>
+    <string name="menu_edit_desc">Edit description</string>
 </resources>

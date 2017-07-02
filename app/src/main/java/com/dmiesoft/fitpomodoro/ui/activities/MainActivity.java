@@ -43,6 +43,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
@@ -90,10 +91,9 @@ public class MainActivity extends AppCompatActivity
         ExerciseDetailFragment.ExerciseDetailFragmentListener,
         AsyncFirstLoad.AsyncFirstLoadListrener,
         MultiSelectionFragment.MultiSelectionFragmentListener,
-        TimerTaskFragment.TimerTaskFragmentListener,
         TimerUIFragment.TimerUIFragmentListener,
         NestedSaveExerciseFragment.NestedExerciseFragListener,
-        NestedExerciseHistoryListFragment.OnListFragmentInteractionListener{
+        NestedExerciseHistoryListFragment.OnListFragmentInteractionListener {
 
     private static final String TAG = "MAct";
 
@@ -145,7 +145,6 @@ public class MainActivity extends AppCompatActivity
     private TreeMap<Integer, ?> map;
     private ActionBarDrawerToggle toggle;
     private DrawerLayout drawer;
-    private List<Long> exercisesIds;
     private AsyncFirstLoad asyncFirstLoad;
     private FloatingActionButton mainFab;
     private Toolbar toolbar;
@@ -154,6 +153,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView tempMenuDelBtn, tempMenuFavBtn;
     private Menu menu;
     private ValueAnimator animToolbarColor, burgerAnim, tempBtnAnimatorAppear, tempBtnAnimatorDisappear;
+//    private FitPomodoroApplication appContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,6 +166,8 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setTitle("");
 
         deleteIdList = new ArrayList<>();
+
+//        appContext = (FitPomodoroApplication) getApplicationContext();
 
         if (savedInstanceState != null) {
             exercisesGroups = savedInstanceState.getParcelableArrayList(EXERCISES_GROUPS);
@@ -492,7 +494,6 @@ public class MainActivity extends AppCompatActivity
         } else if (isFragVisible) {
             if (animToolbarColor != null)
                 animToolbarColor.cancel();
-            toolbar.setBackgroundColor(((ExerciseDetailFragment) fragmentExDetail).getColor());
         }
 
         /**
@@ -741,7 +742,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEditExerciseLongClicked(Exercise exercise, boolean description) {
+    public void onEditExerciseDescClicked(Exercise exercise, boolean description) {
         openEditExerciseDialog(exercise, description);
     }
 
@@ -866,21 +867,18 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onExercisesIdsRequested() {
-        setExercisesIdsForTTFrag();
-    }
-
-    @Override
-    public void onFavoriteSelected() {
-        setExercisesIdsForTTFrag();
-    }
-
-    @Override
-    public void onRandomExerciseRequested(long randExerciseId) {
+    public void onSetRandomExercise() {
+        long randExerciseId = TimerPreferenceManager.getCurrentRandomExercise();
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
-        Exercise exercise = dataSource.findExercises(selection, selectionArgs).get(0);
-        List<ExerciseHistory> exerciseHistoryList = dataSource.getExerciseHistory(exercise.getId());
+        List<Exercise> exercises = dataSource.findExercises(selection, selectionArgs);
+        Log.i(TAG, "onSetRandomExercise: " + exercises.size());
+        Exercise exercise = null;
+        List<ExerciseHistory> exerciseHistoryList = null;
+        if (exercises.size() > 0) {
+            exercise = exercises.get(0);
+            exerciseHistoryList = dataSource.getExerciseHistory(exercise.getId());
+        }
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.setExercise(exercise, exerciseHistoryList);
@@ -1006,19 +1004,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     //**********************************************************************************************
-
-    /**
-     * sets exercises ids for {@link TimerTaskFragment}
-     */
-    private void setExercisesIdsForTTFrag() {
-        dataSource.open();
-        TimerTaskFragment fragment = (TimerTaskFragment) fragmentManager.findFragmentByTag(TIMER_TASK_FRAGMENT_TAG);
-        long favoriteId = TimerPreferenceManager.getSelectedFavorite();
-        if (fragment != null) {
-            exercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
-            fragment.setmExercisesIds(exercisesIds);
-        }
-    }
 
     /**
      * Helper function to clear multi selection and invalidateOptionsMenu
