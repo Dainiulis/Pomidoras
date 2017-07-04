@@ -99,7 +99,7 @@ public class FitPomodoroApplication extends Application {
         dataSource.open();
         long favoriteId = TimerPreferenceManager.getSelectedFavorite();
         Log.i(TAG, "setExercisesIds: "  + favoriteId);
-        mExercisesIds = dataSource.getExercisesIds(null, null, favoriteId);
+        mExercisesIds = ExercisesDataSource.getExercisesIds(getApplicationContext(), null, null, favoriteId);
         Log.i(TAG, "setExercisesIds: " + mExercisesIds);
         dataSource.close();
     }
