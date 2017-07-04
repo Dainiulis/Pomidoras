@@ -59,7 +59,8 @@ public class InitialDatabasePopulation {
             String exerciseGroupImage = allData.getJSONObject(i).getString("image");
             exercisesGroup.setName(exerciseGroupName);
             exercisesGroup.setImage(exerciseGroupImage);
-            exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+//            exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+            exercisesGroup = ExercisesDataSource.createExercisesGroup(context, exercisesGroup);
             copyAssets(false, "", exerciseGroupImage);
 
             JSONArray exercisesData = allData.getJSONObject(i).getJSONArray("exercises");
@@ -71,7 +72,8 @@ public class InitialDatabasePopulation {
                 exercise.setImage("@" + exercisesGroup.getId() + "@" + exercise.getName() + ".png");
                 exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
                 exercise.setExerciseGroupId(exercisesGroup.getId());
-                exercise = dataSource.createExercise(exercise);
+//                exercise = dataSource.createExercise(exercise);
+                exercise = ExercisesDataSource.createExercise(context, exercise);
                 copyAssets(true, exercise.getImage(), exerciseGroupImage);
             }
             exercisesGroups.add(exercisesGroup);
@@ -91,8 +93,6 @@ public class InitialDatabasePopulation {
 
         try {
             if (list.length > 0) {
-//                for (String file : list) {
-//                if (file.contains(".png")) {
                 String finalFileName = "";
                 if (cpExercise) {
                     finalFileName = exerciseImgName;
@@ -107,10 +107,7 @@ public class InitialDatabasePopulation {
                 String path = BitmapHelper.getFileFromImages(finalFileName, context).getAbsolutePath();
                 Log.i(TAG, "copyAssets: " + path);
                 Bitmap bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
-//                bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
                 BitmapHelper.saveImage(finalFileName, bitmap, context);
-//                }
-//                }
             }
         } catch (Exception e) {
             e.printStackTrace();

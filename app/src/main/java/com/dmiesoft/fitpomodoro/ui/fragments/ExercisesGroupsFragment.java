@@ -16,6 +16,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
+import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesGroupListAdapter;

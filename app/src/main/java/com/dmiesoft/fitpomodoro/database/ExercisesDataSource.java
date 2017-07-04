@@ -1,11 +1,13 @@
 package com.dmiesoft.fitpomodoro.database;
 
 import android.accounts.Account;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
@@ -13,6 +15,7 @@ import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +23,8 @@ import java.util.Map;
 public class ExercisesDataSource {
 
     private static final String TAG = "EDS";
-    SQLiteOpenHelper dbHelper;
-    SQLiteDatabase database;
+    private DatabaseHelper dbHelper;
+    private SQLiteDatabase database;
 
     private static String[] exercises_columns = {
             DatabaseContract.ExercisesTable._ID,
@@ -64,13 +67,23 @@ public class ExercisesDataSource {
     Manage database "exercises_groups" table
      */
 
-    public ExercisesGroup createExercisesGroup(ExercisesGroup exercisesGroup) {
+//    public ExercisesGroup createExercisesGroup(ExercisesGroup exercisesGroup) {
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
+//        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
+//
+//        long newRowId = database.insert(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, null, values);
+//        exercisesGroup.setId(newRowId);
+//        return exercisesGroup;
+//    }
+
+    public static ExercisesGroup createExercisesGroup(Context context, ExercisesGroup exercisesGroup) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
         values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
 
-        long newRowId = database.insert(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, null, values);
-        exercisesGroup.setId(newRowId);
+        Uri uri = context.getContentResolver().insert(DatabaseContract.ExercisesGroupsTable.CONTENT_URI, values);
+        exercisesGroup.setId(ContentUris.parseId(uri));
         return exercisesGroup;
     }
 
@@ -78,6 +91,7 @@ public class ExercisesDataSource {
         List<ExercisesGroup> exercisesGroups = new ArrayList<>();
         String orderBy = DatabaseContract.ExercisesGroupsTable.COLUMN_NAME + " ASC";
 
+        //added to content provider
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
                 exercises_groups_columns,
@@ -101,26 +115,54 @@ public class ExercisesDataSource {
         return exercisesGroups;
     }
 
-    public void updateExercisesGroup(ExercisesGroup exercisesGroup) {
-        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] whereArgs = {String.valueOf(exercisesGroup.getId())};
+//    public void updateExercisesGroup(ExercisesGroup exercisesGroup) {
+//        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+//        String[] whereArgs = {String.valueOf(exercisesGroup.getId())};
+//
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
+//        values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
+//        database.update(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, values, where, whereArgs);
+//    }
 
+    public static void updateExercisesGroup(Context context, ExercisesGroup exercisesGroup) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME, exercisesGroup.getName());
         values.put(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE, exercisesGroup.getImage());
-        database.update(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, values, where, whereArgs);
+        Uri uri = Uri.withAppendedPath(DatabaseContract.ExercisesGroupsTable.CONTENT_URI, String.valueOf(exercisesGroup.getId()));
+        context.getContentResolver().update(uri, values, null, null);
     }
 
-    public void deleteExercisesGroup(long id) {
-        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] whereArgs = {String.valueOf(id)};
-        database.delete(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, where, whereArgs);
+
+//    public void deleteExercisesGroup(long id) {
+//        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+//        String[] whereArgs = {String.valueOf(id)};
+//        database.delete(DatabaseContract.ExercisesGroupsTable.TABLE_NAME, where, whereArgs);
+//    }
+
+    public static void deleteExercisesGroup(Context context, long id) {
+        Uri uri = Uri.withAppendedPath(DatabaseContract.ExercisesGroupsTable.CONTENT_URI, String.valueOf(id));
+        context.getContentResolver().delete(uri, null, null);
     }
+
 
     /*
     Manage database "exercises" table
      */
-    public Exercise createExercise(Exercise exercise) {
+//    public Exercise createExercise(Exercise exercise) {
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
+//
+//        long newRowId = database.insert(DatabaseContract.ExercisesTable.TABLE_NAME, null, values);
+//        exercise.setId(newRowId);
+//        return exercise;
+//    }
+
+    public static Exercise createExercise(Context context, Exercise exercise) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
         values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
@@ -128,29 +170,43 @@ public class ExercisesDataSource {
         values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
 
-        long newRowId = database.insert(DatabaseContract.ExercisesTable.TABLE_NAME, null, values);
-        exercise.setId(newRowId);
+        Uri uri = context.getContentResolver().insert(DatabaseContract.ExercisesTable.CONTENT_URI, values);
+        exercise.setId(ContentUris.parseId(uri));
         return exercise;
     }
 
-    public void updateExercise(Exercise exercise) {
-        String where = DatabaseContract.ExercisesTable._ID + "=?";
-        String[] whereArgs = {String.valueOf(exercise.getId())};
+//    public void updateExercise(Exercise exercise) {
+//        String where = DatabaseContract.ExercisesTable._ID + "=?";
+//        String[] whereArgs = {String.valueOf(exercise.getId())};
+//
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
+//
+//        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs);
+//    }
 
+    public static void updateExercise(Context context, Exercise exercise) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExercisesTable.COLUMN_NAME, exercise.getName());
         values.put(DatabaseContract.ExercisesTable.COLUMN_TYPE, exercise.getType());
         values.put(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION, exercise.getDescription());
         values.put(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID, exercise.getExerciseGroupId());
         values.put(DatabaseContract.ExercisesTable.COLUMN_IMAGE, exercise.getImage());
-
-        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs);
+        Uri uri = Uri.withAppendedPath(DatabaseContract.ExercisesTable.CONTENT_URI, String.valueOf(exercise.getId()));
+        context.getContentResolver().update(uri, values, null, null);
     }
+
 
     public List<Exercise> findExercises(String selection, String[] selectionArgs) {
         String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
         List<Exercise> exercises = new ArrayList<>();
 
+
+        // added to provider
         Cursor cursor = database.query(
                 DatabaseContract.ExercisesTable.TABLE_NAME,
                 exercises_columns,
@@ -160,6 +216,34 @@ public class ExercisesDataSource {
                 null,
                 orderBy
         );
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                Exercise exercise = new Exercise();
+                exercise.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID)));
+                exercise.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+                exercise.setType(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_TYPE)));
+                exercise.setDescription(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION)));
+                exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
+                exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
+                exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
+                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
+                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
+                exercises.add(exercise);
+            }
+        }
+        cursor.close();
+        return exercises;
+    }
+
+    public static List<Exercise> findExercises(Context context, String selection, String[] selectionArgs) {
+        String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
+        List<Exercise> exercises = new ArrayList<>();
+
+        // added to provider
+        Cursor cursor = context.getContentResolver()
+                .query(DatabaseContract.ExercisesTable.CONTENT_URI,
+                exercises_columns, selection, selectionArgs, orderBy);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -216,18 +300,31 @@ public class ExercisesDataSource {
         return idList;
     }
 
-    public void deleteExercise(long id) {
-        String where = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] whereArgs = {String.valueOf(id)};
-        database.delete(DatabaseContract.ExercisesTable.TABLE_NAME, where, whereArgs);
+//    public void deleteExercise(long id) {
+//        String where = DatabaseContract.ExercisesTable._ID + "=?";
+//        String[] whereArgs = {String.valueOf(id)};
+//        database.delete(DatabaseContract.ExercisesTable.TABLE_NAME, where, whereArgs);
+//    }
+
+    public static void deleteExercise(Context context, long id) {
+        Uri uri = Uri.withAppendedPath(DatabaseContract.ExercisesTable.CONTENT_URI, String.valueOf(id));
+        context.getContentResolver().delete(uri, null, null);
     }
 
-    // Favorites management
-    public void createFavorite(String name) {
+    /* Favorites management */
+
+//    public void createFavorite(String name) {
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.FavoritesTable.COLUMN_NAME, name);
+//        database.insert(DatabaseContract.FavoritesTable.TABLE_NAME, null, values);
+//    }
+
+    public static void createFavorite(Context context, String name) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.FavoritesTable.COLUMN_NAME, name);
-        database.insert(DatabaseContract.FavoritesTable.TABLE_NAME, null, values);
+        context.getContentResolver().insert(DatabaseContract.FavoritesTable.CONTENT_URI, values);
     }
+
 
     public List<Favorite> getAllFavorites() {
         List<Favorite> favorites = new ArrayList<>();
@@ -252,28 +349,66 @@ public class ExercisesDataSource {
         return favorites;
     }
 
-    public void createFavExIds(HashMap<Long, Long> favExIds) {
+//    public void createFavExIds(HashMap<Long, Long> favExIds) {
+//        for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
+//            ContentValues values = new ContentValues();
+//            values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
+//            values.put(DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID, entry.getValue());
+//            long rowID = database.insert(DatabaseContract.FavExIdsTable.TABLE_NAME, null, values);
+//        }
+//    }
+
+    public static void createFavExIds(Context context, HashMap<Long, Long> favExIds) {
         for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
             ContentValues values = new ContentValues();
             values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
             values.put(DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID, entry.getValue());
-            long rowID = database.insert(DatabaseContract.FavExIdsTable.TABLE_NAME, null, values);
+            context.getContentResolver().insert(DatabaseContract.FavExIdsTable.CONTENT_URI, values);
         }
     }
 
-    public List<Exercise> findFavoriteExercises(long favoriteId) {
+//    public List<Exercise> findFavoriteExercises(long favoriteId) {
+//        List<Exercise> exercises = new ArrayList<>();
+//
+//        Cursor cursor = database.rawQuery(
+//                "SELECT * FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+//                        " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
+//                        " ON " + DatabaseContract.ExercisesTable._ID +
+//                        " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
+//                        " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID +
+//                        " = " + String.valueOf(favoriteId) +
+//                        " ORDER BY " + DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC",
+//                null
+//        );
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                Exercise exercise = new Exercise();
+//                exercise.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID)));
+//                exercise.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+//                exercise.setType(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_TYPE)));
+//                exercise.setDescription(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION)));
+//                exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
+//                exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
+//                exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
+//                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
+//                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
+//                exercises.add(exercise);
+//            }
+//        }
+//        cursor.close();
+//        return exercises;
+//    }
+
+    public static List<Exercise> findFavoriteExercises(Context context, long favoriteId) {
         List<Exercise> exercises = new ArrayList<>();
 
-        Cursor cursor = database.rawQuery(
-                "SELECT * FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
-                        " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
-                        " ON " + DatabaseContract.ExercisesTable._ID +
-                        " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
-                        " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID +
-                        " = " + String.valueOf(favoriteId) +
-                        " ORDER BY " + DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC",
-                null
-        );
+        String selection = DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(favoriteId)};
+        String sortOrder = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC";
+
+        Cursor cursor = context.getContentResolver().query(DatabaseContract.ExercisesTable.CONTENT_URI,
+                exercises_columns, selection, selectionArgs, sortOrder);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -294,46 +429,113 @@ public class ExercisesDataSource {
         return exercises;
     }
 
-    public void removeExercisesFromFavorites(List<Exercise> exercises, List<Integer> unfavoriteIdList, long favoriteId) {
+//    public void removeExercisesFromFavorites(List<Exercise> exercises, List<Integer> unfavoriteIdList, long favoriteId) {
+//        for (int i = 0; i < unfavoriteIdList.size(); i++) {
+//            String where = DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID + "=? AND " +
+//                    DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + "=?";
+//            String[] whereArgs = {String.valueOf(exercises.get(unfavoriteIdList.get(i)).getId()), String.valueOf(favoriteId)};
+//            database.delete(DatabaseContract.FavExIdsTable.TABLE_NAME, where, whereArgs);
+//        }
+//    }
+
+    public static void removeExercisesFromFavorites(Context context, List<Exercise> exercises, List<Integer> unfavoriteIdList, long favoriteId) {
         for (int i = 0; i < unfavoriteIdList.size(); i++) {
             String where = DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID + "=? AND " +
                     DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + "=?";
             String[] whereArgs = {String.valueOf(exercises.get(unfavoriteIdList.get(i)).getId()), String.valueOf(favoriteId)};
-            database.delete(DatabaseContract.FavExIdsTable.TABLE_NAME, where, whereArgs);
+            context.getContentResolver().delete(DatabaseContract.FavExIdsTable.CONTENT_URI, where, whereArgs);
         }
     }
 
-    public void deleteFavorite(long favoriteId) {
-        String where = DatabaseContract.FavoritesTable._ID + "=?";
-        String[] whereArgs = {String.valueOf(favoriteId)};
-        database.delete(DatabaseContract.FavoritesTable.TABLE_NAME, where, whereArgs);
+//    public void deleteFavorite(long favoriteId) {
+//        String where = DatabaseContract.FavoritesTable._ID + "=?";
+//        String[] whereArgs = {String.valueOf(favoriteId)};
+//        database.delete(DatabaseContract.FavoritesTable.TABLE_NAME, where, whereArgs);
+//    }
+
+    public static void deleteFavorite(Context context, long favoriteId) {
+        Uri uri = Uri.withAppendedPath(DatabaseContract.FavoritesTable.CONTENT_URI, String.valueOf(favoriteId));
+        context.getContentResolver().delete(uri, null, null);
     }
 
-    public void saveExerciseHistory(int howMany, long exerciseId) {
+//    public void saveExerciseHistory(int howMany, long exerciseId) {
+//        ContentValues values = new ContentValues();
+//        values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID, exerciseId);
+//        values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME, howMany);
+//        database.insert(DatabaseContract.ExerciseHistoryTable.TABLE_NAME, null, values);
+//
+//        String where = DatabaseContract.ExercisesTable._ID + " = ?";
+//        String[] whereArgs = {String.valueOf(exerciseId)};
+//        Exercise exercise = findExercises(where, whereArgs).get(0);
+//        int howManyTimesDone = exercise.getHowManyTimesDone() + 1;
+//        int totalReps = exercise.getTotalRepsDone() + howMany;
+//        values.clear();
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE, howManyTimesDone);
+//        values.put(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS, totalReps);
+//        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs);
+//    }
+
+    public static void saveExerciseHistory(Context context, int howMany, long exerciseId) {
         ContentValues values = new ContentValues();
         values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID, exerciseId);
         values.put(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME, howMany);
-        database.insert(DatabaseContract.ExerciseHistoryTable.TABLE_NAME, null, values);
+        context.getContentResolver().insert(DatabaseContract.ExerciseHistoryTable.CONTENT_URI, values);
 
         String where = DatabaseContract.ExercisesTable._ID + " = ?";
         String[] whereArgs = {String.valueOf(exerciseId)};
-        Exercise exercise = findExercises(where, whereArgs).get(0);
+        Exercise exercise = findExercises(context, where, whereArgs).get(0);
         int howManyTimesDone = exercise.getHowManyTimesDone() + 1;
         int totalReps = exercise.getTotalRepsDone() + howMany;
         values.clear();
         values.put(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE, howManyTimesDone);
         values.put(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS, totalReps);
-        database.update(DatabaseContract.ExercisesTable.TABLE_NAME, values, where, whereArgs );
+        Uri uri = ContentUris.withAppendedId(DatabaseContract.ExercisesTable.CONTENT_URI, exerciseId);
+        context.getContentResolver().update(uri, values, null, null);
+    }
+
+
+    public static List<ExerciseHistory> getExerciseHistory(Context context, long exerciseId) {
+        List<ExerciseHistory> exercisesHistory = new ArrayList<>();
+        String[] projection =
+                {
+                        DatabaseContract.ExercisesTable.COLUMN_NAME,
+                        DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME,
+                        DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
+                                "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE};
+
+        String selection = DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID + "=?";
+        String[] selectionArgs = {String.valueOf(exerciseId)};
+        String sortOrder = DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC";
+
+        if (exerciseId == -1) {
+            selection = null;
+            selectionArgs = null;
+        }
+
+        Cursor cursor = context.getContentResolver()
+                .query(DatabaseContract.ExerciseHistoryTable.CONTENT_URI, projection, selection, selectionArgs, sortOrder);
+
+        if (cursor.getCount() > 0) {
+            while (cursor.moveToNext()) {
+                ExerciseHistory exerciseHistory = new ExerciseHistory();
+                exerciseHistory.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+                exerciseHistory.setHowMany(cursor.getInt(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME)));
+                exerciseHistory.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_DATE)));
+                exercisesHistory.add(exerciseHistory);
+            }
+        }
+        cursor.close();
+        return exercisesHistory;
     }
 
     public List<ExerciseHistory> getExerciseHistory(long exerciseId) {
         List<ExerciseHistory> exercisesHistory = new ArrayList<>();
         String commaSep = ", ";
-        String selection = DatabaseContract.ExercisesTable.COLUMN_NAME + commaSep +
+        String projection = DatabaseContract.ExercisesTable.COLUMN_NAME + commaSep +
                 DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME + commaSep +
                 DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE;
-        Cursor cursor = database.rawQuery(
-                "SELECT " + selection + " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+        Cursor cursor =
+                database.rawQuery("SELECT " + projection + " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
                         " INNER JOIN " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
                         " ON " + DatabaseContract.ExercisesTable.TABLE_NAME + "." + DatabaseContract.ExercisesTable._ID +
                         " = " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +

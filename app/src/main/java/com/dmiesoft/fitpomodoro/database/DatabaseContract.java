@@ -1,6 +1,9 @@
 package com.dmiesoft.fitpomodoro.database;
 
+import android.net.Uri;
 import android.provider.BaseColumns;
+
+import static com.dmiesoft.fitpomodoro.database.ExercisesContentProvider.BASE_CONTENT_URI;
 
 public class DatabaseContract {
 
@@ -14,6 +17,7 @@ public class DatabaseContract {
     }
 
     public static abstract class ExercisesTable implements BaseColumns {
+
         public static final String TABLE_NAME = "exercises";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_TYPE = "type";
@@ -23,6 +27,8 @@ public class DatabaseContract {
         public static final String COLUMN_DATE = "date_timestamp";
         public static final String COLUMN_TOTAL_REPS = "total_reps_done";
         public static final String COLUMN_HOW_MANY_TIMES_DONE = "how_many_times_done";
+
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, TABLE_NAME);
 
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
@@ -46,6 +52,8 @@ public class DatabaseContract {
         public static final String COLUMN_IMAGE = "image";
         public static final String COLUMN_DATE = "date_timestamp";
 
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, TABLE_NAME);
+
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -62,6 +70,8 @@ public class DatabaseContract {
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_DATE = "date_timestamp";
 
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, TABLE_NAME);
+
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
                         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -75,6 +85,8 @@ public class DatabaseContract {
         public static final String TABLE_NAME = "favorites_exercises_ids";
         public static final String COLUMN_EXERCISE_ID = "exercise_id";
         public static final String COLUMN_FAVORITE_ID = "favorite_id";
+
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, TABLE_NAME);
 
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + " (" +
@@ -92,6 +104,8 @@ public class DatabaseContract {
         public static final String COLUMN_EXERCISE_ID = "exercise_id";
         public static final String COLUMN_HOW_MANY_REPS_TIME = "how_many_reps_time";
         public static final String COLUMN_DATE = "date_timestamp";
+
+        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, TABLE_NAME);
 
         public static final String CREATE_TABLE =
                 CREATE_TABLE_STRING + TABLE_NAME + "(" +

@@ -59,7 +59,8 @@ public class AlertDialogHelper {
                 if (exists) {
                     Toast.makeText(context, "Favorite with the same name already exists", Toast.LENGTH_SHORT).show();
                 } else {
-                    dataSource.createFavorite(favName.trim());
+//                    dataSource.createFavorite(favName.trim());
+                    ExercisesDataSource.createFavorite(context, favName.trim());
                     dialog.dismiss();
                 }
             }

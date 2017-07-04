@@ -165,7 +165,6 @@ public class TimerTaskFragment extends Fragment {
         mAnimatedVal = 0;
         sendAnimatedTimerValue();
 
-        int longBreakCounter = TimerPreferenceManager.getLongBreakCounter();
         setTimer();
 
 //        if (TimerPreferenceManager.isContinuous() && appContext.getPreviousType() != TYPE_LONG_BREAK) {
@@ -178,8 +177,12 @@ public class TimerTaskFragment extends Fragment {
         // the second param shouldAnimBGColor is because if timer should animate BG
         // color from onTimerFinish, then it automatically is stopped, so the timer is always
         // stopped in this case
-        if (!TimerPreferenceManager.isContinuous())
+        if (!TimerPreferenceManager.isContinuous()) {
             postTimerHandlerEvent(shouldAnimBGColor, shouldAnimBGColor);
+        }
+        if (appContext.getCurrentType() != TYPE_WORK) {
+            setOrChangeRandomExercise();
+        }
     }
 
     /**

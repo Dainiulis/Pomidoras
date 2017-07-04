@@ -469,7 +469,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            Log.i(TAG, "onAnimationEnd: " + mPagerAdapter);
                             mViewPager.setAdapter(mPagerAdapter);
                             appContext.setAnimateViewPager(false); // if not set to false here it then animation continues on screen orientation change until DONE button is pressed
                             mViewPager.animate()
@@ -521,7 +520,6 @@ public class TimerUIFragment extends Fragment implements View.OnClickListener, V
         if (event.getPublisher() == TimerHandlerEvent.PUBLISHER_TIMER_UI_FRAGMENT) {
             return;
         }
-        Log.i(TAG, "onTimerHandlerRequest: ");
         mCustomTimerView.setmTimerStateAndType(appContext.getCurrentState(), appContext.getCurrentType(), TimerPreferenceManager.showTimerSuggestions());
         if (appContext.getCurrentState() == TimerTaskFragment.STATE_RUNNING) {
             setBtnTypes(BTN_START);

@@ -7,6 +7,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -83,7 +84,8 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
             isUnfavToolbar = unfavoriteIdList.size() != 0;
             exercises = savedInstanceState.getParcelableArrayList(EXERCISES);
         } else {
-            exercises = dataSource.findFavoriteExercises(favorite.getId());
+//            exercises = dataSource.findFavoriteExercises(favorite.getId());
+            exercises = ExercisesDataSource.findFavoriteExercises(this, favorite.getId());
         }
         adapter = new ExercisesListAdapter(this, R.layout.list_exercises, exercises);
         listView.setAdapter(adapter);
@@ -244,7 +246,7 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dataSource.removeExercisesFromFavorites(exercises, unfavoriteIdList, favorite.getId());
+                        ExercisesDataSource.removeExercisesFromFavorites(FavoriteActivity.this, exercises, unfavoriteIdList, favorite.getId());
                         multiSelectionFragment.setWhatToDelete(Exercise.class.toString());
                         multiSelectionFragment.setDeleteIdList(unfavoriteIdList);
                         multiSelectionFragment.removeItems(null, exercises);
@@ -261,7 +263,8 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
                 builder1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dataSource.deleteFavorite(favorite.getId());
+//                        dataSource.deleteFavorite(favorite.getId());
+                        ExercisesDataSource.deleteFavorite(FavoriteActivity.this, favorite.getId());
                         finish();
                     }
                 });

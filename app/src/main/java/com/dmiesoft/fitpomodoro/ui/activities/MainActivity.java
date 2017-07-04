@@ -12,7 +12,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -43,7 +42,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.dmiesoft.fitpomodoro.R;
-import com.dmiesoft.fitpomodoro.application.FitPomodoroApplication;
 import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.events.DeleteObjects;
@@ -65,17 +63,18 @@ import com.dmiesoft.fitpomodoro.ui.fragments.TimerUIFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.TimerTaskFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedExerciseHistoryListFragment;
 import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedSaveExerciseFragment;
-import com.dmiesoft.fitpomodoro.utils.AsyncFirstLoad;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.MultiSelectionFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.CheckUncheckExerciseHelper;
+import com.dmiesoft.fitpomodoro.utils.FirstTimeDataLoader;
 import com.dmiesoft.fitpomodoro.utils.preferences.TimerPreferenceManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
@@ -89,11 +88,11 @@ public class MainActivity extends AppCompatActivity
         AddExerciseGroupDialog.AddExerciseGroupDialogListener,
         AddExerciseDialog.AddExerciseDialogListener,
         ExerciseDetailFragment.ExerciseDetailFragmentListener,
-        AsyncFirstLoad.AsyncFirstLoadListrener,
         MultiSelectionFragment.MultiSelectionFragmentListener,
         TimerUIFragment.TimerUIFragmentListener,
         NestedSaveExerciseFragment.NestedExerciseFragListener,
-        NestedExerciseHistoryListFragment.OnListFragmentInteractionListener {
+        NestedExerciseHistoryListFragment.OnListFragmentInteractionListener,
+        FirstTimeDataLoader.AsyncFirstDataLoaderListener {
 
     private static final String TAG = "MAct";
 
@@ -145,7 +144,6 @@ public class MainActivity extends AppCompatActivity
     private TreeMap<Integer, ?> map;
     private ActionBarDrawerToggle toggle;
     private DrawerLayout drawer;
-    private AsyncFirstLoad asyncFirstLoad;
     private FloatingActionButton mainFab;
     private Toolbar toolbar;
     private View.OnClickListener navigationClickListener;
@@ -320,7 +318,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
-        Log.i(TAG, "onStop: ");
         super.onStop();
     }
 
@@ -346,12 +343,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void firstTimeDatabaseInitialize() {
-        if (exercisesGroups.size() == 0) {
-            ProgressDialog pD = new ProgressDialog(this);
-            pD.setMessage("Generating exercises...");
-            asyncFirstLoad = new AsyncFirstLoad(this, dataSource, pD);
-            asyncFirstLoad.execute();
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        if (exercisesGroups.size() == 0 && !FirstTimeDataLoader.isLoading) {
+            new FirstTimeDataLoader(this, getSupportLoaderManager(), dataSource).startLoader();
         }
     }
 
@@ -362,12 +355,9 @@ public class MainActivity extends AppCompatActivity
         if (snackbar != null) {
             snackbar.removeCallback(snackbarCallback);
         }
-        if (asyncFirstLoad != null) {
-            if (asyncFirstLoad.getStatus() == AsyncTask.Status.RUNNING) {
-                asyncFirstLoad.cancel(true);
-            }
+        if (!FirstTimeDataLoader.isLoading) {
+            dataSource.close();
         }
-        dataSource.close();
         if (isFinishing()) {
             fragmentManager.beginTransaction().remove(multiSelectionFragment);
         }
@@ -595,14 +585,14 @@ public class MainActivity extends AppCompatActivity
 
         switch (id) {
             case R.id.action_log:
-                DisplayHelper displayHelper = new DisplayHelper(this);
-                float width = (int) displayHelper.getWidth();
-                float height = displayHelper.getHeight();
-                float density = getResources().getDisplayMetrics().density;
-                float dpW = width / density;
-                float dpH = height / density;
-                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
-                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
+//                DisplayHelper displayHelper = new DisplayHelper(this);
+//                float width = (int) displayHelper.getWidth();
+//                float height = displayHelper.getHeight();
+//                float density = getResources().getDisplayMetrics().density;
+//                float dpW = width / density;
+//                float dpH = height / density;
+//                Log.i(TAG, "width: " + width + " density " + density + " dp " + dpW);
+//                Log.i(TAG, "height: " + height + " density " + density + " dp " + dpH);
                 firstTimeDatabaseInitialize();
 
                 if (fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG) != null) {
@@ -670,7 +660,8 @@ public class MainActivity extends AppCompatActivity
                             favExIdsMap.put(exercises.get(deleteIdList.get(i)).getId(), favorites.get(position).getId());
                         }
                     }
-                    dataSource.createFavExIds(favExIdsMap);
+//                    dataSource.createFavExIds(favExIdsMap);
+                    ExercisesDataSource.createFavExIds(MainActivity.this, favExIdsMap);
                     Toast.makeText(MainActivity.this, "Added " + favExIdsMap.size() + " items to " + favorites.get(position).getName() + " favorites", Toast.LENGTH_SHORT).show();
                     updateListViews(false);
                     clearMultiSelection();
@@ -771,7 +762,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSaveExerciseClicked(Exercise exercise) {
-        Exercise newExercise = dataSource.createExercise(exercise);
+//        Exercise newExercise = dataSource.createExercise(exercise);
+        Exercise newExercise = ExercisesDataSource.createExercise(this, exercise);
         ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(newExercise, false);
@@ -780,7 +772,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onUpdateExerciseClicked(Exercise exercise) {
-        dataSource.updateExercise(exercise);
+        ExercisesDataSource.updateExercise(this, exercise);
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
         if (fragment != null && fragment.isVisible()) {
             ((ExercisesFragment) fragment).updateListView(exercise, false);
@@ -801,7 +793,8 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup) {
-        ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+//        ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
+        ExercisesGroup newExercisesGroup = ExercisesDataSource.createExercisesGroup(this, exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(newExercisesGroup, false);
@@ -811,7 +804,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup) {
-        dataSource.updateExercisesGroup(exercisesGroup);
+        ExercisesDataSource.updateExercisesGroup(this, exercisesGroup);
         ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.updateListView(exercisesGroup, false);
@@ -847,15 +840,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPostFirstLoadExecute(List<ExercisesGroup> exercisesGroups, ProgressDialog pD) {
-        if (exercisesGroups == null) {
-            pD.show();
-        } else {
-            this.exercisesGroups = exercisesGroups;
-            pD.dismiss();
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
-            TimerPreferenceManager.setiSFirstTimeLoad(false);
-        }
+    public void onFirstLoadFinished(List<ExercisesGroup> exercisesGroups) {
+        this.exercisesGroups = exercisesGroups;
+        TimerPreferenceManager.setiSFirstTimeLoad(false);
+        Log.i(TAG, "onFirstLoadFinished: ");
     }
 
     @Override
@@ -872,7 +860,6 @@ public class MainActivity extends AppCompatActivity
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
         List<Exercise> exercises = dataSource.findExercises(selection, selectionArgs);
-        Log.i(TAG, "onSetRandomExercise: " + exercises.size());
         Exercise exercise = null;
         List<ExerciseHistory> exerciseHistoryList = null;
         if (exercises.size() > 0) {
@@ -903,7 +890,8 @@ public class MainActivity extends AppCompatActivity
                         ((exerciseType.equalsIgnoreCase(getResources().getString(R.string.reps))) ? "reps" : "sec"),
                 Toast.LENGTH_SHORT).show();
 
-        dataSource.saveExerciseHistory(howMany, exerciseId);
+//        dataSource.saveExerciseHistory(howMany, exerciseId);
+        ExercisesDataSource.saveExerciseHistory(this, howMany, exerciseId);
         ExerciseHistory exerciseHistory = new ExerciseHistory();
         exerciseHistory.setHowMany(howMany);
         exerciseHistory.setName(exerciseName);
@@ -1018,4 +1006,5 @@ public class MainActivity extends AppCompatActivity
             CheckUncheckExerciseHelper.uncheckExercises(exercises);
         }
     }
+
 }
