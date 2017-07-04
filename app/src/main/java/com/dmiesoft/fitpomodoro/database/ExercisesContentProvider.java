@@ -83,11 +83,15 @@ public class ExercisesContentProvider extends ContentProvider {
 
         switch (match) {
             case EXERCISES:
-                queryBuilder = new SQLiteQueryBuilder();
-                queryBuilder.setTables(inExercisesFavoritesTBL);
-                cursor = queryBuilder.query(mDatabase, projection, selection, selectionArgs, null, null, sortOrder);
-                // neefektyvu, sugalvot kita buda, bet veikia...
-                if (cursor.getCount() == 0) {
+                if (selection == null) {
+                    cursor = mDatabase.query(DatabaseContract.ExercisesTable.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+                    break;
+                }
+                if (selection.contains(DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID)) {
+                    queryBuilder = new SQLiteQueryBuilder();
+                    queryBuilder.setTables(inExercisesFavoritesTBL);
+                    cursor = queryBuilder.query(mDatabase, projection, selection, selectionArgs, null, null, sortOrder);
+                } else {
                     cursor = mDatabase.query(DatabaseContract.ExercisesTable.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
                 }
                 break;
@@ -99,13 +103,10 @@ public class ExercisesContentProvider extends ContentProvider {
                         DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
                         projection, selection, selectionArgs, null, null, sortOrder);
                 break;
-            case EXERCISES_GROUP_ID:
-                break;
-
             case FAVORITES:
                 cursor = mDatabase.query(
                         DatabaseContract.FavoritesTable.TABLE_NAME,
-                        projection, null, null, null, null, sortOrder);
+                        projection, selection, selectionArgs, null, null, sortOrder);
                 break;
             case FAVORITES_ID:
                 break;
@@ -142,6 +143,7 @@ public class ExercisesContentProvider extends ContentProvider {
             case FAVORITES:
                 return insertData(uri, values, DatabaseContract.FavoritesTable.TABLE_NAME);
             case FAVORITE_EXERCISES:
+                Log.i(TAG, "insert: ");
                 return insertData(uri, values, DatabaseContract.FavExIdsTable.TABLE_NAME);
             case EXERCISE_HISTORY:
                 return insertData(uri, values, DatabaseContract.ExerciseHistoryTable.TABLE_NAME);
@@ -161,7 +163,6 @@ public class ExercisesContentProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         int match = uriMatcher.match(uri);
-        Log.i(TAG, "delete: " + match);
         switch (match) {
             case EXERCISE_ID:
                 selection = DatabaseContract.ExercisesTable._ID + "=?";
@@ -193,7 +194,6 @@ public class ExercisesContentProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         int match = uriMatcher.match(uri);
-        Log.i(TAG, "delete: " + match);
         switch (match) {
             case EXERCISE_ID:
                 selection = DatabaseContract.ExercisesTable._ID + "=?";

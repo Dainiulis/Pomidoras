@@ -1,13 +1,12 @@
 package com.dmiesoft.fitpomodoro.database;
 
-import android.accounts.Account;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.util.Log;
 
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
@@ -15,7 +14,6 @@ import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.model.Favorite;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,19 +85,39 @@ public class ExercisesDataSource {
         return exercisesGroup;
     }
 
-    public List<ExercisesGroup> findExerciseGroups(String selection, String[] selectionArgs) {
+//    public List<ExercisesGroup> findExerciseGroups(String selection, String[] selectionArgs) {
+//        List<ExercisesGroup> exercisesGroups = new ArrayList<>();
+//        String orderBy = DatabaseContract.ExercisesGroupsTable.COLUMN_NAME + " ASC";
+//
+//        Cursor cursor = database.query(
+//                DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
+//                exercises_groups_columns,
+//                selection,
+//                selectionArgs,
+//                null,
+//                null,
+//                orderBy);
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                ExercisesGroup exercisesGroup = new ExercisesGroup();
+//                exercisesGroup.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable._ID)));
+//                exercisesGroup.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_NAME)));
+//                exercisesGroup.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_IMAGE)));
+//                exercisesGroup.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesGroupsTable.COLUMN_DATE)));
+//                exercisesGroups.add(exercisesGroup);
+//            }
+//        }
+//        cursor.close();
+//        return exercisesGroups;
+//    }
+
+    public static List<ExercisesGroup> findExerciseGroups(Context context, String selection, String[] selectionArgs) {
         List<ExercisesGroup> exercisesGroups = new ArrayList<>();
         String orderBy = DatabaseContract.ExercisesGroupsTable.COLUMN_NAME + " ASC";
 
-        //added to content provider
-        Cursor cursor = database.query(
-                DatabaseContract.ExercisesGroupsTable.TABLE_NAME,
-                exercises_groups_columns,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                orderBy);
+        Cursor cursor = context.getContentResolver().query(DatabaseContract.ExercisesGroupsTable.CONTENT_URI,
+                exercises_groups_columns, selection, selectionArgs, orderBy);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -201,49 +219,48 @@ public class ExercisesDataSource {
     }
 
 
-    public List<Exercise> findExercises(String selection, String[] selectionArgs) {
-        String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
-        List<Exercise> exercises = new ArrayList<>();
-
-
-        // added to provider
-        Cursor cursor = database.query(
-                DatabaseContract.ExercisesTable.TABLE_NAME,
-                exercises_columns,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                orderBy
-        );
-
-        if (cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                Exercise exercise = new Exercise();
-                exercise.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID)));
-                exercise.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
-                exercise.setType(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_TYPE)));
-                exercise.setDescription(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION)));
-                exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
-                exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
-                exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
-                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
-                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
-                exercises.add(exercise);
-            }
-        }
-        cursor.close();
-        return exercises;
-    }
+//    public List<Exercise> findExercises(String selection, String[] selectionArgs) {
+//        String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
+//        List<Exercise> exercises = new ArrayList<>();
+//
+//
+//        Cursor cursor = database.query(
+//                DatabaseContract.ExercisesTable.TABLE_NAME,
+//                exercises_columns,
+//                selection,
+//                selectionArgs,
+//                null,
+//                null,
+//                orderBy
+//        );
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                Exercise exercise = new Exercise();
+//                exercise.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID)));
+//                exercise.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+//                exercise.setType(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_TYPE)));
+//                exercise.setDescription(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DESCRIPTION)));
+//                exercise.setExerciseGroupId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID)));
+//                exercise.setImage(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_IMAGE)));
+//                exercise.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_DATE)));
+//                exercise.setHowManyTimesDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_HOW_MANY_TIMES_DONE)));
+//                exercise.setTotalRepsDone(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseContract.ExercisesTable.COLUMN_TOTAL_REPS)));
+//                exercises.add(exercise);
+//            }
+//        }
+//        cursor.close();
+//        return exercises;
+//    }
 
     public static List<Exercise> findExercises(Context context, String selection, String[] selectionArgs) {
         String orderBy = DatabaseContract.ExercisesTable.COLUMN_NAME + " ASC";
         List<Exercise> exercises = new ArrayList<>();
 
-        // added to provider
+        Uri uri = DatabaseContract.ExercisesTable.CONTENT_URI;
         Cursor cursor = context.getContentResolver()
-                .query(DatabaseContract.ExercisesTable.CONTENT_URI,
-                exercises_columns, selection, selectionArgs, orderBy);
+                .query(uri,
+                        exercises_columns, selection, selectionArgs, orderBy);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -270,24 +287,57 @@ public class ExercisesDataSource {
      * @param favoriteId    pass -1 if not looking from favorites
      * @return
      */
-    public List<Long> getExercisesIds(String selection, String[] selectionArgs, long favoriteId) {
-        String[] exercise_id_column_name = {DatabaseContract.ExercisesTable._ID};
+//    public List<Long> getExercisesIds(String selection, String[] selectionArgs, long favoriteId) {
+//        String[] exercise_id_column_name = {DatabaseContract.ExercisesTable._ID};
+//        List<Long> idList = new ArrayList<>();
+//        Cursor cursor;
+//        if (favoriteId == -1) {
+//            cursor = database.query(
+//                    DatabaseContract.ExercisesTable.TABLE_NAME,
+//                    exercise_id_column_name,
+//                    selection, selectionArgs, null, null, null);
+//        } else {
+//            cursor = database.rawQuery(
+//                    "SELECT " + DatabaseContract.ExercisesTable._ID +
+//                            " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+//                            " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
+//                            " ON " + DatabaseContract.ExercisesTable._ID + " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
+//                            " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = " + String.valueOf(favoriteId),
+//                    null
+//            );
+//        }
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                long id = cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExercisesTable._ID));
+//                idList.add(id);
+//            }
+//        }
+//        cursor.close();
+//        return idList;
+//    }
+
+    /**
+     * @param context
+     * @param selection
+     * @param selectionArgs
+     * @param favoriteId    pass -1 if not looking from favorites
+     * @return
+     */
+    public static List<Long> getExercisesIds(Context context, String selection, String[] selectionArgs, long favoriteId) {
+        String[] projection = {DatabaseContract.ExercisesTable._ID};
         List<Long> idList = new ArrayList<>();
         Cursor cursor;
         if (favoriteId == -1) {
-            cursor = database.query(
-                    DatabaseContract.ExercisesTable.TABLE_NAME,
-                    exercise_id_column_name,
-                    selection, selectionArgs, null, null, null);
+            Uri uri = DatabaseContract.ExercisesTable.CONTENT_URI;
+            cursor = context.getContentResolver()
+                    .query(uri, projection, selection, selectionArgs, null);
         } else {
-            cursor = database.rawQuery(
-                    "SELECT " + DatabaseContract.ExercisesTable._ID +
-                            " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
-                            " INNER JOIN " + DatabaseContract.FavExIdsTable.TABLE_NAME +
-                            " ON " + DatabaseContract.ExercisesTable._ID + " = " + DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID +
-                            " WHERE " + DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + " = " + String.valueOf(favoriteId),
-                    null
-            );
+            Uri uri = DatabaseContract.ExercisesTable.CONTENT_URI;
+            selection = DatabaseContract.FavExIdsTable.COLUMN_FAVORITE_ID + "=?";
+            selectionArgs = new String[]{String.valueOf(favoriteId)};
+            cursor = context.getContentResolver()
+                    .query(uri, projection, selection, selectionArgs, null);
         }
 
         if (cursor.getCount() > 0) {
@@ -326,15 +376,36 @@ public class ExercisesDataSource {
     }
 
 
-    public List<Favorite> getAllFavorites() {
+//    public List<Favorite> getAllFavorites() {
+//        List<Favorite> favorites = new ArrayList<>();
+//        String orderBy = DatabaseContract.FavoritesTable.COLUMN_NAME + " ASC";
+//
+//        Cursor cursor = database.query(
+//                DatabaseContract.FavoritesTable.TABLE_NAME,
+//                favorites_columns,
+//                null, null, null, null,
+//                orderBy);
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                Favorite favorite = new Favorite();
+//                favorite.setId(cursor.getLong(cursor.getColumnIndex(DatabaseContract.FavoritesTable._ID)));
+//                favorite.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.FavoritesTable.COLUMN_NAME)));
+//                favorite.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.FavoritesTable.COLUMN_DATE)));
+//                favorites.add(favorite);
+//            }
+//        }
+//        cursor.close();
+//        return favorites;
+//    }
+
+    public static List<Favorite> getAllFavorites(Context context) {
         List<Favorite> favorites = new ArrayList<>();
         String orderBy = DatabaseContract.FavoritesTable.COLUMN_NAME + " ASC";
 
-        Cursor cursor = database.query(
-                DatabaseContract.FavoritesTable.TABLE_NAME,
-                favorites_columns,
-                null, null, null, null,
-                orderBy);
+        Cursor cursor = context.getContentResolver()
+                .query(DatabaseContract.FavoritesTable.CONTENT_URI, favorites_columns,
+                        null, null, orderBy);
 
         if (cursor.getCount() > 0) {
             while (cursor.moveToNext()) {
@@ -359,6 +430,7 @@ public class ExercisesDataSource {
 //    }
 
     public static void createFavExIds(Context context, HashMap<Long, Long> favExIds) {
+        Log.i(TAG, "createFavExIds: " + favExIds);
         for (Map.Entry<Long, Long> entry : favExIds.entrySet()) {
             ContentValues values = new ContentValues();
             values.put(DatabaseContract.FavExIdsTable.COLUMN_EXERCISE_ID, entry.getKey());
@@ -407,7 +479,8 @@ public class ExercisesDataSource {
         String[] selectionArgs = {String.valueOf(favoriteId)};
         String sortOrder = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " ASC";
 
-        Cursor cursor = context.getContentResolver().query(DatabaseContract.ExercisesTable.CONTENT_URI,
+        Uri uri = DatabaseContract.ExercisesTable.CONTENT_URI;
+        Cursor cursor = context.getContentResolver().query(uri,
                 exercises_columns, selection, selectionArgs, sortOrder);
 
         if (cursor.getCount() > 0) {
@@ -493,6 +566,34 @@ public class ExercisesDataSource {
         context.getContentResolver().update(uri, values, null, null);
     }
 
+//    public List<ExerciseHistory> getExerciseHistory(long exerciseId) {
+//        List<ExerciseHistory> exercisesHistory = new ArrayList<>();
+//        String commaSep = ", ";
+//        String projection = DatabaseContract.ExercisesTable.COLUMN_NAME + commaSep +
+//                DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME + commaSep +
+//                DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE;
+//        Cursor cursor =
+//                database.rawQuery("SELECT " + projection + " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
+//                        " INNER JOIN " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
+//                        " ON " + DatabaseContract.ExercisesTable.TABLE_NAME + "." + DatabaseContract.ExercisesTable._ID +
+//                        " = " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
+//                        " WHERE " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
+//                        " = " + String.valueOf(exerciseId) +
+//                        " ORDER BY " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC", null);
+//
+//        if (cursor.getCount() > 0) {
+//            while (cursor.moveToNext()) {
+//                ExerciseHistory exerciseHistory = new ExerciseHistory();
+//                exerciseHistory.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
+//                exerciseHistory.setHowMany(cursor.getInt(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME)));
+//                exerciseHistory.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_DATE)));
+//                exercisesHistory.add(exerciseHistory);
+//            }
+//        }
+//        cursor.close();
+//        return exercisesHistory;
+//
+//    }
 
     public static List<ExerciseHistory> getExerciseHistory(Context context, long exerciseId) {
         List<ExerciseHistory> exercisesHistory = new ArrayList<>();
@@ -501,7 +602,8 @@ public class ExercisesDataSource {
                         DatabaseContract.ExercisesTable.COLUMN_NAME,
                         DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME,
                         DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
-                                "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE};
+                                "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE
+                };
 
         String selection = DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID + "=?";
         String[] selectionArgs = {String.valueOf(exerciseId)};
@@ -526,35 +628,6 @@ public class ExercisesDataSource {
         }
         cursor.close();
         return exercisesHistory;
-    }
-
-    public List<ExerciseHistory> getExerciseHistory(long exerciseId) {
-        List<ExerciseHistory> exercisesHistory = new ArrayList<>();
-        String commaSep = ", ";
-        String projection = DatabaseContract.ExercisesTable.COLUMN_NAME + commaSep +
-                DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME + commaSep +
-                DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE;
-        Cursor cursor =
-                database.rawQuery("SELECT " + projection + " FROM " + DatabaseContract.ExercisesTable.TABLE_NAME +
-                        " INNER JOIN " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME +
-                        " ON " + DatabaseContract.ExercisesTable.TABLE_NAME + "." + DatabaseContract.ExercisesTable._ID +
-                        " = " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
-                        " WHERE " + DatabaseContract.ExerciseHistoryTable.COLUMN_EXERCISE_ID +
-                        " = " + String.valueOf(exerciseId) +
-                        " ORDER BY " + DatabaseContract.ExerciseHistoryTable.TABLE_NAME + "." + DatabaseContract.ExerciseHistoryTable.COLUMN_DATE + " DESC", null);
-
-        if (cursor.getCount() > 0) {
-            while (cursor.moveToNext()) {
-                ExerciseHistory exerciseHistory = new ExerciseHistory();
-                exerciseHistory.setName(cursor.getString(cursor.getColumnIndex(DatabaseContract.ExercisesTable.COLUMN_NAME)));
-                exerciseHistory.setHowMany(cursor.getInt(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_HOW_MANY_REPS_TIME)));
-                exerciseHistory.setDate(cursor.getLong(cursor.getColumnIndex(DatabaseContract.ExerciseHistoryTable.COLUMN_DATE)));
-                exercisesHistory.add(exerciseHistory);
-            }
-        }
-        cursor.close();
-        return exercisesHistory;
-
     }
 
 }

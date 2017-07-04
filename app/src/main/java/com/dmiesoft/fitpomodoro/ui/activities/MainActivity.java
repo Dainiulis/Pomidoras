@@ -220,7 +220,8 @@ public class MainActivity extends AppCompatActivity
         dataSource = new ExercisesDataSource(this);
         dataSource.open();
         if (exercisesGroups == null) {
-            exercisesGroups = dataSource.findExerciseGroups(null, null);
+//            exercisesGroups = dataSource.findExerciseGroups(null, null);
+            exercisesGroups = ExercisesDataSource.findExerciseGroups(this, null, null);
         }
     }
 
@@ -631,7 +632,7 @@ public class MainActivity extends AppCompatActivity
      *                        Enter 1 for adding to favorites
      */
     private void manageFavDialog(final int menuItemPressed) {
-        final List<Favorite> favorites = dataSource.getAllFavorites();
+        final List<Favorite> favorites = ExercisesDataSource.getAllFavorites(this);
         AlertDialog.Builder mngFavBuilder = AlertDialogHelper.manageFavoritesDialog(this, favorites);
         final AlertDialog dialog = mngFavBuilder.create();
         AlertDialogHelper.manageFavoritesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -650,7 +651,7 @@ public class MainActivity extends AppCompatActivity
                         List<Long> exercisesIds = new ArrayList<Long>();
                         for (int i = 0; i < deleteIdList.size(); i++) {
                             String[] selectionArgs = {String.valueOf(exercisesGroups.get(deleteIdList.get(i)).getId())};
-                            exercisesIds.addAll(dataSource.getExercisesIds(DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + "=?", selectionArgs, -1));
+                            exercisesIds.addAll(ExercisesDataSource.getExercisesIds(MainActivity.this, DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + "=?", selectionArgs, -1));
                         }
                         for (int i = 0; i < exercisesIds.size(); i++) {
                             favExIdsMap.put(exercisesIds.get(i), favorites.get(position).getId());
@@ -726,7 +727,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAddExerciseBtnClicked(long exercisesGroupId) {
-        List<Exercise> exercises = dataSource.findExercises(null, null);
+//        List<Exercise> exercises = dataSource.findExercises(null, null);
+        List<Exercise> exercises = ExercisesDataSource.findExercises(this, null, null);
         AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, null, exercisesGroupId, AddExerciseDialog.NO_EDIT);
         dialog.setCancelable(false);
         dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
@@ -738,7 +740,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void openEditExerciseDialog(Exercise exercise, boolean description) {
-        List<Exercise> exercises = dataSource.findExercises(null, null);
+        List<Exercise> exercises = ExercisesDataSource.findExercises(this, null, null);
         int editCode = 0;
         if (description) {
             editCode = AddExerciseDialog.EDIT_DESCRIPTION;
@@ -816,7 +818,7 @@ public class MainActivity extends AppCompatActivity
     public void onExercisesGroupItemClicked(long exercisesGroupId) {
         String selection = DatabaseContract.ExercisesTable.COLUMN_GROUP_ID + " = ?";
         String[] selectionArgs = {String.valueOf(exercisesGroupId)};
-        exercises = dataSource.findExercises(selection, selectionArgs);
+        exercises = ExercisesDataSource.findExercises(this, selection, selectionArgs);
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
     }
 
@@ -824,7 +826,8 @@ public class MainActivity extends AppCompatActivity
     public void onExercisesGroupItemLongClicked(long exercisesGroupId) {
         String selection = DatabaseContract.ExercisesGroupsTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(exercisesGroupId)};
-        List<ExercisesGroup> group = dataSource.findExerciseGroups(selection, selectionArgs);
+//        List<ExercisesGroup> group = dataSource.findExerciseGroups(selection, selectionArgs);
+        List<ExercisesGroup> group = ExercisesDataSource.findExerciseGroups(this, selection, selectionArgs);
         ExercisesGroup exercisesGroup = group.get(0);
         AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, exercisesGroup, true);
         dialog.setCancelable(false);
@@ -859,12 +862,12 @@ public class MainActivity extends AppCompatActivity
         long randExerciseId = TimerPreferenceManager.getCurrentRandomExercise();
         String selection = DatabaseContract.ExercisesTable._ID + "=?";
         String[] selectionArgs = {String.valueOf(randExerciseId)};
-        List<Exercise> exercises = dataSource.findExercises(selection, selectionArgs);
+        List<Exercise> exercises = ExercisesDataSource.findExercises(this, selection, selectionArgs);
         Exercise exercise = null;
         List<ExerciseHistory> exerciseHistoryList = null;
         if (exercises.size() > 0) {
             exercise = exercises.get(0);
-            exerciseHistoryList = dataSource.getExerciseHistory(exercise.getId());
+            exerciseHistoryList = ExercisesDataSource.getExerciseHistory(this, exercise.getId());
         }
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
@@ -874,7 +877,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onFavoritesListRequested() {
-        List<Favorite> favorites = dataSource.getAllFavorites();
+        List<Favorite> favorites = ExercisesDataSource.getAllFavorites(this);
         TimerUIFragment fragment = (TimerUIFragment) fragmentManager.findFragmentByTag(TIMER_UI_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.setFavorites(favorites);
