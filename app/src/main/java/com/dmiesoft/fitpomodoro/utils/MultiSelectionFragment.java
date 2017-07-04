@@ -129,7 +129,8 @@ public class MultiSelectionFragment extends Fragment{
                 if (file != null) {
                     file.delete();
                 }
-                dataSource.deleteExercisesGroup(eG.getId());
+//                dataSource.deleteExercisesGroup(eG.getId());
+                ExercisesDataSource.deleteExercisesGroup(context, eG.getId());
 
             } else {
                 Exercise e = ((Exercise)o);
@@ -137,7 +138,7 @@ public class MultiSelectionFragment extends Fragment{
                 if (file != null) {
                     file.delete();
                 }
-                dataSource.deleteExercise(e.getId());
+                ExercisesDataSource.deleteExercise(context, e.getId());
             }
         }
     }

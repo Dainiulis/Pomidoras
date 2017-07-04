@@ -63,6 +63,11 @@
             </intent-filter>
         </receiver>
 
+        <provider
+            android:authorities="com.dmiesoft.fitpomodoro.database.databasecontract"
+            android:name=".database.ExercisesContentProvider"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
