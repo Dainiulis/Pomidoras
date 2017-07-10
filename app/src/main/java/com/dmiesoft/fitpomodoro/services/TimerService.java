@@ -69,6 +69,13 @@ public class TimerService extends Service {
     private boolean mNotifSoundOngoing = false;
     private FitPomodoroApplication appContext;
 
+    /**
+     * this is used for notification update.
+     * It's required because if notification is updating too often,
+     * then the buttos become almost unresponsive
+     */
+    boolean canUpdateNotif = true;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -131,9 +138,6 @@ public class TimerService extends Service {
     }
 
     private void finishTimer(long millisecs) {
-
-        logToFileMillisAndSecs("Timer finished with millis left: " + millisecs);
-
         boolean lastSession = false;
         if (appContext.getCurrentType() == TimerTaskFragment.TYPE_LONG_BREAK) {
             lastSession = true;
@@ -175,8 +179,8 @@ public class TimerService extends Service {
         }
         appContext.setAnimateViewPager(true);
 
-        Log.i(TAG, "onFinishTImer: currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) + "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
-                "\n prevType " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousType()) + "   prevState " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousState()));
+//        Log.i(TAG, "onFinishTImer: currType " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentType()) + "  currState " + TimerHelper.getTimerStateOrTypeString(appContext.getCurrentState()) +
+//                "\n prevType " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousType()) + "   prevState " + TimerHelper.getTimerStateOrTypeString(appContext.getPreviousState()));
 
 
         Intent intent = new Intent(INTENT_TIMER_FINISH);
@@ -221,7 +225,18 @@ public class TimerService extends Service {
     }
 
     private void sendTime(long millisecs) {
-        updateNotificationTimer(millisecs);
+        if (canUpdateNotif) {
+            updateNotificationTimer(millisecs);
+            canUpdateNotif = false;
+        }
+        Handler h = new Handler();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                canUpdateNotif = true;
+            }
+        };
+        h.postDelayed(r, 1000);
         sendTimeToUI(millisecs);
     }
 

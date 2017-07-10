@@ -85,9 +85,6 @@ public class MainActivity extends AppCompatActivity
         ExitDialogFragment.ExitListener,
         ExercisesGroupsFragment.ExercisesGroupsListFragmentListener,
         ExercisesFragment.ExercisesListFragmentListener,
-        AddExerciseGroupDialog.AddExerciseGroupDialogListener,
-        AddExerciseDialog.AddExerciseDialogListener,
-        ExerciseDetailFragment.ExerciseDetailFragmentListener,
         MultiSelectionFragment.MultiSelectionFragmentListener,
         TimerUIFragment.TimerUIFragmentListener,
         NestedSaveExerciseFragment.NestedExerciseFragListener,
@@ -106,8 +103,8 @@ public class MainActivity extends AppCompatActivity
     public static final String EXERCISES_FRAGMENT_TAG = "exercises_fragment";
     public static final String EXERCISE_DETAIL_FRAGMENT_TAG = "exercise_detail_fragment_tag";
     private static final String EXIT_DIALOG = "EXIT_DIALOG";
-    private static final String ADD_EXERCISE_GROUP_DIALOG = "add_exercise_group_dialog";
-    private static final String ADD_EXERCISE_DIALOG = "add_exercise_dialog";
+    public static final String ADD_EXERCISE_GROUP_DIALOG = "add_exercise_group_dialog";
+    public static final String ADD_EXERCISE_DIALOG = "add_exercise_dialog";
     public static final String MULTI_SELECTION_FRAGMENT = "multi_selection_fragment";
 
     /*
@@ -131,7 +128,6 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private List<Fragment> fragments;
     private FragmentManager fragmentManager;
-    private ExercisesDataSource dataSource;
     private List<ExercisesGroup> exercisesGroups;
     private List<Exercise> exercises;
     private CoordinatorLayout mainLayout;
@@ -217,8 +213,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initData() {
-        dataSource = new ExercisesDataSource(this);
-        dataSource.open();
+//        dataSource = new ExercisesDataSource(this);
+//        dataSource.open();
         if (exercisesGroups == null) {
 //            exercisesGroups = dataSource.findExerciseGroups(null, null);
             exercisesGroups = ExercisesDataSource.findExerciseGroups(this, null, null);
@@ -327,11 +323,10 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         EventBus.getDefault().register(this);
         setCheckedCurrentNavigationDrawer();
-        dataSource.open();
         if (multiSelectionFragment != null) {
             if (multiSelectionFragment.isAdded() && map != null) {
                 if (map.size() > 0) {
-                    snackbarCallback = multiSelectionFragment.getSnackbarCallback(dataSource, this, map);
+                    snackbarCallback = multiSelectionFragment.getSnackbarCallback(this, map);
                     snackbar = multiSelectionFragment.getSnackbar(mainLayout, exercises, exercisesGroups, map);
                     snackbar.addCallback(snackbarCallback);
                     snackbar.show();
@@ -345,7 +340,7 @@ public class MainActivity extends AppCompatActivity
 
     private void firstTimeDatabaseInitialize() {
         if (exercisesGroups.size() == 0 && !FirstTimeDataLoader.isLoading) {
-            new FirstTimeDataLoader(this, getSupportLoaderManager(), dataSource).startLoader();
+            new FirstTimeDataLoader(this, getSupportLoaderManager()).startLoader();
         }
     }
 
@@ -355,9 +350,6 @@ public class MainActivity extends AppCompatActivity
         EventBus.getDefault().unregister(this);
         if (snackbar != null) {
             snackbar.removeCallback(snackbarCallback);
-        }
-        if (!FirstTimeDataLoader.isLoading) {
-            dataSource.close();
         }
         if (isFinishing()) {
             fragmentManager.beginTransaction().remove(multiSelectionFragment);
@@ -612,7 +604,7 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.action_add_fav:
-                AlertDialog.Builder favBuilder = AlertDialogHelper.favoritesDialog(this, dataSource);
+                AlertDialog.Builder favBuilder = AlertDialogHelper.favoritesDialog(this);
                 favBuilder.show();
                 AlertDialogHelper.favoritesInput.setLayoutParams(AlertDialogHelper.favoritesParams);
                 break;
@@ -690,7 +682,7 @@ public class MainActivity extends AppCompatActivity
         map = multiSelectionFragment.getMap();
 
         snackbar = multiSelectionFragment.getSnackbar(mainLayout, exercises, exercisesGroups, map);
-        snackbarCallback = multiSelectionFragment.getSnackbarCallback(dataSource, this, map);
+        snackbarCallback = multiSelectionFragment.getSnackbarCallback(this, map);
         snackbar.addCallback(snackbarCallback);
 
         snackbar.show();
@@ -726,64 +718,8 @@ public class MainActivity extends AppCompatActivity
      */
 
     @Override
-    public void onAddExerciseBtnClicked(long exercisesGroupId) {
-//        List<Exercise> exercises = dataSource.findExercises(null, null);
-        List<Exercise> exercises = ExercisesDataSource.findExercises(this, null, null);
-        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, null, exercisesGroupId, AddExerciseDialog.NO_EDIT);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
-    }
-
-    @Override
-    public void onEditExerciseDescClicked(Exercise exercise, boolean description) {
-        openEditExerciseDialog(exercise, description);
-    }
-
-    private void openEditExerciseDialog(Exercise exercise, boolean description) {
-        List<Exercise> exercises = ExercisesDataSource.findExercises(this, null, null);
-        int editCode = 0;
-        if (description) {
-            editCode = AddExerciseDialog.EDIT_DESCRIPTION;
-        } else {
-            editCode = AddExerciseDialog.EDIT_IMAGE_LAYOUT;
-        }
-        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getExerciseGroupId(), editCode);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_DIALOG);
-    }
-
-    @Override
     public void onExerciseClicked(Exercise exercise) {
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISE_DETAIL_FRAGMENT_TAG, exercise, true));
-    }
-
-    @Override
-    public void onExerciseLongClicked(Exercise exercise) {
-        openEditExerciseDialog(exercise, false);
-    }
-
-    @Override
-    public void onSaveExerciseClicked(Exercise exercise) {
-//        Exercise newExercise = dataSource.createExercise(exercise);
-        Exercise newExercise = ExercisesDataSource.createExercise(this, exercise);
-        ExercisesFragment fragment = (ExercisesFragment) getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
-        if (fragment != null) {
-            fragment.updateListView(newExercise, false);
-        }
-    }
-
-    @Override
-    public void onUpdateExerciseClicked(Exercise exercise) {
-        ExercisesDataSource.updateExercise(this, exercise);
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(EXERCISES_FRAGMENT_TAG);
-        if (fragment != null && fragment.isVisible()) {
-            ((ExercisesFragment) fragment).updateListView(exercise, false);
-        } else {
-            fragment = getSupportFragmentManager().findFragmentByTag(EXERCISE_DETAIL_FRAGMENT_TAG);
-            if (fragment != null && fragment.isVisible()) {
-                ((ExerciseDetailFragment) fragment).setExercise(exercise);
-            }
-        }
     }
 
     //---------------------------------------------------------------------------------------
@@ -793,26 +729,6 @@ public class MainActivity extends AppCompatActivity
      * ExercisesGroups callbacks
      * ~~~~~~~~~~~~~~~~~~~~~~~~~
      */
-    @Override
-    public void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup) {
-//        ExercisesGroup newExercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
-        ExercisesGroup newExercisesGroup = ExercisesDataSource.createExercisesGroup(this, exercisesGroup);
-        ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
-        if (fragment != null) {
-            fragment.updateListView(newExercisesGroup, false);
-        }
-//        exercisesGroups.add(newExercisesGroup);
-    }
-
-    @Override
-    public void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup) {
-        ExercisesDataSource.updateExercisesGroup(this, exercisesGroup);
-        ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getSupportFragmentManager().findFragmentByTag(EXERCISE_GROUP_FRAGMENT_TAG);
-        if (fragment != null) {
-            fragment.updateListView(exercisesGroup, false);
-        }
-//        exercisesGroups = dataSource.findExerciseGroups(null, null);
-    }
 
     @Override
     public void onExercisesGroupItemClicked(long exercisesGroupId) {
@@ -820,26 +736,6 @@ public class MainActivity extends AppCompatActivity
         String[] selectionArgs = {String.valueOf(exercisesGroupId)};
         exercises = ExercisesDataSource.findExercises(this, selection, selectionArgs);
         EventBus.getDefault().post(new DrawerItemClickedEvent(fragmentManager, EXERCISES_FRAGMENT_TAG, exercises, true, exercisesGroupId));
-    }
-
-    @Override
-    public void onExercisesGroupItemLongClicked(long exercisesGroupId) {
-        String selection = DatabaseContract.ExercisesGroupsTable._ID + "=?";
-        String[] selectionArgs = {String.valueOf(exercisesGroupId)};
-//        List<ExercisesGroup> group = dataSource.findExerciseGroups(selection, selectionArgs);
-        List<ExercisesGroup> group = ExercisesDataSource.findExerciseGroups(this, selection, selectionArgs);
-        ExercisesGroup exercisesGroup = group.get(0);
-        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, exercisesGroup, true);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
-    }
-
-
-    @Override
-    public void onAddExerciseGroupBtnClicked() {
-        AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, null, false);
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(), ADD_EXERCISE_GROUP_DIALOG);
     }
 
     @Override
@@ -893,7 +789,6 @@ public class MainActivity extends AppCompatActivity
                         ((exerciseType.equalsIgnoreCase(getResources().getString(R.string.reps))) ? "reps" : "sec"),
                 Toast.LENGTH_SHORT).show();
 
-//        dataSource.saveExerciseHistory(howMany, exerciseId);
         ExercisesDataSource.saveExerciseHistory(this, howMany, exerciseId);
         ExerciseHistory exerciseHistory = new ExerciseHistory();
         exerciseHistory.setHowMany(howMany);

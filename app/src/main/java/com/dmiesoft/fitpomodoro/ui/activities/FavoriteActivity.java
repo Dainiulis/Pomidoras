@@ -42,7 +42,6 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
     private static final String EXERCISES = "EXERCISES";
     private static final String MULTISELECTION_FRAGMENT_TAG = "MULTISELECTION_FRAGMENT_TAG";
     private Favorite favorite;
-    private ExercisesDataSource dataSource;
     private List<Exercise> exercises;
     private ExercisesListAdapter adapter;
     private ListView listView;
@@ -63,8 +62,6 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        dataSource = new ExercisesDataSource(this);
-        dataSource.open();
         favorite = getIntent().getParcelableExtra(MainActivity.FAVORITE_PACKAGE_NAME);
         unfavoriteIdList = new ArrayList<>();
 
@@ -287,14 +284,12 @@ public class FavoriteActivity extends AppCompatActivity implements MultiSelectio
     protected void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-        dataSource.close();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
-        dataSource.open();
     }
 
     @Subscribe

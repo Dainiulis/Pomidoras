@@ -14,8 +14,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseDialog;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesListAdapter;
 
 import java.util.ArrayList;
@@ -86,7 +88,13 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Exercise exercise = (Exercise) parent.getItemAtPosition(position);
-                mListener.onExerciseLongClicked(exercise);
+
+                List<Exercise> exercises = ExercisesDataSource.findExercises(getContext(), null, null);
+                int editCode = AddExerciseDialog.EDIT_IMAGE_LAYOUT;
+                AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getExerciseGroupId(), editCode);
+                dialog.setCancelable(false);
+                dialog.show(getChildFragmentManager(), MainActivity.ADD_EXERCISE_DIALOG);
+
                 return true;
             }
         });
@@ -102,7 +110,12 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
         int id = v.getId();
         switch (id) {
             case R.id.fab_main:
-                mListener.onAddExerciseBtnClicked(exerciseGroupId);
+
+                List<Exercise> exercises = ExercisesDataSource.findExercises(getContext(), null, null);
+                AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, null, exerciseGroupId, AddExerciseDialog.NO_EDIT);
+                dialog.setCancelable(false);
+                dialog.show(getChildFragmentManager(), MainActivity.ADD_EXERCISE_DIALOG);
+
                 break;
         }
     }
@@ -150,10 +163,6 @@ public class ExercisesFragment extends ListFragment implements View.OnClickListe
 
     public interface ExercisesListFragmentListener {
         void onExerciseClicked(Exercise exercise);
-
-        void onExerciseLongClicked(Exercise exercise);
-
-        void onAddExerciseBtnClicked(long exerciseGroupId);
     }
 
     public void updateListView(Exercise exercise, boolean animate) {

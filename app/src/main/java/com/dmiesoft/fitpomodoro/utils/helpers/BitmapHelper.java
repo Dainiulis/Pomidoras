@@ -10,8 +10,10 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.amulyakhare.textdrawable.TextDrawable;
@@ -50,12 +52,12 @@ public abstract class BitmapHelper {
 
     /**
      * @param context
-     * @param image - imageName
-     * @param scaled - if true scale to resourceDimen
+     * @param image         - imageName
+     * @param scaled        - if true scale to resourceDimen
      * @param resourceDimen - if scaled is false, it can be set to 0
      * @return
      */
-    public static Bitmap getBitmapFromFiles(Context context, String image, boolean scaled, int resourceDimen) {
+    public static Bitmap getBitmapFromFiles(final Context context, final String image, final boolean scaled, final int resourceDimen) {
         if (image == null) {
             return null;
         }
@@ -86,14 +88,15 @@ public abstract class BitmapHelper {
     }
 
 
-    /**
-     * Calculate inSampleSize
-     *
-     * @param options        BitmapFactory.Options
-     * @param requiredWidth  int
-     * @param requiredHeight int
-     * @return InSample value which fits for both parameters
-     */
+        /**
+         * Calculate inSampleSize
+         *
+         * @param options        BitmapFactory.Options
+         * @param requiredWidth  int
+         * @param requiredHeight int
+         * @return InSample value which fits for both parameters
+         */
+
     public static int calculateInSampleSize(BitmapFactory.Options options, int requiredWidth, int requiredHeight) {
         final int imageHeight = options.outHeight;
         final int imageWidth = options.outWidth;
@@ -184,7 +187,13 @@ public abstract class BitmapHelper {
         return output;
     }
 
-    public static void saveImage(String fileName, Bitmap bitmap, Context context) {
+    /**
+     * Saves bitmap to storage asynchronously
+     * @param fileName
+     * @param bitmap
+     * @param context
+     */
+    public static void saveImage(final String fileName, final Bitmap bitmap, final Context context) {
         File newFile = getFileFromImages(fileName, context);
         FileOutputStream fos = null;
 

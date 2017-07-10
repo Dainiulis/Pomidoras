@@ -6,11 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.text.InputFilter;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +30,11 @@ import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.Exercise;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExerciseDetailFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
@@ -50,6 +56,7 @@ public class AddExerciseDialog extends DialogFragment {
     public static final int NO_EDIT = 1001;
     public static final int EDIT_DESCRIPTION = 1002;
     public static final int EDIT_IMAGE_LAYOUT = 1003;
+    private static final String BITMAP = "BITMAP";
 
     private Button btnSave, btnCancel;
     private EditText editText, editDescription;
@@ -62,7 +69,6 @@ public class AddExerciseDialog extends DialogFragment {
     private View rootView;
     private Exercise exercise;
     private List<Exercise> exercises;
-    private AddExerciseDialogListener mListener;
     private String exerciseType = "reps";
     private long exerciseGroupId;
     private int edit;
@@ -86,11 +92,6 @@ public class AddExerciseDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof AddExerciseDialogListener) {
-            mListener = (AddExerciseDialogListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement AddExerciseDialogListener");
-        }
     }
 
     @Override
@@ -233,7 +234,8 @@ public class AddExerciseDialog extends DialogFragment {
     private void updateExercise(String name) {
         if (edit == EDIT_DESCRIPTION) {
             exercise.setDescription(name);
-            mListener.onUpdateExerciseClicked(exercise);
+            ExercisesDataSource.updateExercise(getContext(), exercise);
+            updateExercisesView();
             return;
         }
         if (exercise.getImage() != null) {
@@ -243,7 +245,8 @@ public class AddExerciseDialog extends DialogFragment {
         saveImage(name);
         exercise.setName(name);
         exercise.setType(exerciseType);
-        mListener.onUpdateExerciseClicked(exercise);
+        ExercisesDataSource.updateExercise(getContext(), exercise);
+        updateExercisesView();
     }
 
     private void saveImage(String name) {
@@ -259,7 +262,17 @@ public class AddExerciseDialog extends DialogFragment {
         exercise.setExerciseGroupId(exerciseGroupId);
         exercise.setType(exerciseType);
         saveImage(name);
-        mListener.onSaveExerciseClicked(exercise);
+        exercise = ExercisesDataSource.createExercise(getContext(), exercise);
+        updateExercisesView();
+    }
+
+    private void updateExercisesView() {
+        Fragment fragment = getParentFragment();
+        if (fragment instanceof ExercisesFragment) {
+            ((ExercisesFragment) fragment).updateListView(exercise, false);
+        } else {
+            ((ExerciseDetailFragment) fragment).setExercise(exercise);
+        }
     }
 
     private void startIntentGetContent() {
@@ -302,12 +315,6 @@ public class AddExerciseDialog extends DialogFragment {
         }
     }
 
-    public interface AddExerciseDialogListener {
-        void onSaveExerciseClicked(Exercise exercise);
-
-        void onUpdateExerciseClicked(Exercise exercise);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
@@ -321,18 +328,39 @@ public class AddExerciseDialog extends DialogFragment {
     }
 
     private void getAndSetBitmap() {
-        bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
-        //bugas ant samsung cyanogenmode
-        if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
-        }
-        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
-        imageView.setImageBitmap(bitmap);
+        new AsyncTask<String, Void, Void>() {
+            Bitmap mBitmap;
+
+            @Override
+            protected Void doInBackground(String... params) {
+                mBitmap = BitmapHelper.decodeBitmapFromPath(params[0], BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
+                //bugas ant samsung cyanogenmode
+                if (mBitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
+                }
+                mBitmap = BitmapHelper.getScaledBitmap(mBitmap, BitmapHelper.getMaxSize(getActivity()));
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                imageView.setImageBitmap(mBitmap);
+                bitmap = mBitmap;
+            }
+        }.execute(path);
+//        bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.getRequiredWidth(getActivity()), BitmapHelper.getRequiredHeight(getActivity()));
+//        //bugas ant samsung cyanogenmode
+//        if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
+//        }
+//        bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.getMaxSize(getActivity()));
+//        imageView.setImageBitmap(bitmap);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString("BITMAP", path);
+        outState.putString(BITMAP, path);
         super.onSaveInstanceState(outState);
     }
 
@@ -340,7 +368,7 @@ public class AddExerciseDialog extends DialogFragment {
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null) {
-            path = savedInstanceState.getString("BITMAP");
+            path = savedInstanceState.getString(BITMAP);
             if (path != null) {
                 getAndSetBitmap();
             }
