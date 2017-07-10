@@ -87,14 +87,13 @@ public class MultiSelectionFragment extends Fragment{
         return snackbar;
     }
 
-    public Snackbar.Callback getSnackbarCallback(final ExercisesDataSource dataSource, final Context context, final TreeMap<Integer, ?> map) {
+    public Snackbar.Callback getSnackbarCallback(final Context context, final TreeMap<Integer, ?> map) {
         return new Snackbar.Callback() {
-
             @Override
             public void onDismissed(Snackbar transientBottomBar, int event) {
                 super.onDismissed(transientBottomBar, event);
                 if (event != Snackbar.Callback.DISMISS_EVENT_ACTION) {
-                    removeItemsFromDatabase(dataSource, context, map);
+                    removeItemsFromDatabase(context, map);
                     map.clear();
                     mListener.onSnackbarGone(false);
                 }
@@ -104,11 +103,10 @@ public class MultiSelectionFragment extends Fragment{
 
 
     /** Removes items from database. After this method, the removal is irreversible.
-     * @param dataSource
      * @param context
      * @param map
      */
-    private void removeItemsFromDatabase(ExercisesDataSource dataSource, Context context, TreeMap<Integer, ?> map) {
+    private void removeItemsFromDatabase(Context context, TreeMap<Integer, ?> map) {
         if (whatToDelete == null) {
             return;
         }

@@ -34,7 +34,7 @@ public class AlertDialogHelper {
         return builder;
     }
 
-    public static AlertDialog.Builder favoritesDialog(final Context context, final ExercisesDataSource dataSource) {
+    public static AlertDialog.Builder favoritesDialog(final Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final List<Favorite> favorites = ExercisesDataSource.getAllFavorites(context);
         favoritesInput = new EditText(context);

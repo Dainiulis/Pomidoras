@@ -28,13 +28,11 @@ public class FirstTimeDataLoader implements LoaderManager.LoaderCallbacks<List<E
     private Context context;
     private LoaderManager loaderManager;
     private ProgressDialog pD;
-    private ExercisesDataSource dataSource;
     private AsyncFirstDataLoaderListener mListener;
 
-    public FirstTimeDataLoader(Context context, LoaderManager loaderManager, ExercisesDataSource dataSource) {
+    public FirstTimeDataLoader(Context context, LoaderManager loaderManager) {
         this.context = context;
         this.loaderManager = loaderManager;
-        this.dataSource = dataSource;
 
         if (context instanceof AsyncFirstDataLoaderListener) {
             mListener = (AsyncFirstDataLoaderListener) context;
@@ -54,7 +52,7 @@ public class FirstTimeDataLoader implements LoaderManager.LoaderCallbacks<List<E
     @Override
     public Loader<List<ExercisesGroup>> onCreateLoader(int id, Bundle args) {
         Log.i(TAG, "starting loader");
-        return new AsyncDataLoader(context, dataSource);
+        return new AsyncDataLoader(context);
     }
 
     @Override
@@ -71,17 +69,14 @@ public class FirstTimeDataLoader implements LoaderManager.LoaderCallbacks<List<E
 
     private static class AsyncDataLoader extends AsyncTaskLoader<List<ExercisesGroup>> {
 
-        private ExercisesDataSource mDataSource;
-
-        public AsyncDataLoader(Context context, ExercisesDataSource dataSource) {
+        public AsyncDataLoader(Context context) {
             super(context);
-            this.mDataSource = dataSource;
         }
 
         @Override
         public List<ExercisesGroup> loadInBackground() {
             List<ExercisesGroup> exercisesGroups = null;
-            InitialDatabasePopulation idp = new InitialDatabasePopulation(getContext(), mDataSource);
+            InitialDatabasePopulation idp = new InitialDatabasePopulation(getContext());
             try {
                 exercisesGroups = idp.readJson();
             } catch (IOException | JSONException e) {

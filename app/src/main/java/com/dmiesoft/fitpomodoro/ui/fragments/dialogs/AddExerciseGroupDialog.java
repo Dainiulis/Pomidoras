@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,8 +28,10 @@ import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.ExercisesGroupsFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.AlertDialogHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.DisplayHelper;
 import com.dmiesoft.fitpomodoro.utils.helpers.EditTextInputFilter;
@@ -50,7 +53,7 @@ public class AddExerciseGroupDialog extends DialogFragment {
     private static final String TAG = "AEGD";
     private Button btnSave, btnCancel;
     private EditText editText;
-    private AddExerciseGroupDialogListener mListener;
+//    private AddExerciseGroupDialogListener mListener;
     private ImageView imageView;
     private ImageButton imageButton;
     private List<ExercisesGroup> exercisesGroups;
@@ -79,11 +82,11 @@ public class AddExerciseGroupDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof AddExerciseGroupDialogListener) {
-            mListener = (AddExerciseGroupDialogListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement AddExerciseGroupDialogListener");
-        }
+//        if (context instanceof AddExerciseGroupDialogListener) {
+//            mListener = (AddExerciseGroupDialogListener) context;
+//        } else {
+//            throw new RuntimeException(context.toString() + " must implement AddExerciseGroupDialogListener");
+//        }
     }
 
     @Override
@@ -213,7 +216,16 @@ public class AddExerciseGroupDialog extends DialogFragment {
         }
         saveImage(name);
         exercisesGroup.setName(name);
-        mListener.onUpdateExercisesGroupClicked(exercisesGroup);
+
+        ExercisesDataSource.updateExercisesGroup(getContext(), exercisesGroup);
+        updateExercisesGroupListView(exercisesGroup);
+    }
+
+    private void updateExercisesGroupListView(ExercisesGroup exercisesGroup) {
+        ExercisesGroupsFragment fragment = (ExercisesGroupsFragment) getParentFragment();
+        if (fragment != null) {
+            fragment.updateListView(exercisesGroup, false);
+        }
     }
 
     private void saveImage(String name) {
@@ -227,7 +239,9 @@ public class AddExerciseGroupDialog extends DialogFragment {
         exercisesGroup = new ExercisesGroup();
         exercisesGroup.setName(name);
         saveImage(name);
-        mListener.onSaveExercisesGroupClicked(exercisesGroup);
+
+        ExercisesGroup newExercisesGroup = ExercisesDataSource.createExercisesGroup(getContext(), exercisesGroup);
+        updateExercisesGroupListView(newExercisesGroup);
     }
 
     @Override
@@ -247,12 +261,6 @@ public class AddExerciseGroupDialog extends DialogFragment {
         }
     }
 
-    public interface AddExerciseGroupDialogListener {
-        void onSaveExercisesGroupClicked(ExercisesGroup exercisesGroup);
-
-        void onUpdateExercisesGroupClicked(ExercisesGroup exercisesGroup);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (data != null) {
@@ -266,17 +274,31 @@ public class AddExerciseGroupDialog extends DialogFragment {
     }
 
     private void getAndSetBitmap() {
-        bitmap = BitmapHelper.decodeBitmapFromPath(path, BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
-        //bugas ant samsung cyanogenmode
-        if (bitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
-        }
-        try {
-            bitmap = BitmapHelper.getScaledBitmap(bitmap, BitmapHelper.MAX_SIZE);
-        } catch (NullPointerException e) {
-            Log.i(TAG, "getAndSetBitmap: " + e.getMessage());
-        }
-        imageView.setImageBitmap(bitmap);
+
+        new AsyncTask<String, Void, Void>() {
+            Bitmap mBitmap;
+            @Override
+            protected Void doInBackground(String... params) {
+                mBitmap = BitmapHelper.decodeBitmapFromPath(params[0], BitmapHelper.REQUIRED_WIDTH, BitmapHelper.REQUIRED_HEIGTH);
+                //bugas ant samsung cyanogenmode
+                if (mBitmap == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    AlertDialogHelper.showErrorDialogWhenNotLoadingImg(getContext());
+                }
+                try {
+                    mBitmap = BitmapHelper.getScaledBitmap(mBitmap, BitmapHelper.MAX_SIZE);
+                } catch (NullPointerException e) {
+                    Log.i(TAG, "getAndSetBitmap: " + e.getMessage());
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                imageView.setImageBitmap(mBitmap);
+                bitmap = mBitmap;
+            }
+        }.execute(path);
     }
 
     @Override

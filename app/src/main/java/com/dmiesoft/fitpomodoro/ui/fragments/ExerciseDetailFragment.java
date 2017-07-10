@@ -17,8 +17,13 @@ import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseDialog;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,7 +36,7 @@ public class ExerciseDetailFragment extends Fragment {
     private View view;
     private ImageView imageView;
     private TextView nameTextView, typeTextView, descriptionText;
-    private ExerciseDetailFragmentListener mListener;
+//    private ExerciseDetailFragmentListener mListener;
 
     public ExerciseDetailFragment() {
         // Required empty public constructor
@@ -49,11 +54,11 @@ public class ExerciseDetailFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof ExerciseDetailFragmentListener) {
-            mListener = (ExerciseDetailFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement ExerciseDetailFragmentListener");
-        }
+//        if (context instanceof ExerciseDetailFragmentListener) {
+//            mListener = (ExerciseDetailFragmentListener) context;
+//        } else {
+//            throw new RuntimeException(context.toString() + " must implement ExerciseDetailFragmentListener");
+//        }
     }
 
     @Override
@@ -98,15 +103,22 @@ public class ExerciseDetailFragment extends Fragment {
 
         switch (id) {
             case R.id.menu_edit_image_name_type:
-                mListener.onEditExerciseDescClicked(exercise, false);
+                editExercise(AddExerciseDialog.EDIT_IMAGE_LAYOUT);
                 break;
 
             case R.id.menu_edit_description:
-                mListener.onEditExerciseDescClicked(exercise, true);
+                editExercise(AddExerciseDialog.EDIT_DESCRIPTION);
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void editExercise(int editCode) {
+        List<Exercise> exercises = ExercisesDataSource.findExercises(getContext(), null, null);
+        AddExerciseDialog dialog = AddExerciseDialog.newInstance(exercises, exercise, exercise.getExerciseGroupId(), editCode);
+        dialog.setCancelable(false);
+        dialog.show(getChildFragmentManager(), MainActivity.ADD_EXERCISE_DIALOG);
     }
 
     /**
@@ -167,8 +179,8 @@ public class ExerciseDetailFragment extends Fragment {
         getActivity().invalidateOptionsMenu();
     }
 
-    public interface ExerciseDetailFragmentListener{
-        void onEditExerciseDescClicked(Exercise exercise, boolean description);
-    }
+//    public interface ExerciseDetailFragmentListener{
+//        void onEditExerciseDescClicked(Exercise exercise, boolean description);
+//    }
 
 }

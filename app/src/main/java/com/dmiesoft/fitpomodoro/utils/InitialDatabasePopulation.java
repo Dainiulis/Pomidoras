@@ -28,12 +28,10 @@ public class InitialDatabasePopulation {
 
     private static final String TAG = "IDP";
     private Context context;
-    private ExercisesDataSource dataSource;
     private String[] list;
 
-    public InitialDatabasePopulation(Context context, ExercisesDataSource dataSource) {
+    public InitialDatabasePopulation(Context context) {
         this.context = context;
-        this.dataSource = dataSource;
     }
 
     public List<ExercisesGroup> readJson() throws IOException, JSONException {
@@ -59,7 +57,6 @@ public class InitialDatabasePopulation {
             String exerciseGroupImage = allData.getJSONObject(i).getString("image");
             exercisesGroup.setName(exerciseGroupName);
             exercisesGroup.setImage(exerciseGroupImage);
-//            exercisesGroup = dataSource.createExercisesGroup(exercisesGroup);
             exercisesGroup = ExercisesDataSource.createExercisesGroup(context, exercisesGroup);
             copyAssets(false, "", exerciseGroupImage);
 
@@ -68,11 +65,9 @@ public class InitialDatabasePopulation {
                 Exercise exercise = new Exercise();
                 exercise.setName(exercisesData.getJSONObject(j).getString("name"));
                 exercise.setType(exercisesData.getJSONObject(j).getString("type"));
-//                exercise.setImage(exercisesData.getJSONObject(j).getString("image") + ".png");
                 exercise.setImage("@" + exercisesGroup.getId() + "@" + exercise.getName() + ".png");
                 exercise.setDescription(exercisesData.getJSONObject(j).getString("description"));
                 exercise.setExerciseGroupId(exercisesGroup.getId());
-//                exercise = dataSource.createExercise(exercise);
                 exercise = ExercisesDataSource.createExercise(context, exercise);
                 copyAssets(true, exercise.getImage(), exerciseGroupImage);
             }

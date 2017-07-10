@@ -16,10 +16,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.dmiesoft.fitpomodoro.R;
+import com.dmiesoft.fitpomodoro.database.DatabaseContract;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.model.ExercisesGroup;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
+import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseGroupDialog;
 import com.dmiesoft.fitpomodoro.utils.adapters.ExercisesGroupListAdapter;
 
 import java.util.ArrayList;
@@ -86,7 +88,16 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 long exercisesGroupId = exercisesGroups.get(position).getId();
-                mListener.onExercisesGroupItemLongClicked(exercisesGroupId);
+
+                String selection = DatabaseContract.ExercisesGroupsTable._ID + "=?";
+                String[] selectionArgs = {String.valueOf(exercisesGroupId)};
+                List<ExercisesGroup> group = ExercisesDataSource.findExerciseGroups(getContext(), selection, selectionArgs);
+                ExercisesGroup exercisesGroup = group.get(0);
+                AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, exercisesGroup, true);
+                dialog.setCancelable(false);
+                dialog.show(getChildFragmentManager(), MainActivity.ADD_EXERCISE_GROUP_DIALOG);
+
+//                mListener.onExercisesGroupItemLongClicked(exercisesGroupId);
                 return true;
             }
         });
@@ -150,15 +161,20 @@ public class ExercisesGroupsFragment extends ListFragment implements View.OnClic
         int id = v.getId();
         switch (id) {
             case R.id.fab_main:
-                mListener.onAddExerciseGroupBtnClicked();
+//                mListener.onAddExerciseGroupBtnClicked();
+
+                AddExerciseGroupDialog dialog = AddExerciseGroupDialog.newInstance(exercisesGroups, null, false);
+                dialog.setCancelable(false);
+                dialog.show(getChildFragmentManager(), MainActivity.ADD_EXERCISE_GROUP_DIALOG);
+
                 break;
         }
     }
 
     public interface ExercisesGroupsListFragmentListener {
         void onExercisesGroupItemClicked(long exercisesGroupId);
-        void onAddExerciseGroupBtnClicked();
-        void onExercisesGroupItemLongClicked(long exercisesGroupId);
+//        void onAddExerciseGroupBtnClicked();
+//        void onExercisesGroupItemLongClicked(long exercisesGroupId);
     }
 
     public void updateListView(ExercisesGroup exercisesGroup, boolean animate) {
