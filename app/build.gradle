@@ -32,6 +32,6 @@ dependencies {
     compile 'com.pavelsikun:material-seekbar-preference:2.3.0'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile 'org.greenrobot:eventbus:3.0.0'
-    testCompile 'junit:junit:4.12'
     compile 'com.google.code.gson:gson:2.8.0'
+    testCompile 'junit:junit:4.12'
 }

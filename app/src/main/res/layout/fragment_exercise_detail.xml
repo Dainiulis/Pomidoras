@@ -57,45 +57,53 @@
 
     </RelativeLayout>
 
-    <ScrollView
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_gravity="center"
-        android:overScrollMode="never">
+        android:layout_margin="5dp"
+        android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="@dimen/fragments_padding"
-            android:paddingLeft="@dimen/fragments_padding"
-            android:paddingTop="@dimen/fragments_padding"
-            android:paddingBottom="@dimen/fragments_padding">
+    <!--<ScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:overScrollMode="never">-->
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical"-->
+            <!--android:paddingStart="@dimen/fragments_padding"-->
+            <!--android:paddingLeft="@dimen/fragments_padding"-->
+            <!--android:paddingTop="@dimen/fragments_padding"-->
+            <!--android:paddingBottom="@dimen/fragments_padding">-->
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/description"
-                    android:textSize="22sp"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentLeft="true"
-                    android:textStyle="bold" />
+            <!--<RelativeLayout-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content">-->
 
-            </RelativeLayout>
+                <!--<TextView-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginBottom="5dp"-->
+                    <!--android:text="@string/description"-->
+                    <!--android:textSize="22sp"-->
+                    <!--android:layout_alignParentStart="true"-->
+                    <!--android:layout_alignParentLeft="true"-->
+                    <!--android:textStyle="bold" />-->
 
-            <TextView
-                android:id="@+id/descriptionText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/description"
-                android:textSize="18sp" />
+            <!--</RelativeLayout>-->
 
-        </LinearLayout>
-    </ScrollView>
+            <!--<TextView-->
+                <!--android:id="@+id/descriptionText"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="@string/description"-->
+                <!--android:textSize="18sp" />-->
+
+        <!--</LinearLayout>-->
+    <!--</ScrollView>-->
 
 </LinearLayout>

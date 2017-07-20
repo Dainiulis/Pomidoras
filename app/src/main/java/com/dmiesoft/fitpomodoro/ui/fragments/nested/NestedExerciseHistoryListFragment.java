@@ -63,7 +63,6 @@ public class NestedExerciseHistoryListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_exercise_history_list, container, false);
-        Log.i(TAG, "onCreateView: ");
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
