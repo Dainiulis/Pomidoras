@@ -6,6 +6,10 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,15 +19,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.dmiesoft.fitpomodoro.R;
 import com.dmiesoft.fitpomodoro.database.ExercisesDataSource;
 import com.dmiesoft.fitpomodoro.model.Exercise;
+import com.dmiesoft.fitpomodoro.model.ExerciseHistory;
 import com.dmiesoft.fitpomodoro.ui.activities.MainActivity;
 import com.dmiesoft.fitpomodoro.ui.fragments.dialogs.AddExerciseDialog;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedExerciseDescriptionFragment;
+import com.dmiesoft.fitpomodoro.ui.fragments.nested.NestedExerciseHistoryListFragment;
 import com.dmiesoft.fitpomodoro.utils.helpers.BitmapHelper;
 
 import java.util.List;
+import java.util.Vector;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,16 +41,16 @@ public class ExerciseDetailFragment extends Fragment {
     private static final String TAG = "EDF";
     private Exercise exercise;
     private View view;
-    private ImageView imageView;
-    private TextView nameTextView, typeTextView, descriptionText;
-//    private ExerciseDetailFragmentListener mListener;
+    private ImageView mImageView;
+    private TextView mNameTextView, mTypeTextView; //, descriptionText;
+    private ViewPager mPager;
 
     public ExerciseDetailFragment() {
         // Required empty public constructor
     }
 
     public static ExerciseDetailFragment newInstance(Exercise exercise) {
-        
+
         Bundle args = new Bundle();
         ExerciseDetailFragment fragment = new ExerciseDetailFragment();
         args.putParcelable(PACKAGE_EXERCISES, exercise);
@@ -54,11 +61,6 @@ public class ExerciseDetailFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        if (context instanceof ExerciseDetailFragmentListener) {
-//            mListener = (ExerciseDetailFragmentListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString() + " must implement ExerciseDetailFragmentListener");
-//        }
     }
 
     @Override
@@ -81,10 +83,11 @@ public class ExerciseDetailFragment extends Fragment {
     }
 
     private void initializeViews() {
-        nameTextView = (TextView) view.findViewById(R.id.nameExercise);
-        typeTextView = (TextView) view.findViewById(R.id.typeExercise);
-        descriptionText = (TextView) view.findViewById(R.id.descriptionText);
-        imageView = (ImageView) view.findViewById(R.id.imageExercise);
+        mNameTextView = (TextView) view.findViewById(R.id.nameExercise);
+        mTypeTextView = (TextView) view.findViewById(R.id.typeExercise);
+//        descriptionText = (TextView) view.findViewById(R.id.descriptionText);
+        mImageView = (ImageView) view.findViewById(R.id.imageExercise);
+        mPager = (ViewPager) view.findViewById(R.id.pager);
 
         refreshDisplay();
 
@@ -123,8 +126,8 @@ public class ExerciseDetailFragment extends Fragment {
 
     /**
      * Set exercise and refresh display
-     * @param exercise
      *
+     * @param exercise
      */
     public void setExercise(Exercise exercise) {
         this.exercise = exercise;
@@ -132,34 +135,27 @@ public class ExerciseDetailFragment extends Fragment {
     }
 
     private void refreshDisplay() {
-        nameTextView.setText(exercise.getName());
-        typeTextView.setText(exercise.getType());
+        mNameTextView.setText(exercise.getName());
+        mTypeTextView.setText(exercise.getType());
 
-        descriptionText.setText(exercise.getDescription());
+        ExercisePagerAdapter adapter = new ExercisePagerAdapter(getChildFragmentManager(), exercise);
+        mPager.setAdapter(adapter);
+//        descriptionText.setText(exercise.getDescription());
         int resourceDimen = (int) getContext().getResources().getDimension(R.dimen.exercise_detail_image);
         if (exercise.getImage() != null) {
             Bitmap bitmap = BitmapHelper.getBitmapFromFiles(getContext(), exercise.getImage(), true, resourceDimen);
             if (bitmap != null) {
                 bitmap = BitmapHelper.getCroppedBitmap(bitmap, BitmapHelper.BORDER_SIZE);
-                imageView.setImageBitmap(bitmap);
-                if (imageView.getVisibility() == View.GONE) {
-                    imageView.setVisibility(View.VISIBLE);
+                mImageView.setImageBitmap(bitmap);
+                if (mImageView.getVisibility() == View.GONE) {
+                    mImageView.setVisibility(View.VISIBLE);
                 }
             } else {
-                imageView.setVisibility(View.GONE);
+                mImageView.setVisibility(View.GONE);
             }
         } else {
-            imageView.setVisibility(View.GONE);
+            mImageView.setVisibility(View.GONE);
         }
-    }
-
-//    public int getColor() {
-//        return color;
-//    }
-
-    private int generateColor() {
-        ColorGenerator generator = ColorGenerator.MATERIAL;
-        return generator.getColor(exercise.getName());
     }
 
     @Override
@@ -179,8 +175,28 @@ public class ExerciseDetailFragment extends Fragment {
         getActivity().invalidateOptionsMenu();
     }
 
-//    public interface ExerciseDetailFragmentListener{
-//        void onEditExerciseDescClicked(Exercise exercise, boolean description);
-//    }
+    private class ExercisePagerAdapter extends FragmentStatePagerAdapter {
+
+        private List<Fragment> fragments;
+
+        public ExercisePagerAdapter(FragmentManager fm, Exercise exercise) {
+            super(fm);
+            List<ExerciseHistory> exerciseHistoryList = ExercisesDataSource.getExerciseHistory(getContext(), exercise.getId());
+            fragments = new Vector<>();
+            fragments.add(NestedExerciseDescriptionFragment.newInstance(exercise));
+            fragments.add(NestedExerciseHistoryListFragment.newInstance(exerciseHistoryList, 1));
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+    }
+
 
 }
